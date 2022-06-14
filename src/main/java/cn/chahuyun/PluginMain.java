@@ -7,7 +7,6 @@ import net.mamoe.mirai.console.plugin.jvm.JavaPlugin;
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescriptionBuilder;
 import net.mamoe.mirai.event.EventChannel;
 import net.mamoe.mirai.event.GlobalEventChannel;
-import net.mamoe.mirai.event.ListeningStatus;
 import net.mamoe.mirai.event.events.FriendMessageEvent;
 import net.mamoe.mirai.event.events.GroupMessageEvent;
 import net.mamoe.mirai.event.events.MessageEvent;
@@ -34,16 +33,16 @@ public final class PluginMain extends JavaPlugin {
 
         CommandManager.INSTANCE.registerCommand(new CommandManage(PluginMain.INSTANCE), true);
 
-
-        //监听群消息
-        GlobalEventChannel.INSTANCE.subscribe(GroupMessageEvent.class, event -> {
-            DialogueBasic.isMessageWhereabouts(event);
-            return ListeningStatus.LISTENING;
-        });
-
+        //消息监听器 监听 2061954151 的所有消息
         EventChannel<MessageEvent> messageEvent = GlobalEventChannel.INSTANCE.filterIsInstance(MessageEvent.class)
                 .filter(event -> event.getBot().getId() == 2061954151L);
 
+
+        //监听群消息
+        messageEvent.subscribeAlways(GroupMessageEvent.class, DialogueBasic::isMessageWhereabouts);
+
+
+        //监听好友消息
         messageEvent.subscribeAlways(FriendMessageEvent.class, friendMessageEvent -> {
             String message = friendMessageEvent.getMessage().serializeToMiraiCode();
             if (message.equals("噗~")) {
