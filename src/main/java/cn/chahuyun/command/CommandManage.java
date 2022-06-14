@@ -29,6 +29,7 @@ public class CommandManage extends CompositeCommand {
     }
 
     @SubCommand("pu")
+    @Description("噗~")
     public void pu(CommandSender sender) {
         sender.sendMessage("噗~");
     }

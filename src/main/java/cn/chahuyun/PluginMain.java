@@ -5,10 +5,12 @@ import cn.chahuyun.command.CommandManage;
 import net.mamoe.mirai.console.command.CommandManager;
 import net.mamoe.mirai.console.plugin.jvm.JavaPlugin;
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescriptionBuilder;
+import net.mamoe.mirai.event.EventChannel;
 import net.mamoe.mirai.event.GlobalEventChannel;
 import net.mamoe.mirai.event.ListeningStatus;
+import net.mamoe.mirai.event.events.FriendMessageEvent;
 import net.mamoe.mirai.event.events.GroupMessageEvent;
-
+import net.mamoe.mirai.event.events.MessageEvent;
 
 
 public final class PluginMain extends JavaPlugin {
@@ -39,7 +41,15 @@ public final class PluginMain extends JavaPlugin {
             return ListeningStatus.LISTENING;
         });
 
+        EventChannel<MessageEvent> messageEvent = GlobalEventChannel.INSTANCE.filterIsInstance(MessageEvent.class)
+                .filter(event -> event.getBot().getId() == 2061954151L);
 
+        messageEvent.subscribeAlways(FriendMessageEvent.class, friendMessageEvent -> {
+            String message = friendMessageEvent.getMessage().serializeToMiraiCode();
+            if (message.equals("噗~")) {
+                friendMessageEvent.getSender().sendMessage("噗~");
+            }
+        });
 
 
     }
