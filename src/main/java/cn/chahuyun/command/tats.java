@@ -10,7 +10,7 @@ import lombok.Data;
  * @date 2022/6/8 9:41
  */
 @Data
-public class CommandBase {
+public class tats {
 
 
     private String PREFIX = "#";
