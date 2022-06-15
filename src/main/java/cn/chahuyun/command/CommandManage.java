@@ -28,6 +28,13 @@ public class CommandManage extends CompositeCommand {
                 CommandArgumentContext.EMPTY);
     }
 
+    /**
+     * @description
+     * @author zhangjiaxing
+     * @param sender
+     * @date 2022/6/15 17:03
+     * @return void
+     */
     @SubCommand("pu")
     @Description("噗~")
     public void pu(CommandSender sender) {
