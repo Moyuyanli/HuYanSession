@@ -15,9 +15,8 @@ public class PuDialogue {
     /**
      * @description 噗~ -> 噗~
      * @author zhangjiaxing
-     * @param messageEvent
+     * @param messageEvent 消息事件
      * @date 2022/6/16 14:20
-     * @return void
      */
     public static void sessionPu(MessageEvent messageEvent) {
         try {

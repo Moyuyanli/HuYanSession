@@ -1,4 +1,4 @@
-package cn.chahuyun.file;
+package cn.chahuyun.data;
 
 import cn.chahuyun.enumerate.DataEnum;
 import net.mamoe.mirai.message.data.MessageChain;
@@ -11,15 +11,25 @@ import net.mamoe.mirai.message.data.MessageChain;
  * @date 2022/6/16 10:30
  */
 public class SessionDataBase{
-    //触发关键词
+    /**
+     * 触发关键词
+     */
     private String key;
-    //触发结果类型
+    /**
+     * 触发结果类型
+     */
     private int type = 0;
-    //触发结果-字符
+    /**
+     * 触发结果-字符
+     */
     private String value;
-    //触发结果(所有)
+    /**
+     * 触发结果(所有)
+     */
     private MessageChain messageChain;
-    //触发条件
+    /**
+     * 触发条件
+     */
     private DataEnum dataEnum;
     /**
      * @description 构建
@@ -30,7 +40,6 @@ public class SessionDataBase{
      * @param messageChain 返回消息全部类型
      * @param dataEnum 触发条件
      * @date 2022/6/16 14:30
-     * @return viod
      */
     public SessionDataBase(String key, int type, String value, MessageChain messageChain, DataEnum dataEnum) {
         this.key = key;

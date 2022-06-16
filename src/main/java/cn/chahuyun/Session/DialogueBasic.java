@@ -3,11 +3,9 @@ package cn.chahuyun.Session;
 import cn.chahuyun.GroupSession;
 import cn.chahuyun.Session.Criticaldialog.PuDialogue;
 import cn.chahuyun.Session.Criticaldialog.SessionDialogue;
+import cn.chahuyun.data.SessionDataBase;
 import cn.chahuyun.enumerate.MessEnum;
-import cn.chahuyun.file.SessionData;
-import cn.chahuyun.file.SessionDataBase;
 import lombok.Data;
-import lombok.Generated;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.utils.MiraiLogger;
 
@@ -30,8 +28,13 @@ public class DialogueBasic {
 
     private static MiraiLogger l = GroupSession.INSTANCE.getLogger();
 
-    public static String commandPattern = "学习|修改|查看|删除";
-    //回复消息正则
+    /**
+     * 指令正则
+     */
+    public static String commandPattern = "学习|修改|查询|删除";
+    /**
+     * 回复消息正则
+     */
     public static String dialoguePattern = "噗~";
 
     /**
@@ -51,7 +54,7 @@ public class DialogueBasic {
         判断是否是对话类消息
          */
         //获取对话数据
-        ArrayList<SessionDataBase> sessionPattern = sessionData.getSession();
+        ArrayList<SessionDataBase> sessionPattern = (ArrayList<SessionDataBase>) sessionData.getSession();
         //创建触发对话结果
         SessionDataBase sessionDataBase = null;
         //循环判断
@@ -97,7 +100,11 @@ public class DialogueBasic {
             //COMMAND("指令消息",2)
             case 2:
                 if (messageToString.indexOf("学习") == 0) {
+                    l.info("学习指令");
                     SessionManage.studySession(event);
+                } else if (messageToString.indexOf("查询") == 0) {
+                    l.info("查询指令");
+                    SessionManage.querySession(event);
                 }
                 messEnum = null;
                 break;
@@ -106,6 +113,8 @@ public class DialogueBasic {
                 switch (messageToString){
                     case "噗~":
                         PuDialogue.sessionPu(event);
+                        break;
+                    default:
                         break;
                 }
                 messEnum = null;

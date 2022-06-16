@@ -2,9 +2,9 @@ package cn.chahuyun;
 
 import cn.chahuyun.Session.DialogueBasic;
 import cn.chahuyun.command.CommandManage;
+import cn.chahuyun.data.SessionDataBase;
 import cn.chahuyun.enumerate.DataEnum;
 import cn.chahuyun.file.SessionData;
-import cn.chahuyun.file.SessionDataBase;
 import net.mamoe.mirai.console.command.CommandManager;
 import net.mamoe.mirai.console.plugin.jvm.JavaPlugin;
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescriptionBuilder;
@@ -15,14 +15,22 @@ import net.mamoe.mirai.event.events.MessageEvent;
 import java.util.ArrayList;
 
 
+/**
+ * @description 插件主类
+ * @author zhangjiaxing
+ * @date 2022/6/16 21:35
+ */
 public final class GroupSession extends JavaPlugin {
 
+    /**
+     * 唯一实例GroupSession
+     */
     public static final GroupSession INSTANCE = new GroupSession();
 
     public static SessionData sessionData;
 
     private GroupSession() {
-        super(new JvmPluginDescriptionBuilder("cn.chahuyun.PluginMain", "1.0-SNAPSHOT")
+        super(new JvmPluginDescriptionBuilder("cn.chahuyun.GroupSession", "1.0-SNAPSHOT")
                 .name("Group Session Console")
                 .info("用于服务群的一个综合功能性插件")
                 .author("Moyuyanli")
@@ -37,16 +45,17 @@ public final class GroupSession extends JavaPlugin {
         getLogger().info("Group Session Console 加载!");
 
         //加载数据
-        this.reloadPluginData(SessionData.INSTANCE);
+        sessionData = SessionData.INSTANCE;
+        this.reloadPluginData(sessionData);
         getLogger().info("SessionData 已加载！");
-        if (SessionData.INSTANCE.getSession() == null) {
-            SessionData.INSTANCE.setSession(new ArrayList<SessionDataBase>(){
+        if (sessionData.getSession() == null) {
+            sessionData.setSession(new ArrayList<SessionDataBase>(){
                 {
                     add(new SessionDataBase("乒", 0, "乓", null, DataEnum.ACCURATE));
                 }
             });
         }
-        sessionData = SessionData.INSTANCE;
+
 
         //注册指令
         CommandManager.INSTANCE.registerCommand(new CommandManage(GroupSession.INSTANCE), true);

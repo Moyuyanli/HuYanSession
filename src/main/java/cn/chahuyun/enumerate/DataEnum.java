@@ -9,19 +9,27 @@ package cn.chahuyun.enumerate;
  */
 public enum DataEnum {
 
+    //ACCURATE("精准",1),
     ACCURATE("精准",1),
+    //VAGUE("模糊",2),
     VAGUE("模糊",2),
+    //END("结尾",3),
     END("结尾",3),
+    //START("开头",4);
     START("开头",4);
 
 
-    //匹配类型
+    /**
+     * 匹配类型
+     */
     private String type;
-    //匹配类型id
+    /**
+     * 匹配类型id
+     */
     private int typeInt;
 
 
-    private DataEnum(String type, int typeInt) {
+     DataEnum(String type, int typeInt) {
         this.type = type;
         this.typeInt = typeInt;
     }
