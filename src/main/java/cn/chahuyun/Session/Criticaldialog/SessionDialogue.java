@@ -1,0 +1,34 @@
+package cn.chahuyun.Session.Criticaldialog;
+
+import cn.chahuyun.file.SessionData;
+import cn.chahuyun.file.SessionDataBase;
+import net.mamoe.mirai.event.events.MessageEvent;
+
+import java.util.ArrayList;
+
+/**
+ * SessionDialogue
+ *
+ * @author Zhangjiaxing
+ * @description 关键词对话的消息触发
+ * @date 2022/6/16 14:36
+ */
+public class SessionDialogue {
+
+    /**
+     * @description 传递消息监视和指定的关键词对话
+     * @author zhangjiaxing
+     * @param messageEvent 消息事件
+     * @param sessionDataBase 对话类
+     * @date 2022/6/16 15:17
+     * @return void
+     */
+    public static void session(MessageEvent messageEvent,SessionDataBase sessionDataBase) {
+        ArrayList<SessionDataBase> session = SessionData.INSTANCE.getSession();
+        if (sessionDataBase.getType() == 0) {
+            messageEvent.getSubject().sendMessage(sessionDataBase.getValue());
+        }
+
+    }
+
+}

@@ -1,15 +1,10 @@
 package cn.chahuyun.command;
 
-import cn.chahuyun.PluginMain;
-import net.mamoe.mirai.console.command.CommandOwner;
 import net.mamoe.mirai.console.command.CommandSender;
 import net.mamoe.mirai.console.command.CompositeCommand;
 import net.mamoe.mirai.console.command.descriptor.CommandArgumentContext;
 import net.mamoe.mirai.console.permission.Permission;
 import net.mamoe.mirai.console.plugin.jvm.JvmPlugin;
-import org.jetbrains.annotations.NotNull;
-
-import java.util.ArrayList;
 
 /**
  * 基本指令

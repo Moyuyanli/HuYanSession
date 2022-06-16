@@ -29,5 +29,12 @@ public class SessionManage {
     }
 
 
+    public static boolean studySession(MessageChain chain) {
+        String studyPatten = "(学习 [\\u4e00-\\u9fa5]{1,} [\\u4e00-\\u9fa5]{1,}( ?(精准|模糊|头部|结尾))?)";
+
+
+        return false;
+    }
+
 
 }
