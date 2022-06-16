@@ -25,6 +25,7 @@ public class SessionDialogue {
      */
     public static void session(MessageEvent messageEvent,SessionDataBase sessionDataBase) {
         ArrayList<SessionDataBase> session = SessionData.INSTANCE.getSession();
+        //type = 0 为string类回复
         if (sessionDataBase.getType() == 0) {
             messageEvent.getSubject().sendMessage(sessionDataBase.getValue());
         }

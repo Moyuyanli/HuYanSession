@@ -4,6 +4,7 @@ import cn.chahuyun.Session.DialogueBasic;
 import cn.chahuyun.command.CommandManage;
 import cn.chahuyun.enumerate.DataEnum;
 import cn.chahuyun.file.SessionData;
+import cn.chahuyun.file.SessionDataBase;
 import net.mamoe.mirai.console.command.CommandManager;
 import net.mamoe.mirai.console.plugin.jvm.JavaPlugin;
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescriptionBuilder;
@@ -11,10 +12,14 @@ import net.mamoe.mirai.event.EventChannel;
 import net.mamoe.mirai.event.GlobalEventChannel;
 import net.mamoe.mirai.event.events.MessageEvent;
 
+import java.util.ArrayList;
+
 
 public final class GroupSession extends JavaPlugin {
 
     public static final GroupSession INSTANCE = new GroupSession();
+
+    public static SessionData sessionData;
 
     private GroupSession() {
         super(new JvmPluginDescriptionBuilder("cn.chahuyun.PluginMain", "1.0-SNAPSHOT")
@@ -34,9 +39,15 @@ public final class GroupSession extends JavaPlugin {
         //加载数据
         this.reloadPluginData(SessionData.INSTANCE);
         getLogger().info("SessionData 已加载！");
-        if (SessionData.INSTANCE.getSession().size() == 0) {
-            SessionData.INSTANCE.add("乒", 0, "乓", null, DataEnum.ACCURATE);
+        if (SessionData.INSTANCE.getSession() == null) {
+            SessionData.INSTANCE.setSession(new ArrayList<SessionDataBase>(){
+                {
+                    add(new SessionDataBase("乒", 0, "乓", null, DataEnum.ACCURATE));
+                }
+            });
         }
+        sessionData = SessionData.INSTANCE;
+
         //注册指令
         CommandManager.INSTANCE.registerCommand(new CommandManage(GroupSession.INSTANCE), true);
 

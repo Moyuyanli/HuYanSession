@@ -1,15 +1,21 @@
 package cn.chahuyun.Session;
 
+import cn.chahuyun.GroupSession;
 import cn.chahuyun.Session.Criticaldialog.PuDialogue;
 import cn.chahuyun.Session.Criticaldialog.SessionDialogue;
 import cn.chahuyun.enumerate.MessEnum;
 import cn.chahuyun.file.SessionData;
 import cn.chahuyun.file.SessionDataBase;
 import lombok.Data;
+import lombok.Generated;
 import net.mamoe.mirai.event.events.MessageEvent;
+import net.mamoe.mirai.utils.MiraiLogger;
 
 import java.util.ArrayList;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static cn.chahuyun.GroupSession.sessionData;
 
 
 /**
@@ -22,6 +28,9 @@ import java.util.regex.Pattern;
 @Data
 public class DialogueBasic {
 
+    private static MiraiLogger l = GroupSession.INSTANCE.getLogger();
+
+    public static String commandPattern = "学习|修改|查看|删除";
     //回复消息正则
     public static String dialoguePattern = "噗~";
 
@@ -42,7 +51,7 @@ public class DialogueBasic {
         判断是否是对话类消息
          */
         //获取对话数据
-        ArrayList<SessionDataBase> sessionPattern = SessionData.INSTANCE.getSession();
+        ArrayList<SessionDataBase> sessionPattern = sessionData.getSession();
         //创建触发对话结果
         SessionDataBase sessionDataBase = null;
         //循环判断
@@ -50,11 +59,18 @@ public class DialogueBasic {
             //TypeInt = 1 -> 精准匹配
             if (base.getDataEnum().getTypeInt() == 1) {
                 if (base.getKey().equals(messageToString)) {
+                    l.info("匹配对话成功 "+base.getKey()+" -> "+base.getValue());
                     messEnum = MessEnum.SESSION;
                     sessionDataBase = base;
                 }
             }
         }
+
+        /*
+        判断是否是指令消息
+         */
+        Matcher matcher = Pattern.compile(commandPattern).matcher(messageToString);
+        if (matcher.find() && matcher.end()==2) messEnum = MessEnum.COMMAND;
 
 
         /*
@@ -80,6 +96,9 @@ public class DialogueBasic {
                 break;
             //COMMAND("指令消息",2)
             case 2:
+                if (messageToString.indexOf("学习") == 0) {
+                    SessionManage.studySession(event);
+                }
                 messEnum = null;
                 break;
             //REPLY("回复消息",3)

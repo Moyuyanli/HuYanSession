@@ -24,7 +24,7 @@ public class SessionData extends AutoSavePluginData {
         super("SessionData");
     }
 
-    private ArrayList<SessionDataBase> session = new ArrayList<SessionDataBase>();
+    private ArrayList<SessionDataBase> session;
 
     public void add(String key, int type, String value, MessageChain messageChain, DataEnum dataEnum) {
         session.add(new SessionDataBase(key, type, value, messageChain, dataEnum));
