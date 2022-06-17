@@ -5,7 +5,6 @@ import cn.chahuyun.Session.Criticaldialog.PuDialogue;
 import cn.chahuyun.Session.Criticaldialog.SessionDialogue;
 import cn.chahuyun.data.SessionDataBase;
 import cn.chahuyun.enumerate.MessEnum;
-import lombok.Data;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.utils.MiraiLogger;
 
@@ -23,7 +22,6 @@ import static cn.chahuyun.GroupSession.sessionData;
  * @description 触发基本对话
  * @date 2022/6/8 9:18
  */
-@Data
 public class DialogueBasic {
 
     private static MiraiLogger l = GroupSession.INSTANCE.getLogger();
@@ -54,7 +52,7 @@ public class DialogueBasic {
         判断是否是对话类消息
          */
         //获取对话数据
-        ArrayList<SessionDataBase> sessionPattern = (ArrayList<SessionDataBase>) sessionData.getSession();
+        ArrayList<SessionDataBase> sessionPattern = new ArrayList<>(sessionData.values()) ;
         //创建触发对话结果
         SessionDataBase sessionDataBase = null;
         //循环判断

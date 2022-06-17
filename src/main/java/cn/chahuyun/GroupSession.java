@@ -12,7 +12,7 @@ import net.mamoe.mirai.event.EventChannel;
 import net.mamoe.mirai.event.GlobalEventChannel;
 import net.mamoe.mirai.event.events.MessageEvent;
 
-import java.util.ArrayList;
+import java.util.Map;
 
 
 /**
@@ -27,7 +27,7 @@ public final class GroupSession extends JavaPlugin {
      */
     public static final GroupSession INSTANCE = new GroupSession();
 
-    public static SessionData sessionData;
+    public static Map<String,SessionDataBase> sessionData ;
 
     private GroupSession() {
         super(new JvmPluginDescriptionBuilder("cn.chahuyun.GroupSession", "1.0-SNAPSHOT")
@@ -45,16 +45,11 @@ public final class GroupSession extends JavaPlugin {
         getLogger().info("Group Session Console 加载!");
 
         //加载数据
-        sessionData = SessionData.INSTANCE;
-        this.reloadPluginData(sessionData);
+        this.reloadPluginData(SessionData.INSTANCE);
         getLogger().info("SessionData 已加载！");
-        if (sessionData.getSession() == null) {
-            sessionData.setSession(new ArrayList<SessionDataBase>(){
-                {
-                    add(new SessionDataBase("乒", 0, "乓", null, DataEnum.ACCURATE));
-                }
-            });
-        }
+        //获取
+        sessionData = SessionData.INSTANCE.getSessionMap();
+        sessionData.put("乒", new SessionDataBase("乒", 0, "乓", null, DataEnum.ACCURATE));
 
 
         //注册指令
@@ -63,9 +58,7 @@ public final class GroupSession extends JavaPlugin {
         //消息监听器 监听 2061954151 的所有消息
         EventChannel<MessageEvent> messageEvent = GlobalEventChannel.INSTANCE.filterIsInstance(MessageEvent.class)
                 .filter(event -> event.getBot().getId() == 2061954151L);
-
-
-
+        
         //监听消息
         messageEvent.subscribeAlways(MessageEvent.class, DialogueBasic::isMessageWhereabouts);
 

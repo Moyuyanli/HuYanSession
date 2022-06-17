@@ -6,6 +6,8 @@ import net.mamoe.mirai.event.events.MessageEvent;
 
 import java.util.ArrayList;
 
+import static cn.chahuyun.GroupSession.sessionData;
+
 /**
  * SessionDialogue
  *
@@ -23,7 +25,7 @@ public class SessionDialogue {
      * @date 2022/6/16 15:17
      */
     public static void session(MessageEvent messageEvent,SessionDataBase sessionDataBase) {
-        ArrayList<SessionDataBase> session = (ArrayList<SessionDataBase>) SessionData.INSTANCE.getSession();
+        ArrayList<SessionDataBase> session = new ArrayList<>(sessionData.values());
         //type = 0 为string类回复
         if (sessionDataBase.getType() == 0) {
             messageEvent.getSubject().sendMessage(sessionDataBase.getValue());

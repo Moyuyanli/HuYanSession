@@ -6,10 +6,8 @@ import cn.chahuyun.data.SessionDataPaging;
 import cn.chahuyun.enumerate.DataEnum;
 import net.mamoe.mirai.contact.Contact;
 import net.mamoe.mirai.event.events.MessageEvent;
-import net.mamoe.mirai.message.data.Message;
 import net.mamoe.mirai.message.data.MessageChain;
 import net.mamoe.mirai.message.data.MessageChainBuilder;
-import net.mamoe.mirai.message.data.SingleMessage;
 import net.mamoe.mirai.utils.MiraiLogger;
 
 import java.util.ArrayList;
@@ -73,7 +71,7 @@ public class SessionManage {
         l.info(Arrays.toString(strings));
         if (strings.length == 3 && !strings[2].equals("图片")) {
             //type = 0 为string类回复
-            sessionData.add(strings[1],0,strings[2],null, DataEnum.ACCURATE);
+            sessionData.put(strings[1],new SessionDataBase(strings[1],0,strings[2],null, DataEnum.ACCURATE));
             subject.sendMessage("学习成功! " + strings[1] + "->"+strings[2]);
             return true;
         }
@@ -129,7 +127,7 @@ public class SessionManage {
      */
     private static Boolean sessionMessageInInt(int pageNum, MessageEvent event) {
         //进行分页
-        SessionDataPaging dataPaging = SessionDataPaging.queryPageInfo(pageNum, PAGE_SIZE, (ArrayList<SessionDataBase>) sessionData.getSession());
+        SessionDataPaging dataPaging = SessionDataPaging.queryPageInfo(pageNum, PAGE_SIZE, new ArrayList<>(sessionData.values()));
         //构造消息
         MessageChainBuilder messageChainBuilder = new MessageChainBuilder();
         messageChainBuilder.add("------所有关键词------\n");

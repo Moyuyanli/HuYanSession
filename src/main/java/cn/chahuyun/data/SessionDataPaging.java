@@ -5,7 +5,6 @@ import cn.chahuyun.GroupSession;
 import net.mamoe.mirai.utils.MiraiLogger;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import static cn.chahuyun.GroupSession.sessionData;
 /**
@@ -19,7 +18,7 @@ public class SessionDataPaging {
 
     private static MiraiLogger l = GroupSession.INSTANCE.getLogger();
 
-    private ArrayList<SessionDataBase> sessionPattern = (ArrayList<SessionDataBase>) sessionData.getSession();
+    private ArrayList<SessionDataBase> sessionPattern = new ArrayList<>(sessionData.values()) ;
 
 
     /**
