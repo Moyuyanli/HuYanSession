@@ -46,7 +46,7 @@ public class DialogueBasic {
         //判断消息传递类型
         MessEnum messEnum = null;
         //获取到的消息
-        String messageToString = event.getMessage().contentToString();
+        String messageToString = event.getMessage().serializeToMiraiCode();
 
         /*
         判断是否是对话类消息
@@ -103,6 +103,9 @@ public class DialogueBasic {
                 } else if (messageToString.indexOf("查询") == 0) {
                     l.info("查询指令");
                     SessionManage.querySession(event);
+                } else if (messageToString.indexOf("删除") == 0) {
+                    l.info("删除指令");
+                    SessionManage.deleteSession(event);
                 }
                 messEnum = null;
                 break;

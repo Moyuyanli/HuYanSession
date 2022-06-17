@@ -10,6 +10,7 @@ import net.mamoe.mirai.message.data.MessageChain;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * SessionData
@@ -94,16 +95,34 @@ public class SessionData extends JavaAutoSavePluginData {
         try {
             //data中的stringmap
             Map<String, String> stringStringMap = INSTANCE.sessionMap.get();
+            //判断删除，如果内存中不存在这条数据，那么就将持久化的这条数据删除
+            String toString = parMap.keySet().toString();
+            Set<String> keySet = stringStringMap.keySet();
+            for (String s : keySet) {
+                //判断内存中的mapKey里面是否有持久化的mapKey，如果不存在，就删除
+                if (!toString.contains(s)) {
+                    GroupSession.INSTANCE.getLogger().info("删除 ->"+ s);
+                    stringStringMap.remove(s);
+                }
+            }
             //循环添加
             for (SessionDataBase dataBase : parMap.values()) {
                 //序列化
                 String toJSONString = JSONArray.toJSONString(dataBase);
                 GroupSession.INSTANCE.getLogger().info("序列化 ->"+ toJSONString);
-                stringStringMap.put(dataBase.getKey(), toJSONString);
+                String key = dataBase.getKey();
+                if (toJSONString.equals(stringStringMap.get(key))) {
+                    continue;
+                } else {
+                    GroupSession.INSTANCE.getLogger().info("修改前本地数据 "+key+" -> "+stringStringMap.get(key));
+                    GroupSession.INSTANCE.getLogger().info("修改后本地数据 "+key+" -> "+toJSONString);
+                    stringStringMap.put(key, toJSONString);
+                }
             }
+            GroupSession.INSTANCE.getLogger().info("会话数据保存成功！");
             return true;
         } catch (Exception e) {
-            GroupSession.INSTANCE.getLogger().error("数据保存出错 ->"+e.getMessage());
+            GroupSession.INSTANCE.getLogger().error("数据保存出错 -> "+e.getMessage());
             return false;
         }
     }

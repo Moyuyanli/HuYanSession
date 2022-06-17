@@ -46,7 +46,9 @@ public class AutoSaveDataTest {
         });
         Map<String, SessionDataBase> sessionMap = SessionData.INSTANCE.getSessionMap();
         sessionMap.put("测试", new SessionDataBase("乌拉", 0, "乌拉", null, DataEnum.ACCURATE));
-        SessionData.INSTANCE.setSessionMap(sessionMap);
+
+
+
 
 
         assertEquals("乌拉",SessionData.INSTANCE.getSessionMap().get("乌拉"));

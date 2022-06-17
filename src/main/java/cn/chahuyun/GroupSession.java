@@ -50,7 +50,7 @@ public final class GroupSession extends JavaPlugin {
         //获取
         sessionData = SessionData.INSTANCE.getSessionMap();
         sessionData.put("乒", new SessionDataBase("乒", 0, "乓", null, DataEnum.ACCURATE));
-        
+
         //注册指令
         CommandManager.INSTANCE.registerCommand(new CommandManage(GroupSession.INSTANCE), true);
 
@@ -66,9 +66,6 @@ public final class GroupSession extends JavaPlugin {
 
     @Override
     public void onDisable() {
-
         SessionData.INSTANCE.setSessionMap(sessionData);
-        getLogger().info("会话数据已保存");
-
     }
 }
