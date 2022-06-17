@@ -99,7 +99,6 @@ public class SessionManage {
         }
         //当 消息仅为 查询 时 默认查询第一页消息
         if (messageString.length()<=3) {
-            l.info("报错1");
             sessionMessageInInt(1, event);
             return true;
         }

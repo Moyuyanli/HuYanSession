@@ -75,6 +75,7 @@ public class SessionData extends JavaAutoSavePluginData {
         for (String s : stringStringMap.values()) {
             //反序列化
             SessionDataBase dataBase = JSONArray.parseObject(s, SessionDataBase.class);
+            GroupSession.INSTANCE.getLogger().info("反序列化 ->"+dataBase.getKey()+dataBase.getValue());
             //添加到返回map中
             stringSessionDataBaseMap.put(dataBase.getKey(), dataBase);
         }
@@ -97,6 +98,7 @@ public class SessionData extends JavaAutoSavePluginData {
             for (SessionDataBase dataBase : parMap.values()) {
                 //序列化
                 String toJSONString = JSONArray.toJSONString(dataBase);
+                GroupSession.INSTANCE.getLogger().info("序列化 ->"+ toJSONString);
                 stringStringMap.put(dataBase.getKey(), toJSONString);
             }
             return true;
