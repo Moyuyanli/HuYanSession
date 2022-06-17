@@ -13,10 +13,10 @@ public enum DataEnum {
     ACCURATE("精准",1),
     //VAGUE("模糊",2),
     VAGUE("模糊",2),
-    //END("结尾",3),
-    END("结尾",3),
-    //START("开头",4);
-    START("开头",4);
+    //START("头部",3),
+    START("头部",3),
+    //END("结尾",4);
+    END("结尾",4);
 
 
     /**

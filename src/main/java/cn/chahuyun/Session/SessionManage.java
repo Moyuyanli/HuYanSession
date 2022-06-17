@@ -77,11 +77,17 @@ public class SessionManage {
             return false;
         }
 
+        //分割学习数据
         String[] strings = messageString.split(" ");
         l.info(Arrays.toString(strings));
-        if (strings.length == 3 && !strings[2].equals("图片")) {
+        //当为3时默认精准匹配
+        if (strings.length == 3) {
+            int type = 0;
+            if (Pattern.matches("\\[mirai:", strings[1])) {
+                type = 1;
+            }
             //type = 0 为string类回复
-            sessionData.put(strings[1],new SessionDataBase(strings[1],0,strings[2],null, DataEnum.ACCURATE));
+            sessionData.put(strings[1],new SessionDataBase(strings[1],type,strings[2],null, DataEnum.ACCURATE));
             subject.sendMessage(new MessageChainBuilder().append("学习成功! ")
                     .append(MiraiCode.deserializeMiraiCode(strings[1]))
                     .append(" -> ")
@@ -89,8 +95,59 @@ public class SessionManage {
                     .build());
             return true;
         }
-
-
+        //查看结尾匹配类型
+        switch (strings[3]) {
+            case "精准":
+                int jType = 0;
+                if (Pattern.matches("\\[mirai:", strings[1])) {
+                    jType = 1;
+                }
+                //type = 0 为string类回复
+                sessionData.put(strings[1],new SessionDataBase(strings[1],jType,strings[2],null, DataEnum.ACCURATE));
+                subject.sendMessage(new MessageChainBuilder().append("学习精准匹配成功! ")
+                        .append(MiraiCode.deserializeMiraiCode(strings[1]))
+                        .append(" -> ")
+                        .append(MiraiCode.deserializeMiraiCode(strings[2]))
+                        .build());
+                break;
+            case "模糊":
+                int mType = 0;
+                if (Pattern.matches("\\[mirai:", strings[1])) {
+                    mType = 1;
+                }
+                sessionData.put(strings[1],new SessionDataBase(strings[1],mType,strings[2],null, DataEnum.VAGUE));
+                subject.sendMessage(new MessageChainBuilder().append("学习模糊匹配成功! ")
+                        .append(MiraiCode.deserializeMiraiCode(strings[1]))
+                        .append(" -> ")
+                        .append(MiraiCode.deserializeMiraiCode(strings[2]))
+                        .build());
+                break;
+            case "头部":
+                int tType = 0;
+                if (Pattern.matches("\\[mirai:", strings[1])) {
+                    tType = 1;
+                }
+                sessionData.put(strings[1],new SessionDataBase(strings[1],tType,strings[2],null, DataEnum.START));
+                subject.sendMessage(new MessageChainBuilder().append("学习头部匹配成功! ")
+                        .append(MiraiCode.deserializeMiraiCode(strings[1]))
+                        .append(" -> ")
+                        .append(MiraiCode.deserializeMiraiCode(strings[2]))
+                        .build());
+                break;
+            case "结尾":
+                int wType = 0;
+                if (Pattern.matches("\\[mirai:", strings[1])) {
+                    wType = 1;
+                }
+                sessionData.put(strings[1],new SessionDataBase(strings[1],wType,strings[2],null, DataEnum.END));
+                subject.sendMessage(new MessageChainBuilder().append("学习结尾匹配成功! ")
+                        .append(MiraiCode.deserializeMiraiCode(strings[1]))
+                        .append(" -> ")
+                        .append(MiraiCode.deserializeMiraiCode(strings[2]))
+                        .build());
+                break;
+            default:break;
+        }
         return false;
     }
 

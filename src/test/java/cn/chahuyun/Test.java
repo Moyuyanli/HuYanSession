@@ -22,6 +22,19 @@ public class Test {
         System.out.println(s);
         String a = "卧";
         System.out.println(s.indexOf(a));
+        String s1 = "abcdef";
+        String s2 = "bc";
+        String s3 = "abc";
+        String s4 = "ef";
+        System.out.println(s1.indexOf(s2));
+        System.out.println(s1.indexOf(s3));
+        System.out.println(s1.indexOf(s4));
+        System.out.println(s1.length()-s4.length());
+
+        System.out.println(s1.substring(s1.length() - s4.length()));
+        System.out.println(s1.substring(s1.length() - s4.length()));
+
+
 
     }
 

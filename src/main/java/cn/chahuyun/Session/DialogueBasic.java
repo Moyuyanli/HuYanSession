@@ -1,7 +1,7 @@
 package cn.chahuyun.Session;
 
 import cn.chahuyun.GroupSession;
-import cn.chahuyun.Session.Criticaldialog.PuDialogue;
+import cn.chahuyun.Session.Criticaldialog.SpecialDialogue;
 import cn.chahuyun.Session.Criticaldialog.SessionDialogue;
 import cn.chahuyun.data.SessionDataBase;
 import cn.chahuyun.enumerate.MessEnum;
@@ -33,7 +33,7 @@ public class DialogueBasic {
     /**
      * 回复消息正则
      */
-    public static String dialoguePattern = "噗~";
+    public static String dialoguePattern = "噗~|斗地主|帮助";
 
     /**
      * @description 所有消息的入口
@@ -57,13 +57,55 @@ public class DialogueBasic {
         SessionDataBase sessionDataBase = null;
         //循环判断
         for (SessionDataBase base : sessionPattern) {
-            //TypeInt = 1 -> 精准匹配
-            if (base.getDataEnum().getTypeInt() == 1) {
-                if (base.getKey().equals(messageToString)) {
-                    l.info("匹配对话成功 "+base.getKey()+" -> "+base.getValue());
-                    messEnum = MessEnum.SESSION;
-                    sessionDataBase = base;
-                }
+            switch (base.getDataEnum().getTypeInt()) {
+                //TypeInt = 1 -> 精准匹配
+                case 1:
+                    if (base.getKey().equals(messageToString)) {
+                        l.info("匹配对话成功 " + base.getKey() + " -> " + base.getValue());
+                        messEnum = MessEnum.SESSION;
+                        sessionDataBase = base;
+                    }
+                    break;
+                //TypeInt = 2 -> 模糊匹配
+                case 2:
+                    if (messageToString.contains(base.getKey())) {
+                        l.info("匹配对话成功 " + base.getKey() + " -> " + base.getValue());
+                        messEnum = MessEnum.SESSION;
+                        sessionDataBase = base;
+                    }
+                    break;
+                //TypeInt = 3 -> 头部匹配
+                case 3:
+                    String firstSubstring;
+                    if (messageToString.length() >= base.getKey().length()) {
+                        firstSubstring = messageToString.substring(0, base.getKey().length());
+//                        l.info("进行头部匹配 -> "+firstSubstring);
+                    } else {
+                        firstSubstring = messageToString;
+                    }
+                    if (firstSubstring.equals(base.getKey())) {
+                        l.info("匹配对话成功 " + base.getKey() + " -> " + base.getValue());
+                        messEnum = MessEnum.SESSION;
+                        sessionDataBase = base;
+                    }
+                    break;
+                //TypeInt = 4 -> 结尾匹配
+                case 4:
+                    String endSubstring;
+                    if (messageToString.length() >= base.getKey().length()) {
+                        endSubstring = messageToString.substring(messageToString.length() - base.getKey().length());
+//                        l.info("进行结尾匹配 -> "+endSubstring);
+                    } else {
+                        endSubstring = messageToString;
+                    }
+                    if (endSubstring.equals(base.getKey())) {
+                        l.info("匹配对话成功 " + base.getKey() + " -> " + base.getValue());
+                        messEnum = MessEnum.SESSION;
+                        sessionDataBase = base;
+                    }
+                    break;
+                default:
+                    break;
             }
         }
 
@@ -113,7 +155,10 @@ public class DialogueBasic {
             case 3:
                 switch (messageToString){
                     case "噗~":
-                        PuDialogue.sessionPu(event);
+                        SpecialDialogue.sessionPu(event);
+                        break;
+                    case "斗地主":
+                        SpecialDialogue.sessionDou(event);
                         break;
                     default:
                         break;
