@@ -7,6 +7,7 @@ import cn.chahuyun.config.PowerConfig;
 import cn.chahuyun.config.PowerConfigBase;
 import cn.chahuyun.data.SessionDataBase;
 import cn.chahuyun.enumerate.MessEnum;
+import cn.chahuyun.power.Permissions;
 import net.mamoe.mirai.console.permission.AbstractPermitteeId;
 import net.mamoe.mirai.contact.User;
 import net.mamoe.mirai.event.events.MessageEvent;
@@ -30,16 +31,20 @@ import static cn.chahuyun.GroupSession.sessionData;
  */
 public class DialogueBasic {
 
-    private static MiraiLogger l = GroupSession.INSTANCE.getLogger();
+    public static final DialogueBasic INSTANCE = new DialogueBasic();
+
+    private  MiraiLogger l = GroupSession.INSTANCE.getLogger();
 
     /**
      * 指令正则
      */
-    public static String commandPattern = "查询 ?|学习 |删除 |([+-]\\[mirai:at:\\d+\\] [\\w]+)";
+    public  String commandPattern = "查询 ?|学习 |删除 |([+-]\\[mirai:at:\\d+\\] [\\w]+)";
     /**
      * 回复消息正则
      */
-    public static String dialoguePattern = "噗~|斗地主|帮助";
+    public  String dialoguePattern = "噗~|斗地主|帮助";
+
+
 
     /**
      * @description 所有消息的入口
@@ -48,7 +53,7 @@ public class DialogueBasic {
      * @date 2022/6/16 15:25
      * @return void
      */
-    public static void isMessageWhereabouts(MessageEvent event) {
+    public  void isMessageWhereabouts(MessageEvent event) {
         //判断消息传递类型
         MessEnum messEnum = null;
         //获取到的消息
@@ -154,7 +159,7 @@ public class DialogueBasic {
         switch (messEnum.getMessageTypeInt()) {
             //SESSION("会话消息",1)
             case 1:
-                SessionDialogue.session(event,sessionDataBase);
+                SessionDialogue.INSTANCE.session(event,sessionDataBase);
                 messEnum = null;
                 break;
             //COMMAND("指令消息",2)
@@ -163,18 +168,19 @@ public class DialogueBasic {
                 if (adminList.get(userPower).isSessionPower()) {
                     if (messageToString.indexOf("学习") == 0) {
                         l.info("学习指令");
-                        SessionManage.studySession(event);
+                        SessionManage.INSTANCE.studySession(event);
                     } else if (messageToString.indexOf("查询") == 0) {
                         l.info("查询指令");
-                        SessionManage.querySession(event);
+                        SessionManage.INSTANCE.querySession(event);
                     } else if (messageToString.indexOf("删除") == 0) {
                         l.info("删除指令");
-                        SessionManage.deleteSession(event);
+                        SessionManage.INSTANCE.deleteSession(event);
                     }
-                } else if (adminList.get(userPower).isAdminPower()) {
+                }
+                if (adminList.get(userPower).isAdminPower()) {
                     if (Pattern.matches("([+-]\\[mirai:at:\\d+\\] [\\w]+)", messageToString)) {
                         l.info("权限指令");
-                        messageToPower(event);
+                        Permissions.INSTANCE.messageToPower(event);
                     }
                 }
                 messEnum = null;
@@ -183,10 +189,10 @@ public class DialogueBasic {
             case 3:
                 switch (messageToString){
                     case "噗~":
-                        SpecialDialogue.sessionPu(event);
+                        SpecialDialogue.INSTANCE.sessionPu(event);
                         break;
                     case "斗地主":
-                        SpecialDialogue.sessionDou(event);
+                        SpecialDialogue.INSTANCE.sessionDou(event);
                         break;
                     default:
                         break;
@@ -199,37 +205,5 @@ public class DialogueBasic {
         }
     }
 
-    /**
-     * @description 用于处理权限消息的字符串数组
-     * @author zhangjiaxing
-     * @param event
-     * @date 2022/6/19 1:18
-     * @return void
-     */
-    private static void messageToPower(MessageEvent event) {
-        //先将发送的消息转换为string
-        String string = event.getMessage().contentToString();
-        l.info(string);
-        //修改类型
-        String s = string.substring(0, 1);
-        //去掉 修改类型
-        string = string.substring(1);
-        //通过>分割
-        String[] split = string.split(">");
-        //权限类参数
-        String power = split[1];
-        //匹配正则,获取中段消息的所有数字，疑似qq
-        Matcher matcher = Pattern.compile("(@\\d+)").matcher(split[0]);
-        //这里需要先进行一次匹配，find
-        matcher.find();
-        //然后才能通关group获取,然后把@给截取掉
-        String qq = matcher.group().substring(1);
-        //拼接权限类识别用户字符
-        String user = "m"+event.getSubject().getId()+"."+qq;
-        //进行设置
-        MessageChain messages = PowerConfig.INSTANCE.setAdminList(s,user,power);
-        //返回消息
-        event.getSubject().sendMessage(messages);
-    }
 
 }

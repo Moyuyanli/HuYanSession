@@ -64,7 +64,8 @@ public final class GroupSession extends JavaPlugin {
                 .filter(event -> event.getBot().getId() == 2061954151L);
         
         //监听消息
-        messageEvent.subscribeAlways(MessageEvent.class, DialogueBasic::isMessageWhereabouts);
+//        messageEvent.subscribeAlways(MessageEvent.class, DialogueBasic::isMessageWhereabouts);
+        messageEvent.subscribeAlways(MessageEvent.class, event -> DialogueBasic.INSTANCE.isMessageWhereabouts(event));
 
 
     }

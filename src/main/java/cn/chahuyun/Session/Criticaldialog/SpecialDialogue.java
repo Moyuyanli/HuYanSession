@@ -14,13 +14,15 @@ import net.mamoe.mirai.message.data.MessageChainBuilder;
  */
 public class SpecialDialogue {
 
+    public static final SpecialDialogue INSTANCE = new SpecialDialogue();
+
     /**
      * @description 噗~ -> 噗~
      * @author zhangjiaxing
      * @param messageEvent 消息事件
      * @date 2022/6/16 14:20
      */
-    public static void sessionPu(MessageEvent messageEvent) {
+    public  void sessionPu(MessageEvent messageEvent) {
         try {
             messageEvent.getSubject().sendMessage("噗~");
         } catch (Exception e) {
@@ -35,7 +37,7 @@ public class SpecialDialogue {
      * @date 2022/6/18 0:09
      * @return void
      */
-    public static void sessionDou(MessageEvent event) {
+    public  void sessionDou(MessageEvent event) {
         Contact subject = event.getSubject();
         MessageChainBuilder messageChainBuilder = new MessageChainBuilder();
         messageChainBuilder.append(

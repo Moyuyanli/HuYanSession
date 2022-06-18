@@ -18,6 +18,8 @@ import static cn.chahuyun.GroupSession.sessionData;
  */
 public class SessionDialogue {
 
+    public static final SessionDialogue INSTANCE = new SessionDialogue();
+
     /**
      * @description 传递消息监视和指定的关键词对话
      * @author zhangjiaxing
@@ -25,7 +27,7 @@ public class SessionDialogue {
      * @param sessionDataBase 对话类
      * @date 2022/6/16 15:17
      */
-    public static void session(MessageEvent messageEvent,SessionDataBase sessionDataBase) {
+    public  void session(MessageEvent messageEvent,SessionDataBase sessionDataBase) {
         ArrayList<SessionDataBase> session = new ArrayList<>(sessionData.values());
         //type = 0 为string类回复
         if (sessionDataBase.getType() == 0) {

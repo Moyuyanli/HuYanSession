@@ -30,22 +30,22 @@ import static cn.chahuyun.GroupSession.sessionData;
  */
 public class SessionManage {
 
-    private static MiraiLogger l = GroupSession.INSTANCE.getLogger();
+    public static final SessionManage INSTANCE = new SessionManage();
 
-    private static final int PAGE_SIZE = 5;
+    private MiraiLogger l = GroupSession.INSTANCE.getLogger();
 
     /**
      * 学习正则
      */
-    public static String studyPattern = "(学习 [\\d\\w\\S\\u4e00-\\u9fa5]+ [\\d\\w\\S\\u4e00-\\u9fa5]+( ?(精准|模糊|头部|结尾))?)";
+    public String studyPattern = "(学习 [\\d\\w\\S\\u4e00-\\u9fa5]+ [\\d\\w\\S\\u4e00-\\u9fa5]+( ?(精准|模糊|头部|结尾))?)";
     /**
      * 查询正则
      */
-    public static String queryPattern = "(查询 ?([\\d\\w\\S\\u4e00-\\u9fa5])*)";
+    public String queryPattern = "(查询 ?([\\d\\w\\S\\u4e00-\\u9fa5])*)";
     /**
      * 删除正则
      */
-    public static String deletePattern = "(删除 ?([\\d\\w\\S\\u4e00-\\u9fa5])*)";
+    public String deletePattern = "(删除 ?([\\d\\w\\S\\u4e00-\\u9fa5])*)";
 
 
     /**
@@ -55,7 +55,7 @@ public class SessionManage {
      * @date 2022/6/8 12:32
      * @return boolean
      */
-    public static boolean isString(MessageChain messageChain) {
+    public boolean isString(MessageChain messageChain) {
         return false;
     }
 
@@ -66,7 +66,7 @@ public class SessionManage {
      * @date 2022/6/16 20:56
      * @return boolean
      */
-    public static boolean studySession(MessageEvent event) {
+    public boolean studySession(MessageEvent event) {
         String messageString = event.getMessage().serializeToMiraiCode();
         Contact subject = event.getSubject();
 
@@ -158,7 +158,7 @@ public class SessionManage {
      * @date 2022/6/16 20:57
      * @return boolean
      */
-    public static boolean querySession(MessageEvent event) {
+    public boolean querySession(MessageEvent event) {
         String messageString = event.getMessage().serializeToMiraiCode();
         Contact subject = event.getSubject();
 
@@ -200,7 +200,7 @@ public class SessionManage {
      * @date 2022/6/17 19:44
      * @return java.lang.Boolean
      */
-    public static Boolean deleteSession(MessageEvent event) {
+    public Boolean deleteSession(MessageEvent event) {
         String messageString = event.getMessage().serializeToMiraiCode();
         Contact subject = event.getSubject();
         //删除语法结构查询
@@ -230,7 +230,7 @@ public class SessionManage {
      * @date 2022/6/16 22:08
      * @return java.lang.Boolean
      */
-    private static Boolean sessionMessageInInt(MessageEvent event) {
+    private Boolean sessionMessageInInt(MessageEvent event) {
         //进行分页
 //        SessionDataPaging dataPaging = SessionDataPaging.queryPageInfo(pageNum, PAGE_SIZE, new ArrayList<>(sessionData.values()));
         //构造消息
