@@ -1,6 +1,8 @@
 package cn.chahuyun.command;
 
+import cn.chahuyun.config.PowerConfig;
 import net.mamoe.mirai.console.command.CommandSender;
+import net.mamoe.mirai.console.command.CommandSenderOnMessage;
 import net.mamoe.mirai.console.command.CompositeCommand;
 import net.mamoe.mirai.console.command.descriptor.CommandArgumentContext;
 import net.mamoe.mirai.console.permission.Permission;
@@ -37,5 +39,18 @@ public class CommandManage extends CompositeCommand {
     }
 
 
+    @SubCommand({"p"})
+    @Description("为自己添加管理权限")
+    public void powerToMe(CommandSender sender) {
+        String user = "m" + sender.getSubject().getId() + "." + sender.getUser().getId();
+        PowerConfig.INSTANCE.setAdminList("+", user, "all");
+    }
+
+    @SubCommand({"power"})
+    @Description("设置他人添加管理权限")
+    public void powerToOther(CommandSender sender,String s ,long group ,long qq ,String power) {
+        String user = "m" + group + "." + qq;
+        PowerConfig.INSTANCE.setAdminList(s, user, power);
+    }
 
 }

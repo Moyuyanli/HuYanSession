@@ -3,12 +3,18 @@ package cn.chahuyun.Session;
 import cn.chahuyun.GroupSession;
 import cn.chahuyun.Session.Criticaldialog.SpecialDialogue;
 import cn.chahuyun.Session.Criticaldialog.SessionDialogue;
+import cn.chahuyun.config.PowerConfig;
+import cn.chahuyun.config.PowerConfigBase;
 import cn.chahuyun.data.SessionDataBase;
 import cn.chahuyun.enumerate.MessEnum;
+import net.mamoe.mirai.console.permission.AbstractPermitteeId;
+import net.mamoe.mirai.contact.User;
 import net.mamoe.mirai.event.events.MessageEvent;
+import net.mamoe.mirai.message.data.MessageChain;
 import net.mamoe.mirai.utils.MiraiLogger;
 
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -29,7 +35,7 @@ public class DialogueBasic {
     /**
      * 指令正则
      */
-    public static String commandPattern = "学习|修改|查询|删除";
+    public static String commandPattern = "查询 ?|学习 |删除 |([+-]\\[mirai:at:\\d+\\] [\\w]+)";
     /**
      * 回复消息正则
      */
@@ -109,17 +115,29 @@ public class DialogueBasic {
             }
         }
 
+
         /*
         判断是否是指令消息
          */
-        Matcher matcher = Pattern.compile(commandPattern).matcher(messageToString);
-        if (matcher.find() && matcher.end()==2) messEnum = MessEnum.COMMAND;
+        //拼接权限识别字符
+        String userPower = "m" + event.getSubject().getId()  + "." + event.getSender().getId();
+        //获取配置中权限map
+        Map<String, PowerConfigBase> adminList = PowerConfig.INSTANCE.getAdminList();
+        //先判断map是否为空，如果为不为空，在判断该用户是否存在,不存在直接不判断能否使用指令
+        if (adminList != null && adminList.containsKey(userPower)) {
+            Matcher matcher = Pattern.compile(commandPattern).matcher(messageToString);
+            if (matcher.find()) {
+                messEnum = MessEnum.COMMAND;
+            }
+        }
 
 
         /*
         判断是否是回复消息
          */
-        if (Pattern.matches(dialoguePattern,messageToString)) messEnum = MessEnum.REPLY;
+        if (Pattern.matches(dialoguePattern,messageToString)) {
+            messEnum = MessEnum.REPLY;
+        }
 
 
 
@@ -128,6 +146,8 @@ public class DialogueBasic {
          */
         if (messEnum == null) {
             return;
+        } else {
+            l.info("识别到"+messEnum.getMessageType());
         }
 
         //分支
@@ -139,15 +159,23 @@ public class DialogueBasic {
                 break;
             //COMMAND("指令消息",2)
             case 2:
-                if (messageToString.indexOf("学习") == 0) {
-                    l.info("学习指令");
-                    SessionManage.studySession(event);
-                } else if (messageToString.indexOf("查询") == 0) {
-                    l.info("查询指令");
-                    SessionManage.querySession(event);
-                } else if (messageToString.indexOf("删除") == 0) {
-                    l.info("删除指令");
-                    SessionManage.deleteSession(event);
+                l.info(userPower);
+                if (adminList.get(userPower).isSessionPower()) {
+                    if (messageToString.indexOf("学习") == 0) {
+                        l.info("学习指令");
+                        SessionManage.studySession(event);
+                    } else if (messageToString.indexOf("查询") == 0) {
+                        l.info("查询指令");
+                        SessionManage.querySession(event);
+                    } else if (messageToString.indexOf("删除") == 0) {
+                        l.info("删除指令");
+                        SessionManage.deleteSession(event);
+                    }
+                } else if (adminList.get(userPower).isAdminPower()) {
+                    if (Pattern.matches("([+-]\\[mirai:at:\\d+\\] [\\w]+)", messageToString)) {
+                        l.info("权限指令");
+                        messageToPower(event);
+                    }
                 }
                 messEnum = null;
                 break;
@@ -169,6 +197,39 @@ public class DialogueBasic {
                 messEnum = null;
                 break;
         }
+    }
+
+    /**
+     * @description 用于处理权限消息的字符串数组
+     * @author zhangjiaxing
+     * @param event
+     * @date 2022/6/19 1:18
+     * @return void
+     */
+    private static void messageToPower(MessageEvent event) {
+        //先将发送的消息转换为string
+        String string = event.getMessage().contentToString();
+        l.info(string);
+        //修改类型
+        String s = string.substring(0, 1);
+        //去掉 修改类型
+        string = string.substring(1);
+        //通过>分割
+        String[] split = string.split(">");
+        //权限类参数
+        String power = split[1];
+        //匹配正则,获取中段消息的所有数字，疑似qq
+        Matcher matcher = Pattern.compile("(@\\d+)").matcher(split[0]);
+        //这里需要先进行一次匹配，find
+        matcher.find();
+        //然后才能通关group获取,然后把@给截取掉
+        String qq = matcher.group().substring(1);
+        //拼接权限类识别用户字符
+        String user = "m"+event.getSubject().getId()+"."+qq;
+        //进行设置
+        MessageChain messages = PowerConfig.INSTANCE.setAdminList(s,user,power);
+        //返回消息
+        event.getSubject().sendMessage(messages);
     }
 
 }

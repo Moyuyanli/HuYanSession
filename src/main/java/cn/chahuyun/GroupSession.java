@@ -2,6 +2,7 @@ package cn.chahuyun;
 
 import cn.chahuyun.Session.DialogueBasic;
 import cn.chahuyun.command.CommandManage;
+import cn.chahuyun.config.PowerConfig;
 import cn.chahuyun.data.SessionDataBase;
 import cn.chahuyun.enumerate.DataEnum;
 import cn.chahuyun.file.SessionData;
@@ -43,6 +44,10 @@ public final class GroupSession extends JavaPlugin {
     public void onEnable() {
         //加载插件，打印日志
         getLogger().info("Group Session Console 加载!");
+
+        //加载配置
+        this.reloadPluginConfig(PowerConfig.INSTANCE);
+        getLogger().info("SessionConfig 已加载！");
 
         //加载数据
         this.reloadPluginData(SessionData.INSTANCE);

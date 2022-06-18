@@ -17,6 +17,7 @@ public class SessionDataBase{
     private String key;
     /**
      * 触发结果类型
+     * 默认为字符 = 0 string类回复
      */
     private int type = 0;
     /**
@@ -25,12 +26,18 @@ public class SessionDataBase{
     private String value;
     /**
      * 触发结果(所有)
+     * 特指文件类回复
      */
     private MessageChain messageChain;
     /**
      * 触发条件
      */
     private DataEnum dataEnum;
+    /**
+     * 触发范围
+     * 默认本群，以群号保存
+     */
+    private Long activate;
     /**
      * @description 构建
      * @author zhangjiaxing
@@ -87,5 +94,13 @@ public class SessionDataBase{
 
     public void setDataEnum(DataEnum dataEnum) {
         this.dataEnum = dataEnum;
+    }
+
+    public Long getActivate() {
+        return activate;
+    }
+
+    public void setActivate(Long activate) {
+        this.activate = activate;
     }
 }
