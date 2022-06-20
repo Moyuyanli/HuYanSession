@@ -1,8 +1,7 @@
 # HuYanSession 壶言会话
     基于的mirai-console的插件
 
-[Release]()
-[Downloads]()
+[Release](https://github.com/Moyuyanli/GroupSession/releases/tag/formal)
 [MiraiForum]()
 
 ### 使用
