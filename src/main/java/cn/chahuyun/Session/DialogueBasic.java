@@ -199,6 +199,8 @@ public class DialogueBasic {
                     case "斗地主":
                         SpecialDialogue.INSTANCE.sessionDou(event);
                         break;
+                    case "帮助":
+                        SpecialDialogue.INSTANCE.sessionHelp(event);
                     default:
                         break;
                 }
