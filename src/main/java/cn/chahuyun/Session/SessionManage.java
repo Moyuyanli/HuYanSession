@@ -69,6 +69,7 @@ public class SessionManage {
         String value = strings[2];
         //匹配类型
         DataEnum dataEnum = DataEnum.ACCURATE;
+        ScopeInfo scopeInfo = new ScopeInfo("当前", true, event.getSubject().getId());
         if (strings.length >= 4) {
             String matches = strings[3];
             switch (matches) {
@@ -78,11 +79,13 @@ public class SessionManage {
                     dataEnum = DataEnum.START;break;
                 case "结尾":
                     dataEnum = DataEnum.END;break;
+                case "全局":
+                    //如果省略参数只填写匹配范围，用来识别匹配范围
+                    scopeInfo = new ScopeInfo("全局", false, null);
                 default:break;
             }
         }
         //匹配范围
-        ScopeInfo scopeInfo = new ScopeInfo("当前", true, event.getSubject().getId());
         if (strings.length == 5) {
             Long owner = PowerConfig.INSTANCE.getOwner();
             if (event.getSender().getId() == owner && strings[4].equals("全局")) {
