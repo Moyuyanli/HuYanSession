@@ -34,7 +34,7 @@ public class SessionManage {
     /**
      * 学习正则
      */
-    public String studyPattern = "(学习 [\\d\\w\\S\\u4e00-\\u9fa5]+ [\\d\\w\\S\\u4e00-\\u9fa5]+( ?(精准|模糊|头部|结尾))?( ?(当前|全局)?))";
+    public String studyPattern = "(学习\\s+[\\d\\w\\S\\u4e00-\\u9fa5]+\\s+[\\d\\w\\S\\u4e00-\\u9fa5]+(\\s?(精准|模糊|头部|结尾))?(\\s?(当前|全局)?))";
     /**
      * 查询正则
      */
@@ -63,8 +63,11 @@ public class SessionManage {
             return false;
         }
 
+        //过滤换行
+        messageString = messageString.replace("\\n", " ");
+
         //分割学习数据
-        String[] strings = messageString.split(" ");
+        String[] strings = messageString.split("\\s+");
         String key  = strings[1];
         String value = strings[2];
         //匹配类型

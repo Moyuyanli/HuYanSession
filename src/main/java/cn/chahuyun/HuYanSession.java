@@ -46,13 +46,13 @@ public final class HuYanSession extends JavaPlugin {
         this.reloadPluginConfig(PowerConfig.INSTANCE);
         getLogger().info("SessionConfig 已加载！");
         Long owner = PowerConfig.INSTANCE.getOwner();
-        if (owner == null) {
+        if (owner == null || owner == 0) {
             getLogger().error("还没有添加主人,请添加主人!");
         } else {
             getLogger().info("主人已设置->"+owner);
         }
         Long bot = PowerConfig.INSTANCE.getBot();
-        if (bot == null) {
+        if (bot == null || bot == 0) {
             getLogger().error("还没有添加机器人,请添加机器人后再使用!");
         } else {
             getLogger().info("机器人已设置->"+bot);

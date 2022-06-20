@@ -34,7 +34,7 @@ public class DialogueBasic {
     /**
      * 指令正则
      */
-    public  String commandPattern = "查询 ?|学习 |删除 |([+-]\\[mirai:at:\\d+\\] [\\w]+)";
+    public  String commandPattern = "查询 ?|学习\\s+|删除 |([+-]\\[mirai:at:\\d+\\] [\\w]+)";
     /**
      * 回复消息正则
      */
