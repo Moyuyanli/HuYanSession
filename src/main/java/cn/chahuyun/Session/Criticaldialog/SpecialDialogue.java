@@ -112,7 +112,7 @@ public class SpecialDialogue {
         MessageChainBuilder messageChainBuilder = new MessageChainBuilder();
         messageChainBuilder.append("--详细帮助--\n")
                 .append("以下为基础指令帮助↓\n")
-                .append("()为必填 []为选填 |为或 \n")
+                .append("()为必填 []为选填 |为或 \n\n")
                 .append("学习指令全格式:\n")
                 .append("学习 (触发内容<任意内容，图片也可以>) (回复内容<同理>) [精准|模糊|头部|结尾] [当前|全局]\n\n")
                 .append("查询指令全格式:\n")
@@ -124,7 +124,7 @@ public class SpecialDialogue {
         powermcb.append("以下为高级指令帮助↓\n")
                 .append("()为必填 []为选填 |为或 \n\n")
                 .append("添加权限(+)/删除权限(-):\n\n")
-                .append("(+|-) (@群员) (session|admin|group|all)\n")
+                .append("(+|-) (@群员) (session|admin|group|all)\n\n")
                 .append("session(会话操作权限)\n")
                 .append("admin(权限操作权限)\n")
                 .append("group(群操作权限)\n");
