@@ -101,6 +101,7 @@ public class PowerConfig extends JavaAutoSavePluginConfig {
                     base.setSessionPower(true);
                     base.setGroupPower(true);
                     messages.append("管理员添加成功！");
+                    break;
                 default:
                     messages.append("添加失败，未识别权限！");
                     break;
