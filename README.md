@@ -2,7 +2,7 @@
     基于的mirai-console的插件
 
 [Release](https://github.com/Moyuyanli/GroupSession/releases/tag/formal)
-[MiraiForum]()
+[MiraiForum](https://mirai.mamoe.net/topic/1310/%E5%A3%B6%E8%A8%80-%E4%B8%80%E6%AC%BE%E8%87%AA%E5%AE%9A%E4%B9%89%E6%B6%88%E6%81%AF%E5%9B%9E%E5%A4%8D%E6%8F%92%E4%BB%B6)
 
 ### 使用
 
