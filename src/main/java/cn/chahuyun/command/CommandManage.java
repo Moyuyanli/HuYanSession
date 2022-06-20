@@ -2,7 +2,6 @@ package cn.chahuyun.command;
 
 import cn.chahuyun.config.PowerConfig;
 import net.mamoe.mirai.console.command.CommandSender;
-import net.mamoe.mirai.console.command.CommandSenderOnMessage;
 import net.mamoe.mirai.console.command.CompositeCommand;
 import net.mamoe.mirai.console.command.descriptor.CommandArgumentContext;
 import net.mamoe.mirai.console.permission.Permission;

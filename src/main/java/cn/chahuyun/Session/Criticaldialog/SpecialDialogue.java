@@ -1,6 +1,6 @@
 package cn.chahuyun.Session.Criticaldialog;
 
-import cn.chahuyun.GroupSession;
+import cn.chahuyun.HuYanSession;
 import net.mamoe.mirai.contact.Contact;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.data.MessageChainBuilder;
@@ -26,7 +26,7 @@ public class SpecialDialogue {
         try {
             messageEvent.getSubject().sendMessage("噗~");
         } catch (Exception e) {
-            GroupSession.INSTANCE.getLogger().error(e.getMessage());
+            HuYanSession.INSTANCE.getLogger().error(e.getMessage());
         }
     }
 

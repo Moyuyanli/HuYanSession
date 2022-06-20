@@ -1,13 +1,11 @@
 package cn.chahuyun.config;
 
-import cn.chahuyun.GroupSession;
+import cn.chahuyun.HuYanSession;
 import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import net.mamoe.mirai.console.data.Value;
 import net.mamoe.mirai.console.data.java.JavaAutoSavePluginConfig;
 import net.mamoe.mirai.message.data.MessageChain;
 import net.mamoe.mirai.message.data.MessageChainBuilder;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -16,6 +14,7 @@ import java.util.Map;
  * 说明
  * 用于管理添加指令管理员
  * 用于判断是否拥有改权限
+ *
  * @author Moyuyanli
  * @Description :各类指令权限
  * @Date 2022/6/18 23:33
@@ -31,27 +30,36 @@ public class PowerConfig extends JavaAutoSavePluginConfig {
      * 文件名
      */
     public PowerConfig() {
-        super("admin");
+        super("config");
     }
+
+    /**
+     * 主人识别
+     */
+    private final Value<Long> owner = typedValue("owner", createKType(Long.class));
+    /**
+     * 机器人识别
+     */
+    private final Value<Long> bot = typedValue("bot", createKType(Long.class));
 
     /**
      * 权限存储识别法
      */
-    private final Value<Map<String, String>> adminList = typedValue("admin",
+    private final Value<Map<String, String>> powerList = typedValue("powerList",
             createKType(Map.class,
                     createKType(String.class),
                     createKType(String.class)
             ));
 
     /**
+     * @return java.util.Map<java.lang.String, cn.chahuyun.config.PowerConfigBase>
      * @description 获取权限map
      * @author zhangjiaxing
      * @date 2022/6/19 0:51
-     * @return java.util.Map<java.lang.String,cn.chahuyun.config.PowerConfigBase>
      */
     public Map<String, PowerConfigBase> getAdminList() {
         HashMap<String, PowerConfigBase> stringPowerConfigBaseHashMap = new HashMap<String, PowerConfigBase>();
-        Map<String, String> stringStringMap = this.adminList.get();
+        Map<String, String> stringStringMap = this.powerList.get();
         for (String key : stringStringMap.keySet()) {
             stringPowerConfigBaseHashMap.put(key, JSONArray.parseObject(stringStringMap.get(key), PowerConfigBase.class));
         }
@@ -59,15 +67,15 @@ public class PowerConfig extends JavaAutoSavePluginConfig {
     }
 
     /**
+     * @param s     修改类型
+     * @param user  用户匹配
+     * @param power 权限
+     * @return net.mamoe.mirai.message.data.MessageChain
      * @description 根据传递消息进行权限的修改
      * @author zhangjiaxing
-     * @param s 修改类型
-     * @param user 用户匹配
-     * @param power 权限
      * @date 2022/6/19 2:43
-     * @return net.mamoe.mirai.message.data.MessageChain
      */
-    public MessageChain setAdminList(String s,String user,String power) {
+    public MessageChain setAdminList(String s, String user, String power) {
         //创建返回消息构造器
         MessageChainBuilder messages = new MessageChainBuilder();
         //获取3类数据 添加or删除  用户识别符  权限
@@ -99,18 +107,18 @@ public class PowerConfig extends JavaAutoSavePluginConfig {
             }
             String jsonString = JSONArray.toJSONString(base);
             //添加or覆盖
-            this.adminList.get().put(user, jsonString);
-            GroupSession.INSTANCE.getLogger().info("添加权限: " + user +" " + power);
+            this.powerList.get().put(user, jsonString);
+            HuYanSession.INSTANCE.getLogger().info("添加权限: " + user + " " + power);
             return messages.build();
         } else {
             //先从本地获取数据
-            Map<String, String> baseMap = this.adminList.get();
+            Map<String, String> baseMap = this.powerList.get();
             //创建一个空权限base
             PowerConfigBase base = null;
             //查找本地有没有该用户的权限base
             for (String k : baseMap.keySet()) {
                 if (k.equals(user)) {
-                    base = JSONArray.parseObject(baseMap.get(k),PowerConfigBase.class);
+                    base = JSONArray.parseObject(baseMap.get(k), PowerConfigBase.class);
                 }
             }
             //如果没有，直接返回失败
@@ -141,9 +149,18 @@ public class PowerConfig extends JavaAutoSavePluginConfig {
             }
             String jsonString = JSONArray.toJSONString(base);
             //覆盖
-            this.adminList.get().put(user, jsonString);
-            GroupSession.INSTANCE.getLogger().info("删除权限: " + user +" "+ power);
+            this.powerList.get().put(user, jsonString);
+            HuYanSession.INSTANCE.getLogger().info("删除权限: " + user + " " + power);
             return messages.build();
         }
+    }
+
+
+    public Long getOwner() {
+        return owner.get();
+    }
+
+    public Long getBot() {
+        return bot.get();
     }
 }

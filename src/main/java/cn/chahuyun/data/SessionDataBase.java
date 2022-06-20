@@ -1,7 +1,6 @@
 package cn.chahuyun.data;
 
 import cn.chahuyun.enumerate.DataEnum;
-import net.mamoe.mirai.message.data.MessageChain;
 
 /**
  * SessionData
@@ -25,35 +24,30 @@ public class SessionDataBase{
      */
     private String value;
     /**
-     * 触发结果(所有)
-     * 特指文件类回复
-     */
-    private MessageChain messageChain;
-    /**
      * 触发条件
      */
     private DataEnum dataEnum;
     /**
      * 触发范围
-     * 默认本群，以群号保存
+     * 默认本群，以枚举保存
      */
-    private Long activate;
+    private ScopeInfo scopeInfo;
     /**
      * @description 构建
      * @author zhangjiaxing
      * @param key 触发词
-     * @param type 返回消息类型
+     * @param type 消息类型
      * @param value 返回字符消息
-     * @param messageChain 返回消息全部类型
      * @param dataEnum 触发条件
+     * @param scopeInfo 触发作用域
      * @date 2022/6/16 14:30
      */
-    public SessionDataBase(String key, int type, String value, MessageChain messageChain, DataEnum dataEnum) {
+    public SessionDataBase(String key, int type, String value, DataEnum dataEnum, ScopeInfo scopeInfo) {
         this.key = key;
         this.type = type;
         this.value = value;
-        this.messageChain = messageChain;
         this.dataEnum = dataEnum;
+        this.scopeInfo = scopeInfo;
     }
 
     public String getKey() {
@@ -80,14 +74,6 @@ public class SessionDataBase{
         this.value = value;
     }
 
-    public MessageChain getMessageChain() {
-        return messageChain;
-    }
-
-    public void setMessageChain(MessageChain messageChain) {
-        this.messageChain = messageChain;
-    }
-
     public DataEnum getDataEnum() {
         return dataEnum;
     }
@@ -96,11 +82,11 @@ public class SessionDataBase{
         this.dataEnum = dataEnum;
     }
 
-    public Long getActivate() {
-        return activate;
+    public ScopeInfo getScopeInfo() {
+        return scopeInfo;
     }
 
-    public void setActivate(Long activate) {
-        this.activate = activate;
+    public void setScopeInfo(ScopeInfo scopeInfo) {
+        this.scopeInfo = scopeInfo;
     }
 }

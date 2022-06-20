@@ -1,6 +1,6 @@
 package cn.chahuyun.power;
 
-import cn.chahuyun.GroupSession;
+import cn.chahuyun.HuYanSession;
 import cn.chahuyun.config.PowerConfig;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.data.MessageChain;
@@ -20,7 +20,7 @@ public class Permissions {
 
     public static final Permissions INSTANCE = new Permissions();
 
-    private MiraiLogger l = GroupSession.INSTANCE.getLogger();
+    private MiraiLogger l = HuYanSession.INSTANCE.getLogger();
 
     /**
      * @description 用于处理权限消息的字符串数组

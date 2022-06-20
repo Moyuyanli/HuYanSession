@@ -1,25 +1,21 @@
 package cn.chahuyun.Session;
 
-import cn.chahuyun.GroupSession;
-import cn.chahuyun.Session.Criticaldialog.SpecialDialogue;
+import cn.chahuyun.HuYanSession;
 import cn.chahuyun.Session.Criticaldialog.SessionDialogue;
+import cn.chahuyun.Session.Criticaldialog.SpecialDialogue;
 import cn.chahuyun.config.PowerConfig;
 import cn.chahuyun.config.PowerConfigBase;
+import cn.chahuyun.data.SessionData;
 import cn.chahuyun.data.SessionDataBase;
 import cn.chahuyun.enumerate.MessEnum;
 import cn.chahuyun.power.Permissions;
-import net.mamoe.mirai.console.permission.AbstractPermitteeId;
-import net.mamoe.mirai.contact.User;
 import net.mamoe.mirai.event.events.MessageEvent;
-import net.mamoe.mirai.message.data.MessageChain;
 import net.mamoe.mirai.utils.MiraiLogger;
 
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import static cn.chahuyun.GroupSession.sessionData;
 
 
 /**
@@ -33,7 +29,7 @@ public class DialogueBasic {
 
     public static final DialogueBasic INSTANCE = new DialogueBasic();
 
-    private  MiraiLogger l = GroupSession.INSTANCE.getLogger();
+    private  MiraiLogger l = HuYanSession.INSTANCE.getLogger();
 
     /**
      * 指令正则
@@ -63,14 +59,21 @@ public class DialogueBasic {
         判断是否是对话类消息
          */
         //获取对话数据
-        ArrayList<SessionDataBase> sessionPattern = new ArrayList<>(sessionData.values()) ;
+        ArrayList<SessionDataBase> sessionPattern = new ArrayList<>(SessionData.INSTANCE.getSessionMap().values()) ;
         //创建触发对话结果
         SessionDataBase sessionDataBase = null;
         //循环判断
         for (SessionDataBase base : sessionPattern) {
-            switch (base.getDataEnum().getTypeInt()) {
+            //判断是全局还是当前群
+            if (base.getScopeInfo().getType()) {
+                if (base.getScopeInfo().getScopeCode() != event.getSubject().getId()) {
+                    continue;
+                }
+            }
+            //匹配
+            switch (base.getDataEnum()) {
                 //TypeInt = 1 -> 精准匹配
-                case 1:
+                case ACCURATE:
                     if (base.getKey().equals(messageToString)) {
                         l.info("匹配对话成功 " + base.getKey() + " -> " + base.getValue());
                         messEnum = MessEnum.SESSION;
@@ -78,7 +81,7 @@ public class DialogueBasic {
                     }
                     break;
                 //TypeInt = 2 -> 模糊匹配
-                case 2:
+                case VAGUE:
                     if (messageToString.contains(base.getKey())) {
                         l.info("匹配对话成功 " + base.getKey() + " -> " + base.getValue());
                         messEnum = MessEnum.SESSION;
@@ -86,7 +89,7 @@ public class DialogueBasic {
                     }
                     break;
                 //TypeInt = 3 -> 头部匹配
-                case 3:
+                case START:
                     String firstSubstring;
                     if (messageToString.length() >= base.getKey().length()) {
                         firstSubstring = messageToString.substring(0, base.getKey().length());
@@ -101,7 +104,7 @@ public class DialogueBasic {
                     }
                     break;
                 //TypeInt = 4 -> 结尾匹配
-                case 4:
+                case END:
                     String endSubstring;
                     if (messageToString.length() >= base.getKey().length()) {
                         endSubstring = messageToString.substring(messageToString.length() - base.getKey().length());
@@ -128,8 +131,10 @@ public class DialogueBasic {
         String userPower = "m" + event.getSubject().getId()  + "." + event.getSender().getId();
         //获取配置中权限map
         Map<String, PowerConfigBase> adminList = PowerConfig.INSTANCE.getAdminList();
+        Long owner = PowerConfig.INSTANCE.getOwner();
+        //优先判断是否为主人
         //先判断map是否为空，如果为不为空，在判断该用户是否存在,不存在直接不判断能否使用指令
-        if (adminList != null && adminList.containsKey(userPower)) {
+        if ( event.getSender().getId() == owner ||(adminList != null && adminList.containsKey(userPower))) {
             Matcher matcher = Pattern.compile(commandPattern).matcher(messageToString);
             if (matcher.find()) {
                 messEnum = MessEnum.COMMAND;
@@ -156,16 +161,16 @@ public class DialogueBasic {
         }
 
         //分支
-        switch (messEnum.getMessageTypeInt()) {
+        switch (messEnum) {
             //SESSION("会话消息",1)
-            case 1:
+            case SESSION:
                 SessionDialogue.INSTANCE.session(event,sessionDataBase);
                 messEnum = null;
                 break;
             //COMMAND("指令消息",2)
-            case 2:
+            case COMMAND:
                 l.info(userPower);
-                if (adminList.get(userPower).isSessionPower()) {
+                if (owner == event.getSender().getId() || adminList.get(userPower).isSessionPower()) {
                     if (messageToString.indexOf("学习") == 0) {
                         l.info("学习指令");
                         SessionManage.INSTANCE.studySession(event);
@@ -177,7 +182,7 @@ public class DialogueBasic {
                         SessionManage.INSTANCE.deleteSession(event);
                     }
                 }
-                if (adminList.get(userPower).isAdminPower()) {
+                if ( owner == event.getSender().getId() || adminList.get(userPower).isAdminPower()) {
                     if (Pattern.matches("([+-]\\[mirai:at:\\d+\\] [\\w]+)", messageToString)) {
                         l.info("权限指令");
                         Permissions.INSTANCE.messageToPower(event);
@@ -186,7 +191,7 @@ public class DialogueBasic {
                 messEnum = null;
                 break;
             //REPLY("回复消息",3)
-            case 3:
+            case REPLY:
                 switch (messageToString){
                     case "噗~":
                         SpecialDialogue.INSTANCE.sessionPu(event);

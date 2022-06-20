@@ -1,12 +1,14 @@
 package cn.chahuyun.data;
 
 
-import cn.chahuyun.GroupSession;
-import net.mamoe.mirai.utils.MiraiLogger;
+import net.mamoe.mirai.Bot;
+import net.mamoe.mirai.event.events.MessageEvent;
+import net.mamoe.mirai.message.code.MiraiCode;
+import net.mamoe.mirai.message.data.ForwardMessageBuilder;
+import net.mamoe.mirai.message.data.MessageChainBuilder;
 
 import java.util.ArrayList;
 
-import static cn.chahuyun.GroupSession.sessionData;
 /**
  * 说明
  *
@@ -16,127 +18,82 @@ import static cn.chahuyun.GroupSession.sessionData;
  */
 public class SessionDataPaging {
 
-    private static MiraiLogger l = GroupSession.INSTANCE.getLogger();
-
-    private ArrayList<SessionDataBase> sessionPattern = new ArrayList<>(sessionData.values()) ;
-
+    public static final SessionDataPaging INSTANCE = new SessionDataPaging();
 
     /**
-     * 当前分页页数
-     */
-    private int pageNum;
-    /**
-     * 分页大小
-     */
-    private int pageSize;
-    /**
-     * 总页数
-     */
-    private int pageAll;
-    /**
-     * 总条数
-     */
-    private int pageAllSize;
-
-    private ArrayList<SessionDataBase> list;
-
-    public SessionDataPaging() {
-    }
-
-    /**
-     * 处理List集合数据进行分页
-     *
-     * @param currentPage 当前页
-     * @param pageSize    每页数据个数
-     * @param list        进行分页的数据
-     * @return
-     */
-    public static SessionDataPaging  queryPageInfo(int currentPage, int pageSize, ArrayList<SessionDataBase> list) {
-        ArrayList<SessionDataBase> subList = null;
-        //list的总数量
-        int total = list.size();
-        //如果总数大于每页数据量
-        if (total > pageSize) {
-            //获取需要截取页数的最大下标
-            int toIndex = pageSize * currentPage;
-            //如果list的最大没有页数的总数大
-            if (toIndex > total) {
-                //将list的最大改存为目前最大下标
-                toIndex = total;
-            }
-            //截取list，从该页的位置数截取起
-            subList = (ArrayList<SessionDataBase>) list.subList(pageSize * (currentPage - 1), toIndex);
-        }else {
-            subList = list;
-        }
-
-        SessionDataPaging paging = new SessionDataPaging(currentPage, pageSize,
-                /*
-                总分页信息
-                 */
-                (total + pageSize) / pageSize,
-                total, subList
-        );
-
-        return paging;
-    }
-
-    /**
-     * @description
+     * @description 查询所有消息，并且分类
      * @author zhangjiaxing
-     * @param pageNum 当前分页页数
-     * @param pageSize 分页大小
-     * @param pageAll 总页数
-     * @param pageAllSize 总条数
-     * @param list 数据
-     * @date 2022/6/16 22:49
-     * @return
+     * @param event 消息事件
+     * @date 2022/6/20 13:25
+     * @return boolean
      */
-    public SessionDataPaging(int pageNum, int pageSize, int pageAll, int pageAllSize,ArrayList<SessionDataBase> list) {
-        this.pageNum = pageNum;
-        this.pageSize = pageSize;
-        this.pageAll = pageAll;
-        this.pageAllSize = pageAllSize;
-        this.list = list;
+    public boolean checkSessionList(MessageEvent event) {
+        //创建转发消息构造
+        ForwardMessageBuilder forwardMessageBuilder = new ForwardMessageBuilder(event.getSubject());
+        //获取机器人
+        Bot bot = event.getBot();
+        //创建消息分类构造
+        MessageChainBuilder table = new MessageChainBuilder();
+        MessageChainBuilder accurate = new MessageChainBuilder();
+        MessageChainBuilder vague = new MessageChainBuilder();
+        MessageChainBuilder start = new MessageChainBuilder();
+        MessageChainBuilder end = new MessageChainBuilder();
+        MessageChainBuilder other = new MessageChainBuilder();
+        table.append("以下为所有查询到的触发关键词结果↓");
+        forwardMessageBuilder.add(bot, table.build());
+        accurate.append("所有的精准匹配触发消息:\n");
+        vague.append("所有的模糊匹配触发消息:\n");
+        start.append("所有的头部匹配触发消息:\n");
+        end.append("所有的结尾匹配触发消息:\n");
+        other.append("所有的其他匹配触发消息:\n");
+        //获取全部消息
+        ArrayList<SessionDataBase> values = new ArrayList<>(SessionData.INSTANCE.getSessionMap().values()) ;
+        for (SessionDataBase base : values) {
+            //判断触发类别
+            String trigger = "全局触发";
+            long groupId = event.getSubject().getId();
+            if (base.getScopeInfo().getType() && base.getScopeInfo().getScopeCode() == groupId) {
+                trigger = "当前群触发";
+            } else if (base.getScopeInfo().getType()) {
+                trigger = "其他群触发";
+            }
+            //判断消息类别
+            if (base.getType() == 0) {
+                //判断匹配机制
+                switch (base.getDataEnum()) {
+                    case ACCURATE:
+                        accurate.append(base.getKey() + " ==> " + base.getValue() + " -> " + trigger + "\n");
+                        break;
+                    case VAGUE:
+                        vague.append(base.getKey() + " ==> " + base.getValue() + " -> " + trigger + "\n");
+                        break;
+                    case START:
+                        start.append(base.getKey() + " ==> " + base.getValue() + " -> " + trigger + "\n");
+                        break;
+                    case END:
+                        end.append(base.getKey() + " ==> " + base.getValue() + " -> " + trigger + "\n");
+                        break;
+                    default:
+                        break;
+                }
+            } else {
+                other.append(MiraiCode.deserializeMiraiCode(base.getKey()))
+                        .append(" ==> ")
+                        .append(MiraiCode.deserializeMiraiCode(base.getValue()))
+                        .append(" -> ")
+                        .append(trigger)
+                        .append(":")
+                        .append(base.getDataEnum().getType())
+                        .append("\n");
+            }
+        }
+        forwardMessageBuilder.add(bot, accurate.build());
+        forwardMessageBuilder.add(bot, vague.build());
+        forwardMessageBuilder.add(bot, start.build());
+        forwardMessageBuilder.add(bot, end.build());
+        forwardMessageBuilder.add(bot, other.build());
+        event.getSubject().sendMessage(forwardMessageBuilder.build());
+        return true;
     }
 
-    public int getPageNum() {
-        return pageNum;
-    }
-
-    public void setPageNum(int pageNum) {
-        this.pageNum = pageNum;
-    }
-
-    public int getPageSize() {
-        return pageSize;
-    }
-
-    public void setPageSize(int pageSize) {
-        this.pageSize = pageSize;
-    }
-
-    public int getPageAll() {
-        return pageAll;
-    }
-
-    public void setPageAll(int pageAll) {
-        this.pageAll = pageAll;
-    }
-
-    public int getPageAllSize() {
-        return pageAllSize;
-    }
-
-    public void setPageAllSize(int pageAllSize) {
-        this.pageAllSize = pageAllSize;
-    }
-
-    public ArrayList<SessionDataBase> getList() {
-        return list;
-    }
-
-    public void setList(ArrayList<SessionDataBase> list) {
-        this.list = list;
-    }
 }
