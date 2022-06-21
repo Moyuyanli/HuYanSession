@@ -38,7 +38,7 @@ public class GroupEventManager{
         //获取欢迎词
         Map<String, String> welcomeMessage = SessionData.INSTANCE.getGroupWelcomeMessage();
         //为空为默认欢迎词
-        if (welcomeMessage == null) {
+        if (welcomeMessage.keySet().size() == 0) {
             event.getGroup().sendMessage("小茶壶欢迎带佬入群~~~");
             return;
         }

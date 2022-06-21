@@ -40,7 +40,7 @@ public class DialogueBasic {
     /**
      * 群管指令正则
      */
-    public String groupPattern = "([+-][\\d\\w\\u4e00-\\u9fa5]+[:：][\\d\\w\\S\\u4e00-\\u9fa5]+)|查询[欢迎新]+词";
+    public String groupPattern = "([+-][\\d\\w\\u4e00-\\u9fa5]+[:：][\\d\\w\\S\\u4e00-\\u9fa5]+)|查询[欢迎新]+词|(\\[mirai:at:\\d+\\] \\d+[s|d|h|m])";
     /**
      * 回复消息正则
      */
@@ -231,6 +231,9 @@ public class DialogueBasic {
                 }else if (Pattern.matches("([+-][\\d\\w\\u4e00-\\u9fa5]+[:：][\\d\\w\\S\\u4e00-\\u9fa5]+)", messageToString)) {
                     l.info("迎新词指令");
                     GroupManager.INSTANCE.setGroupWelcomeMessage(event);
+                }else if (Pattern.matches("(\\[mirai:at:\\d+\\] \\d+[s|d|h|m])",messageToString)){
+                    l.info("禁言指令");
+                    GroupManager.INSTANCE.prohibit(event);
                 }
                 break;
             default:
