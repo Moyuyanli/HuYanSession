@@ -16,6 +16,8 @@ import net.mamoe.mirai.event.GlobalEventChannel;
 import net.mamoe.mirai.event.events.MemberJoinEvent;
 import net.mamoe.mirai.event.events.MessageEvent;
 
+import java.util.ArrayList;
+
 
 /**
  * @description 插件主类
@@ -69,7 +71,16 @@ public final class HuYanSession extends JavaPlugin {
         CommandManager.INSTANCE.registerCommand(new CommandManage(HuYanSession.INSTANCE), true);
         //群加人检测
         EventChannel<MemberJoinEvent> memberJoinEventEventChannel = GlobalEventChannel.INSTANCE.filterIsInstance(MemberJoinEvent.class)
-                .filter(event -> event.getBot().getId() == bot);
+                .filter(event -> event.getBot().getId() == bot)
+                .filter(event -> {
+                    ArrayList<Long> groupList = PowerConfig.INSTANCE.getGroupList();
+                    for (Long group : groupList) {
+                        if( event.getGroup().getId() == group){
+                            return true;
+                        }
+                    }
+                    return false;
+                });
 
         //监听 群加人事件
         memberJoinEventEventChannel.subscribeAlways(MemberJoinEvent.class, GroupEventManager.INSTANCE::onMemberJoinEvent);

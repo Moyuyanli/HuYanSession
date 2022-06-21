@@ -135,7 +135,7 @@ public class DialogueBasic {
         //拼接权限识别字符
         String userPower = "m" + event.getSubject().getId()  + "." + event.getSender().getId();
         //获取配置中权限map
-        Map<String, PowerConfigBase> adminList = PowerConfig.INSTANCE.getAdminList();
+        Map<String, PowerConfigBase> adminList = PowerConfig.INSTANCE.getPowerList();
         //优先判断是否为主人
         //先判断map是否为空，如果为不为空，在判断该用户是否存在,不存在直接不判断能否使用指令
         if ( event.getSender().getId() == owner ||(adminList != null && adminList.containsKey(userPower))) {

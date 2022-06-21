@@ -2,12 +2,15 @@ package cn.chahuyun.config;
 
 import cn.chahuyun.HuYanSession;
 import com.alibaba.fastjson.JSONArray;
+import jdk.internal.net.http.common.Log;
 import net.mamoe.mirai.console.data.Value;
 import net.mamoe.mirai.console.data.java.JavaAutoSavePluginConfig;
 import net.mamoe.mirai.message.data.MessageChain;
 import net.mamoe.mirai.message.data.MessageChainBuilder;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -46,6 +49,11 @@ public class PowerConfig extends JavaAutoSavePluginConfig {
     private final Value<Boolean> douSwitch = typedValue("斗地主帮助显示", createKType(Boolean.class),false);
     private final Value<Boolean> linkSwitch = typedValue("详细帮助链接显示", createKType(Boolean.class),false);
 
+    /**
+     * 群号
+     */
+    private final Value<List<Long>> groupList = typedValue("groupList", createKType(List.class, createKType(Long.class)));
+
 
     /**
      * 权限存储识别法
@@ -62,7 +70,7 @@ public class PowerConfig extends JavaAutoSavePluginConfig {
      * @author zhangjiaxing
      * @date 2022/6/19 0:51
      */
-    public Map<String, PowerConfigBase> getAdminList() {
+    public Map<String, PowerConfigBase> getPowerList() {
         HashMap<String, PowerConfigBase> stringPowerConfigBaseHashMap = new HashMap<String, PowerConfigBase>();
         Map<String, String> stringStringMap = this.powerList.get();
         for (String key : stringStringMap.keySet()) {
@@ -147,7 +155,7 @@ public class PowerConfig extends JavaAutoSavePluginConfig {
                     break;
                 case "all":
                     //当删除全部权限的时候，直接删除该用户的权限base
-                    this.getAdminList().remove(user);
+                    this.powerList.get().remove(user);
                     messages.append("管理员删除成功！");
                 default:
                     messages.append("删除失败，未识别权限！");
@@ -177,4 +185,24 @@ public class PowerConfig extends JavaAutoSavePluginConfig {
     public Value<Boolean> getLinkSwitch() {
         return linkSwitch;
     }
+
+    public ArrayList<Long> getGroupList() {
+        return new  ArrayList<Long>(groupList.get());
+    }
+
+    public MessageChain setGroupList(Boolean operate,Long group) {
+        if (operate) {
+            this.groupList.get().add(group);
+            return new MessageChainBuilder().append("群" + group + "检测添加成功!").build();
+        } else {
+            try {
+                this.groupList.get().remove(group);
+                return new MessageChainBuilder().append("群" + group + "检测删除成功!").build();
+            } catch (Exception e) {
+                return new MessageChainBuilder().append("没有该群!").build();
+            }
+        }
+    }
+
+
 }
