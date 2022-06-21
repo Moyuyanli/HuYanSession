@@ -8,6 +8,7 @@ import cn.chahuyun.config.PowerConfigBase;
 import cn.chahuyun.data.SessionData;
 import cn.chahuyun.data.SessionDataBase;
 import cn.chahuyun.enumerate.MessEnum;
+import cn.chahuyun.groupManager.GroupManager;
 import cn.chahuyun.power.Permissions;
 import cn.chahuyun.sessionManager.SessionManage;
 import net.mamoe.mirai.event.events.MessageEvent;
@@ -35,14 +36,17 @@ public class DialogueBasic {
     /**
      * 指令正则
      */
-    public  String commandPattern = "查询 ?|学习\\s+|删除 |([+-]\\[mirai:at:\\d+\\] [\\w]+)";
+    public String commandPattern = "查询 ?|学习\\s+|删除 |([+-]\\[mirai:at:\\d+\\] [\\w]+)";
+    /**
+     * 群管指令正则
+     */
+    public String groupPattern = "([+-][\\d\\w\\u4e00-\\u9fa5]+[:：][\\d\\w\\S\\u4e00-\\u9fa5]+)|查询[欢迎新]+词";
     /**
      * 回复消息正则
      */
-    public  String dialoguePattern = "噗~|斗地主|帮助";
+    public String dialoguePattern = "噗~|斗地主|帮助";
 
-
-
+    public Long owner = PowerConfig.INSTANCE.getOwner();
     /**
      * @description 所有消息的入口
      * @author zhangjiaxing
@@ -132,7 +136,6 @@ public class DialogueBasic {
         String userPower = "m" + event.getSubject().getId()  + "." + event.getSender().getId();
         //获取配置中权限map
         Map<String, PowerConfigBase> adminList = PowerConfig.INSTANCE.getAdminList();
-        Long owner = PowerConfig.INSTANCE.getOwner();
         //优先判断是否为主人
         //先判断map是否为空，如果为不为空，在判断该用户是否存在,不存在直接不判断能否使用指令
         if ( event.getSender().getId() == owner ||(adminList != null && adminList.containsKey(userPower))) {
@@ -150,6 +153,16 @@ public class DialogueBasic {
             messEnum = MessEnum.REPLY;
         }
 
+        /**
+         * 群管消息判断
+         */
+        Pattern pattern = Pattern.compile(groupPattern);
+        Matcher groupMatcher = pattern.matcher(messageToString);
+        if (owner == event.getSender().getId() || (adminList != null && adminList.containsKey(userPower) && adminList.get(userPower).isGroupPower())) {
+            if (groupMatcher.find()) {
+                messEnum = MessEnum.GROUP;
+            }
+        }
 
 
         /*
@@ -208,6 +221,17 @@ public class DialogueBasic {
                         break;
                 }
                 messEnum = null;
+                break;
+            //GROUP("群管消息", 4)
+            case GROUP:
+                String groupMessage = groupMatcher.group();
+                if (groupMessage.equals("查询欢迎词") || groupMessage.equals("查询迎新词") ) {
+                    l.info("查询迎新词指令");
+                    GroupManager.INSTANCE.checkGroupWelcomeMessage(event);
+                }else if (Pattern.matches("([+-][\\d\\w\\u4e00-\\u9fa5]+[:：][\\d\\w\\S\\u4e00-\\u9fa5]+)", messageToString)) {
+                    l.info("迎新词指令");
+                    GroupManager.INSTANCE.setGroupWelcomeMessage(event);
+                }
                 break;
             default:
                 messEnum = null;

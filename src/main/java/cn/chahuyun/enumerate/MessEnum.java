@@ -14,7 +14,9 @@ public enum MessEnum {
     //指令消息
     COMMAND("指令消息",2),
     //回复消息
-    REPLY("回复消息",3);
+    REPLY("回复消息",3),
+    //群管消息
+    GROUP("群管消息", 4);
 
     private String messageType;
     private int messageTypeInt;

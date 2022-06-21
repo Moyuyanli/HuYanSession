@@ -41,9 +41,11 @@ public class SessionData extends JavaAutoSavePluginData {
      */
     private final Value<Map<String,String>> sessionMap = typedValue("sessionMap",createKType(Map.class,createKType(String .class),createKType(String.class)));
 
-    public final Value<Map<String, Map<String, Object>>> mapValue = typedValue("mapvalue", createKType(
-            Map.class,createKType(String.class), createKType(Map.class, createKType(String.class), createKType(Object.class))
-    ));
+    /**
+     * 群欢迎词
+     */
+    private final Value<Map<String,String>> groupWelcomeMessage = typedValue("groupWelcomeMessage",createKType(Map.class,createKType(String.class),createKType(String.class)));
+
 
 
     /**
@@ -99,5 +101,32 @@ public class SessionData extends JavaAutoSavePluginData {
         }
     }
 
+    /**
+     * @description 群消息欢迎词
+     * @author zhangjiaxing
+     * @param s 标签
+     * @param message 欢迎词
+     * @date 2022/6/21 9:06
+     * @return net.mamoe.mirai.message.data.MessageChain
+     */
+    public MessageChain setGroupWelcomeMessage(String s, String message) {
+        Map<String, String> stringStringMap = this.groupWelcomeMessage.get();
+        String substring = s.substring(0,1);
+        s = s.substring(1);
+        if (substring.equals("+")) {
+            stringStringMap.put(s, message);
+            return new MessageChainBuilder().append("欢迎词添加成功！").build();
+        } else {
+            if (stringStringMap.containsKey(s)) {
+                stringStringMap.remove(s);
+                return new MessageChainBuilder().append("欢迎词删除成功！").build();
+            } else {
+                return new MessageChainBuilder().append("没找到该欢迎词哦~").build();
+            }
+        }
+    }
 
+    public Map<String,String> getGroupWelcomeMessage() {
+        return groupWelcomeMessage.get();
+    }
 }

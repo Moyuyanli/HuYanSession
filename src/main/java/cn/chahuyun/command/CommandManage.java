@@ -2,9 +2,7 @@ package cn.chahuyun.command;
 
 import cn.chahuyun.config.PowerConfig;
 import net.mamoe.mirai.console.command.CommandSender;
-import net.mamoe.mirai.console.command.CompositeCommand;
-import net.mamoe.mirai.console.command.descriptor.CommandArgumentContext;
-import net.mamoe.mirai.console.permission.Permission;
+import net.mamoe.mirai.console.command.java.JCompositeCommand;
 import net.mamoe.mirai.console.plugin.jvm.JvmPlugin;
 
 /**
@@ -14,14 +12,11 @@ import net.mamoe.mirai.console.plugin.jvm.JvmPlugin;
  * @description 基础指令
  * @date 2022/6/8 9:40
  */
-public class CommandManage extends CompositeCommand {
+public class CommandManage extends JCompositeCommand {
 
     public CommandManage(JvmPlugin jvmPlugin) {
         super(jvmPlugin,
-                "m",
-                new String[]{}, "管理命令",
-                Permission.getRootPermission(),
-                CommandArgumentContext.EMPTY);
+                "hy", "壶言管理命令");
     }
 
     /**
@@ -35,14 +30,6 @@ public class CommandManage extends CompositeCommand {
     @Description("噗~")
     public void pu(CommandSender sender) {
         sender.sendMessage("噗~");
-    }
-
-
-    @SubCommand({"p"})
-    @Description("为自己添加管理权限")
-    public void powerToMe(CommandSender sender) {
-        String user = "m" + sender.getSubject().getId() + "." + sender.getUser().getId();
-        PowerConfig.INSTANCE.setAdminList("+", user, "all");
     }
 
     @SubCommand({"power"})

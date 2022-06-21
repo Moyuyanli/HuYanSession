@@ -7,11 +7,13 @@ import cn.chahuyun.data.ScopeInfo;
 import cn.chahuyun.data.SessionData;
 import cn.chahuyun.data.SessionDataBase;
 import cn.chahuyun.enumerate.DataEnum;
+import cn.chahuyun.groupManager.GroupEventManager;
 import net.mamoe.mirai.console.command.CommandManager;
 import net.mamoe.mirai.console.plugin.jvm.JavaPlugin;
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescriptionBuilder;
 import net.mamoe.mirai.event.EventChannel;
 import net.mamoe.mirai.event.GlobalEventChannel;
+import net.mamoe.mirai.event.events.MemberJoinEvent;
 import net.mamoe.mirai.event.events.MessageEvent;
 
 
@@ -65,12 +67,18 @@ public final class HuYanSession extends JavaPlugin {
 
         //注册指令
         CommandManager.INSTANCE.registerCommand(new CommandManage(HuYanSession.INSTANCE), true);
+        //群加人检测
+        EventChannel<MemberJoinEvent> memberJoinEventEventChannel = GlobalEventChannel.INSTANCE.filterIsInstance(MemberJoinEvent.class)
+                .filter(event -> event.getBot().getId() == bot);
+
+        //监听 群加人事件
+        memberJoinEventEventChannel.subscribeAlways(MemberJoinEvent.class, GroupEventManager.INSTANCE::onMemberJoinEvent);
 
 
         //消息监听器 监听 bot 的所有消息
         EventChannel<MessageEvent> messageEvent = GlobalEventChannel.INSTANCE.filterIsInstance(MessageEvent.class)
                 .filter(event -> event.getBot().getId() == bot);
-        
+
         //监听消息
 //        messageEvent.subscribeAlways(MessageEvent.class, DialogueBasic::isMessageWhereabouts);
         messageEvent.subscribeAlways(MessageEvent.class, DialogueBasic.INSTANCE::isMessageWhereabouts);
