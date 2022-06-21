@@ -9,7 +9,8 @@ tasks.withType(JavaCompile) {
     options.encoding = "UTF-8"
 }
 group = 'cn.chahuyun'
-version = '1.2.2'
+//做一个关键词开个
+version = '1.2.3'
 
 
 repositories {

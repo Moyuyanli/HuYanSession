@@ -1,4 +1,4 @@
-package cn.chahuyun.Session;
+package cn.chahuyun.sessionManager;
 
 import cn.chahuyun.HuYanSession;
 import cn.chahuyun.config.PowerConfig;

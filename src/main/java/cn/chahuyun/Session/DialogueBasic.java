@@ -9,6 +9,7 @@ import cn.chahuyun.data.SessionData;
 import cn.chahuyun.data.SessionDataBase;
 import cn.chahuyun.enumerate.MessEnum;
 import cn.chahuyun.power.Permissions;
+import cn.chahuyun.sessionManager.SessionManage;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.utils.MiraiLogger;
 
@@ -197,7 +198,9 @@ public class DialogueBasic {
                         SpecialDialogue.INSTANCE.sessionPu(event);
                         break;
                     case "斗地主":
-                        SpecialDialogue.INSTANCE.sessionDou(event);
+                        if (PowerConfig.INSTANCE.getDouSwitch().get()) {
+                            SpecialDialogue.INSTANCE.sessionDou(event);
+                        }
                         break;
                     case "帮助":
                         SpecialDialogue.INSTANCE.sessionHelp(event);

@@ -42,6 +42,11 @@ public class PowerConfig extends JavaAutoSavePluginConfig {
      */
     private final Value<Long> bot = typedValue("bot", createKType(Long.class));
 
+
+    private final Value<Boolean> douSwitch = typedValue("斗地主帮助显示", createKType(Boolean.class),false);
+    private final Value<Boolean> linkSwitch = typedValue("详细帮助链接显示", createKType(Boolean.class),false);
+
+
     /**
      * 权限存储识别法
      */
@@ -163,5 +168,13 @@ public class PowerConfig extends JavaAutoSavePluginConfig {
 
     public Long getBot() {
         return bot.get();
+    }
+
+    public Value<Boolean> getDouSwitch() {
+        return douSwitch;
+    }
+
+    public Value<Boolean> getLinkSwitch() {
+        return linkSwitch;
     }
 }

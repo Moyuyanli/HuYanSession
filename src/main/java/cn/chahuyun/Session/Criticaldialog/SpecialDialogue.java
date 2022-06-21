@@ -1,6 +1,7 @@
 package cn.chahuyun.Session.Criticaldialog;
 
 import cn.chahuyun.HuYanSession;
+import cn.chahuyun.config.PowerConfig;
 import net.mamoe.mirai.contact.Contact;
 import net.mamoe.mirai.event.GlobalEventChannel;
 import net.mamoe.mirai.event.events.GroupMessageEvent;
@@ -134,8 +135,10 @@ public class SpecialDialogue {
 
         forwardMessageBuilder.add(event.getBot(), messageChainBuilder.build());
         forwardMessageBuilder.add(event.getBot(), powermcb.build());
-        forwardMessageBuilder.add(event.getBot(), end.build());
-
+        //是否显示链接
+        if (PowerConfig.INSTANCE.getLinkSwitch().get()) {
+            forwardMessageBuilder.add(event.getBot(), end.build());
+        }
 
         subject.sendMessage(forwardMessageBuilder.build());
         event.intercept();
