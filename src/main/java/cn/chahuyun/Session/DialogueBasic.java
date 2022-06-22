@@ -40,11 +40,11 @@ public class DialogueBasic {
     /**
      * 群管指令正则
      */
-    public String groupPattern = "([+-][\\d\\w\\u4e00-\\u9fa5]+[:：][\\d\\w\\S\\u4e00-\\u9fa5]+)|查询[欢迎新]+词|(\\[mirai:at:\\d+\\] \\d+[s|d|h|m])";
+    public String groupPattern = "([+-][\\d\\w\\u4e00-\\u9fa5]+[:：][\\d\\w\\S\\u4e00-\\u9fa5]+)|查询[欢迎新]+词|(\\[mirai:at:\\d+\\] \\d+[s|d|h|m])|(踢人\\[mirai:at:\\d+\\])";
     /**
      * 回复消息正则
      */
-    public String dialoguePattern = "噗~|斗地主|帮助";
+    public String dialoguePattern = "斗地主|帮助";
 
     public Long owner = PowerConfig.INSTANCE.getOwner();
     /**
@@ -207,9 +207,6 @@ public class DialogueBasic {
             //REPLY("回复消息",3)
             case REPLY:
                 switch (messageToString){
-                    case "噗~":
-                        SpecialDialogue.INSTANCE.sessionPu(event);
-                        break;
                     case "斗地主":
                         if (PowerConfig.INSTANCE.getDouSwitch().get()) {
                             SpecialDialogue.INSTANCE.sessionDou(event);
@@ -229,11 +226,14 @@ public class DialogueBasic {
                     l.info("查询迎新词指令");
                     GroupManager.INSTANCE.checkGroupWelcomeMessage(event);
                 }else if (Pattern.matches("([+-][\\d\\w\\u4e00-\\u9fa5]+[:：][\\d\\w\\S\\u4e00-\\u9fa5]+)", messageToString)) {
-                    l.info("迎新词指令");
+                    l.info("添加迎新词指令");
                     GroupManager.INSTANCE.setGroupWelcomeMessage(event);
                 }else if (Pattern.matches("(\\[mirai:at:\\d+\\] \\d+[s|d|h|m])",messageToString)){
                     l.info("禁言指令");
                     GroupManager.INSTANCE.prohibit(event);
+                } else if (Pattern.matches("(踢人\\[mirai:at:\\d+\\])", messageToString)) {
+                    l.info("踢人指令");
+                    GroupManager.INSTANCE.kick(event);
                 }
                 break;
             default:

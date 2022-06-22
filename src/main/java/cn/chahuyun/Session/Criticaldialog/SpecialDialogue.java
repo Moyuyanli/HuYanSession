@@ -6,9 +6,13 @@ import net.mamoe.mirai.contact.Contact;
 import net.mamoe.mirai.event.GlobalEventChannel;
 import net.mamoe.mirai.event.events.GroupMessageEvent;
 import net.mamoe.mirai.event.events.MessageEvent;
+import net.mamoe.mirai.message.MessageReceipt;
 import net.mamoe.mirai.message.data.ForwardMessageBuilder;
 import net.mamoe.mirai.message.data.MessageChainBuilder;
 import net.mamoe.mirai.utils.MiraiLogger;
+
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * PuDialogue
@@ -31,11 +35,20 @@ public class SpecialDialogue {
      * @date 2022/6/16 14:20
      */
     public  void sessionPu(MessageEvent messageEvent) {
-        try {
-            messageEvent.getSubject().sendMessage("噗~");
-        } catch (Exception e) {
-            HuYanSession.INSTANCE.getLogger().error(e.getMessage());
-        }
+        MessageReceipt<Contact> receipt = messageEvent.getSubject().sendMessage("啦啦啦");
+
+        //创建延时器
+        Timer timer = new Timer();
+        //延时器任务
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                receipt.recall();
+                this.cancel();
+            }
+            //时间单位毫秒 1s = 1000
+        },10000);
+
     }
 
     /**
@@ -120,7 +133,6 @@ public class SpecialDialogue {
                 .append("查询<后面的空格和参数可带可不带> [触发内容]\n\n")
                 .append("删除指令全格式:\n")
                 .append("删除 (触发内容<必填>)");
-
         MessageChainBuilder powermcb = new MessageChainBuilder();
         powermcb.append("以下为高级指令帮助↓\n")
                 .append("()为必填 []为选填 |为或 \n\n")
@@ -129,12 +141,29 @@ public class SpecialDialogue {
                 .append("session(会话操作权限)\n")
                 .append("admin(权限操作权限)\n")
                 .append("group(群操作权限)\n");
+        MessageChainBuilder groupmcb = new MessageChainBuilder();
+        groupmcb.append("以下为群管指令帮助↓\n")
+                .append("()为必填 []为选填 |为或 \n\n")
+                .append("添加欢迎词指令：\n")
+                .append("+(标签):(欢迎内容<可以用图片>)\n")
+                .append("删除欢迎词指令：\n")
+                .append("-(标签)::\n")
+                .append("查询欢迎词指令：\n")
+                .append("查询[欢迎|迎新]词\n\n")
+                .append("禁言指令指令：\n")
+                .append("(@某人) (时间)(时间单位[s|m|h|d])\n")
+                .append("s=秒，m=分钟，h=小时，d=天。\n")
+                .append("解除禁言指令：\n")
+                .append("(@某人) (0s)\n\n")
+                .append("踢人指令：\n")
+                .append("踢人(@某人)\n");
         MessageChainBuilder end = new MessageChainBuilder();
         end.append("更多插件使用帮助请查看↓\n")
            .append("https://mirai.mamoe.net/topic/1310/%E5%A3%B6%E8%A8%80-%E4%B8%80%E6%AC%BE%E8%87%AA%E5%AE%9A%E4%B9%89%E6%B6%88%E6%81%AF%E5%9B%9E%E5%A4%8D%E6%8F%92%E4%BB%B6");
 
         forwardMessageBuilder.add(event.getBot(), messageChainBuilder.build());
         forwardMessageBuilder.add(event.getBot(), powermcb.build());
+        forwardMessageBuilder.add(event.getBot(), groupmcb.build());
         //是否显示链接
         if (PowerConfig.INSTANCE.getLinkSwitch().get()) {
             forwardMessageBuilder.add(event.getBot(), end.build());

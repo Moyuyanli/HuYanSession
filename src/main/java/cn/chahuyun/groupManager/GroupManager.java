@@ -76,7 +76,7 @@ public class GroupManager {
         //构造转发消息
         ForwardMessageBuilder forwardMessageBuilder = new ForwardMessageBuilder(subject);
 
-        MessageChain fastMessages = new MessageChainBuilder().append("以下为查询到的所有的迎新测↓").build();
+        MessageChain fastMessages = new MessageChainBuilder().append("以下为查询到的所有的迎新词↓").build();
         //查询所有欢迎词，然后遍历添加，以miraicode码
         Map<String, String> groupWelcomeMessage = SessionData.INSTANCE.getGroupWelcomeMessage();
         MessageChainBuilder messageChainBuilder = new MessageChainBuilder();
@@ -99,9 +99,8 @@ public class GroupManager {
     /**
      * @description 解禁言
      * @author zhangjiaxing
-     * @param event
+     * @param event 消息事件
      * @date 2022/6/21 16:44
-     * @return void
      */
     public void prohibit(MessageEvent event) {
         Contact subject = event.getSubject();
@@ -128,7 +127,7 @@ public class GroupManager {
         String param = split[1];
         //分解参数
         String type = param.substring(param.length() - 1);
-        Integer timeParam = Integer.valueOf(param.substring(0,param.length()-1));
+        int timeParam = Integer.parseInt(param.substring(0, param.length() - 1));
         if (timeParam == 0) {
             assert member != null;
             member.unmute();
@@ -162,5 +161,27 @@ public class GroupManager {
         member.mute(time);
         subject.sendMessage(messages.build());
     }
+
+
+    public void kick(MessageEvent event) {
+        Contact subject = event.getSubject();
+        MessageChain message = event.getMessage();
+
+        Long qq = null;
+        for (SingleMessage singleMessage : message) {
+            if (singleMessage instanceof At) {
+                qq =  ((At) singleMessage).getTarget();
+            }
+        }
+        if (qq == null) {
+            subject.sendMessage("踢出失败，没有这个人呢！");
+            return;
+        }
+        NormalMember member = event.getBot().getGroup(event.getSubject().getId()).get(qq);
+
+        member.kick("踢出");
+
+    }
+
 
 }

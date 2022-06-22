@@ -39,20 +39,25 @@ public class SessionData extends JavaAutoSavePluginData {
     /**
      * list<SessionDataBase> 对话数据集合
      */
-    private final Value<Map<String,String>> sessionMap = typedValue("sessionMap",createKType(Map.class,createKType(String .class),createKType(String.class)));
+    private final Value<Map<String, String>> sessionMap = typedValue("sessionMap", createKType(Map.class, createKType(String.class), createKType(String.class)));
 
     /**
      * 群欢迎词
      */
-    private final Value<Map<String,String>> groupWelcomeMessage = typedValue("groupWelcomeMessage",createKType(Map.class,createKType(String.class),createKType(String.class)));
+    private final Value<Map<String, String>> groupWelcomeMessage = typedValue("groupWelcomeMessage", createKType(Map.class, createKType(String.class), createKType(String.class)));
+
+    /**
+     * 黑名单
+     */
+    private final Value<Map<Long, Long>> blackList = typedValue("blackList", createKType(Map.class, createKType(Long.class), createKType(Long.class)));
 
 
 
     /**
+     * @return java.util.Map<java.lang.String, cn.chahuyun.data.SessionDataBase>
      * @description 获取是sessiondatabase的map
      * @author zhangjiaxing
      * @date 2022/6/17 16:37
-     * @return java.util.Map<java.lang.String,cn.chahuyun.data.SessionDataBase>
      */
     public Map<String, SessionDataBase> getSessionMap() {
         //从data中获取map
@@ -71,14 +76,14 @@ public class SessionData extends JavaAutoSavePluginData {
 
 
     /**
+     * @param s    + or -
+     * @param base 基本对话
+     * @return net.mamoe.mirai.message.data.MessageChain
      * @description 用于修改本地数据的操作方法
      * @author zhangjiaxing
-     * @param s + or -
-     * @param base 基本对话
      * @date 2022/6/20 8:35
-     * @return net.mamoe.mirai.message.data.MessageChain
      */
-    public MessageChain setSessionMap(String s ,SessionDataBase base) {
+    public MessageChain setSessionMap(String s, SessionDataBase base) {
         Map<String, String> stringStringMap = this.sessionMap.get();
         if (s.equals("+")) {
             String jsonString = JSONObject.toJSONString(base);
@@ -94,7 +99,7 @@ public class SessionData extends JavaAutoSavePluginData {
                 return new MessageChainBuilder().append("删除成功! ")
                         .append(MiraiCode.deserializeMiraiCode(base.getKey()))
                         .build();
-            }else {
+            } else {
                 return new MessageChainBuilder().append("没有找到能够删除的东西啦~")
                         .build();
             }
@@ -102,16 +107,16 @@ public class SessionData extends JavaAutoSavePluginData {
     }
 
     /**
+     * @param s       标签
+     * @param message 欢迎词
+     * @return net.mamoe.mirai.message.data.MessageChain
      * @description 群消息欢迎词
      * @author zhangjiaxing
-     * @param s 标签
-     * @param message 欢迎词
      * @date 2022/6/21 9:06
-     * @return net.mamoe.mirai.message.data.MessageChain
      */
     public MessageChain setGroupWelcomeMessage(String s, String message) {
         Map<String, String> stringStringMap = this.groupWelcomeMessage.get();
-        String substring = s.substring(0,1);
+        String substring = s.substring(0, 1);
         s = s.substring(1);
         if (substring.equals("+")) {
             stringStringMap.put(s, message);
@@ -126,7 +131,7 @@ public class SessionData extends JavaAutoSavePluginData {
         }
     }
 
-    public Map<String,String> getGroupWelcomeMessage() {
+    public Map<String, String> getGroupWelcomeMessage() {
         return groupWelcomeMessage.get();
     }
 }

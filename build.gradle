@@ -9,8 +9,10 @@ tasks.withType(JavaCompile) {
     options.encoding = "UTF-8"
 }
 group = 'cn.chahuyun'
-//完成禁言模块-1.4.4 修复了欢迎词的bug '1.4.5'
-version = '1.4.5'
+/**
+ * 完成踢人模块-1.5.5
+ */
+version = '1.5.5'
 
 
 repositories {
@@ -25,6 +27,7 @@ repositories {
 dependencies {
     implementation 'junit:junit:4.13.1'
     implementation 'com.alibaba:fastjson:2.0.7'
+    implementation 'com.alibaba:druid:1.2.11'
     compileOnly 'org.apache.logging.log4j:log4j-to-slf4j:2.17.2'
 
 

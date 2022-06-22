@@ -42,15 +42,14 @@ public class CommandManage extends JCompositeCommand {
     }
 
 
-    @SubCommand("addg")
+    @SubCommand("addgroup")
     @Description("添加检测群")
     public void setGroup(CommandSender sender,long group) {
         MessageChain messages = PowerConfig.INSTANCE.setGroupList(true, group);
         sender.sendMessage(messages);
     }
 
-
-    @SubCommand("delg")
+    @SubCommand("delgroup")
     @Description("删除检测群")
     public void delGroup(CommandSender sender,long group) {
         MessageChain messages = PowerConfig.INSTANCE.setGroupList(false, group);
