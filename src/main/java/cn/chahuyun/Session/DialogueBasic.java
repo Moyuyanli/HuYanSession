@@ -11,6 +11,7 @@ import cn.chahuyun.enumerate.MessEnum;
 import cn.chahuyun.groupManager.GroupManager;
 import cn.chahuyun.power.Permissions;
 import cn.chahuyun.sessionManager.SessionManage;
+import cn.chahuyun.utils.MessageUtil;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.utils.MiraiLogger;
 
@@ -33,10 +34,11 @@ public class DialogueBasic {
 
     private  MiraiLogger l = HuYanSession.INSTANCE.getLogger();
 
+    private final MessageUtil util = MessageUtil.INSTANCE;
     /**
      * 指令正则
      */
-    public String commandPattern = "查询 ?|学习[+|-]?\\s+|删除 |([+-]\\[mirai:at:\\d+\\] [\\w]+)";
+    public String commandPattern = "查询 ?|学习(多词条)?\\s+|删除 |([+-]\\[mirai:at:\\d+\\] [\\w]+)";
     /**
      * 群管指令正则
      */
@@ -185,13 +187,13 @@ public class DialogueBasic {
             case COMMAND:
                 l.info(userPower);
                 if (owner == event.getSender().getId() || adminList.get(userPower).isSessionPower()) {
-                    if (messageToString.indexOf("学习") == 0) {
+                    if (util.isStudyCommand(event)) {
                         l.info("学习指令");
                         SessionManage.INSTANCE.studySession(event);
                     } else if (messageToString.indexOf("查询") == 0) {
                         l.info("查询指令");
                         SessionManage.INSTANCE.querySession(event);
-                    } else if (messageToString.indexOf("删除") == 0) {
+                    } else if (util.isDeleteCommand(event)) {
                         l.info("删除指令");
                         SessionManage.INSTANCE.deleteSession(event);
                     }

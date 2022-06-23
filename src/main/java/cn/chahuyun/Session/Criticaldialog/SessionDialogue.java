@@ -64,6 +64,7 @@ public class SessionDialogue {
                 //发送
                 subject.sendMessage(MiraiCode.deserializeMiraiCode(valueList.get(nextInt)));
                 break;
+            default:break;
         }
 
 

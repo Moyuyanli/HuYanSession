@@ -4,6 +4,7 @@ import cn.chahuyun.HuYanSession;
 import cn.chahuyun.data.ScopeInfo;
 import cn.chahuyun.enumerate.DataEnum;
 import net.mamoe.mirai.event.events.MessageEvent;
+import net.mamoe.mirai.message.data.MessageChain;
 import net.mamoe.mirai.utils.MiraiLogger;
 
 import java.util.HashMap;
@@ -26,7 +27,7 @@ public class MessageUtil {
     /**
      * miraiCode匹配正则
      */
-    private String miraiCode = "\\[mirai:\\w+:[\\S]+\\]";
+    private final String miraiCode = "\\[mirai:\\w+:[\\S]+\\]";
 
     /**
      * 学习正则
@@ -38,10 +39,12 @@ public class MessageUtil {
      * 删除正则
      * 删除(多词条)?\s+(\S)+
      */
-    public String deletePattern = "删除(多词条)?\\s+(\\S)+";
+    public String deletePattern = "删除(多词条)?\\s+(\\S)+\\s?(\\S)?";
 
 
-    //匹配器，重复利用
+    /**
+     * 匹配器，重复利用
+     */
     public Matcher matcher;
 
     /**
@@ -106,7 +109,11 @@ public class MessageUtil {
                     case "全局":
                         scopeInfo = new ScopeInfo("全局", false, null);break;
                     case "随机":
-                        if (studyType) contentType = 3;break;
+                        if (studyType) {
+                            contentType = 3;
+                        }
+                        break;
+                    default:break;
                 }
             }
         }
@@ -129,9 +136,39 @@ public class MessageUtil {
         return map;
     }
 
-
+    /**
+     * @description 判断是否是删除指令
+     * @author zhangjiaxing
+     * @param event
+     * @date 2022/6/23 22:15
+     * @return boolean
+     */
     public boolean isDeleteCommand(MessageEvent event) {
         String code = event.getMessage().serializeToMiraiCode();
+        //同理
+        matcher = Pattern.compile(deletePattern).matcher(code);
+        return matcher.find();
+    }
+
+    /**
+     * @description 删除
+     * @author zhangjiaxing
+     * @date 2022/6/23 22:15
+     * @return java.lang.String
+     */
+    public String  deleteParam() {
+
+        //获取匹配数据
+        String group = matcher.group();
+        //删除换行
+        String replace = group.replace("\\n", "");
+        //分割参数
+        String[] split = replace.split("\\s+");
+        if (split[0].equals("删除多词条")) {
+            return "! " + split[1]+" "+split[2];
+        }
+        return split[1];
+
     }
 
     

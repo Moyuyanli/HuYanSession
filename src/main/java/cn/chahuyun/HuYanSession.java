@@ -65,7 +65,7 @@ public final class HuYanSession extends JavaPlugin {
         this.reloadPluginData(SessionData.INSTANCE);
         getLogger().info("SessionData 已加载！");
         //添加默认信息
-        SessionData.INSTANCE.setSessionMap("+",new SessionDataBase("乒", 0, "乓", DataEnum.ACCURATE, new ScopeInfo("全局", false, 0L)));
+        SessionData.INSTANCE.setSessionMap(false, 0, "乒", "乓", new ScopeInfo("全局", false, 0L), DataEnum.ACCURATE);
 
         //注册指令
         CommandManager.INSTANCE.registerCommand(new CommandManage(HuYanSession.INSTANCE), true);

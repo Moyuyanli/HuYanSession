@@ -10,6 +10,7 @@ import net.mamoe.mirai.message.data.MessageChain;
 import net.mamoe.mirai.message.data.MessageChainBuilder;
 import net.mamoe.mirai.utils.MiraiLogger;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -77,8 +78,6 @@ public class SessionData extends JavaAutoSavePluginData {
 
 
     /**
-     * @param s    + or -
-     * @param base 基本对话
      * @return net.mamoe.mirai.message.data.MessageChain
      * @description 用于修改本地数据的操作方法
      * @author zhangjiaxing
@@ -117,6 +116,47 @@ public class SessionData extends JavaAutoSavePluginData {
         //覆盖
         stringStringMap.put(key, jsonString);
         return new MessageChainBuilder().append("修改触发词回复成功!").build();
+    }
+
+
+    /**
+     * @description 删除词
+     * @author zhangjiaxing
+     * @param param
+     * @date 2022/6/23 22:36
+     * @return net.mamoe.mirai.message.data.MessageChain
+     */
+    public MessageChain delSessionData(String param) {
+        String[] s = param.split(" ");
+        Map<String, String> stringStringMap = this.sessionMap.get();
+        if (s[0].equals("!")) {
+            if (stringStringMap.containsKey(s[1])) {
+                String s1 = stringStringMap.get(s[1]);
+                SessionDataBase base = JSONObject.parseObject(s1, SessionDataBase.class);
+                return base.setValues(false, s[2]);
+            }
+        }
+        if (stringStringMap.containsKey(s[1])) {
+            stringStringMap.remove(s[1]);
+            return new MessageChainBuilder().append("删除关键词成功！").build();
+        }
+        return new MessageChainBuilder().append("删除关键词失败！").build();
+    }
+
+    /**
+     * @description 轮询次数+1
+     * @author zhangjiaxing
+     * @param key
+     * @date 2022/6/23 22:43
+     * @return void
+     */
+    public void addPollNum(String key) {
+        Map<String, String> stringStringMap = this.sessionMap.get();
+        String s = stringStringMap.get(key);
+        SessionDataBase base = JSONObject.parseObject(s, SessionDataBase.class);
+        base.getPoll();
+        String string = JSONObject.toJSONString(base);
+        stringStringMap.put(key, string);
     }
 
     /**

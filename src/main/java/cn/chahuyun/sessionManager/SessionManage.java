@@ -138,8 +138,15 @@ public class SessionManage {
         String messageString = event.getMessage().serializeToMiraiCode();
         Contact subject = event.getSubject();
 
-
-
+        //验证格式
+        boolean deleteCommand = messageUtil.isDeleteCommand(event);
+        if (deleteCommand) {
+            subject.sendMessage("删除失败!需要帮助请发送帮助!");
+            return false;
+        }
+        String param = messageUtil.deleteParam();
+        MessageChain messages = SessionData.INSTANCE.delSessionData(param);
+        subject.sendMessage(messageString);
         return false;
     }
 
