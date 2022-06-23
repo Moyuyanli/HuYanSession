@@ -7,6 +7,7 @@ import cn.chahuyun.data.SessionData;
 import cn.chahuyun.data.SessionDataBase;
 import cn.chahuyun.data.SessionDataPaging;
 import cn.chahuyun.enumerate.DataEnum;
+import cn.chahuyun.utils.MessageUtil;
 import net.mamoe.mirai.contact.Contact;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.code.MiraiCode;
@@ -30,12 +31,9 @@ public class SessionManage {
     public static final SessionManage INSTANCE = new SessionManage();
 
     private MiraiLogger l = HuYanSession.INSTANCE.getLogger();
+    private final MessageUtil messageUtil = MessageUtil.INSTANCE;
 
-    /**
-     * 学习正则
-     */
-    public String studyPattern = "(学习[+|-]?\\s+[\\d\\w\\S\\u4e00-\\u9fa5]+\\s+[\\d\\w\\S\\u4e00-\\u9fa5]+(\\s?(精准|模糊|头部|结尾))?(\\s?(当前|全局)?)(\\s?(轮询|随机)?)?)";
-    /**
+     /**
      * 查询正则
      */
     public String queryPattern = "(查询 ?([\\d\\w\\S\\u4e00-\\u9fa5])*)";
@@ -53,77 +51,32 @@ public class SessionManage {
      * @return boolean
      */
     public boolean studySession(MessageEvent event) {
-        String messageString = event.getMessage().serializeToMiraiCode();
         Contact subject = event.getSubject();
-
-        //判断学习语法结构是否正确
-        if (!Pattern.matches(studyPattern, messageString)) {
-            subject.sendMessage("学习失败!学习结构应为：");
-            subject.sendMessage("学习 (触发关键词) (回复内容) [精准|模糊|头部|结尾] [当前|全局] [轮询|随机]");
+        String code = event.getMessage().serializeToMiraiCode();
+        //验证格式
+        boolean studyCommand = messageUtil.isStudyCommand(event);
+        if (studyCommand) {
+            subject.sendMessage("学习失败!需要帮助请发送帮助!");
             return false;
         }
-
-        //过滤换行
-        messageString = messageString.replace("\\n", " ");
-
-        //分割学习数据
-        String[] strings = messageString.split("\\s+");
-        String key  = strings[1];
-        String value = strings[2];
-        //匹配类型
-        DataEnum dataEnum = DataEnum.ACCURATE;
-        ScopeInfo scopeInfo = new ScopeInfo("当前", true, event.getSubject().getId());
-        int type = 0;
-        boolean contains = strings[0].contains("学习+") | strings[0].contains("学习-");
-        if (strings.length >= 4) {
-            String matches = strings[3];
-            switch (matches) {
-                case "模糊":
-                    dataEnum = DataEnum.VAGUE;break;
-                case "头部":
-                    dataEnum = DataEnum.START;break;
-                case "结尾":
-                    dataEnum = DataEnum.END;break;
-                case "全局":
-                    //如果省略参数只填写匹配范围，用来识别匹配范围
-                    scopeInfo = new ScopeInfo("全局", false, null);
-                case "随机":
-                    if (contains) {
-                        type = 3;
-                    }
-                default:break;
-            }
-        }
-        //匹配范围
-        if (strings.length >= 5) {
-            Long owner = PowerConfig.INSTANCE.getOwner();
-            if (event.getSender().getId() == owner && strings[4].equals("全局")) {
-                scopeInfo = new ScopeInfo("全局", false, null);
-            }
-            if (contains && strings[4].equals("随机")) {
-                type = 3;
-            }
-        }
-        //关键词类型 0-string 1其他
-        if (contains && strings.length == 6 && strings[5].equals("随机")) {
-            type = 3;
-        } else if (contains && strings.length == 6 && strings[5].equals("轮询")) {
-            type = 2;
-        }else if (Pattern.matches("\\[mirai:(\\w)+:[{}\\d\\w-.]+\\]",value)) {
-            type = 1;
-        }
-
-        l.info(Arrays.toString(strings));
-        //新建对话信息
-        SessionDataBase base = new SessionDataBase(key, type, value, dataEnum, scopeInfo);
-        //put进存储数据
-        String s = "+";
-        if (contains) {
-            s = "++";
-        }
-        l.info("type-"+type);
-        MessageChain returnMessChain = SessionData.INSTANCE.setSessionMap(s, base);
-        subject.sendMessage(returnMessChain);
+        //取参添加
+        Map<String, Object> param = messageUtil.spotStudyCommandParam(event);
+        /*
+          studyType 学习类型
+          contentType 数据保存类型
+          scopeInfo 作用域
+          dataEnum 匹配机制
+          key k
+          value v
+         */
+        boolean studyType = (boolean) param.get("studyType");
+        int contentType = (int) param.get("contentType");
+        String key = (String) param.get("key");
+        String value = (String) param.get("value");
+        DataEnum dataEnum = (DataEnum) param.get("dataEnum");
+        ScopeInfo scopeInfo = (ScopeInfo) param.get("scopeInfo");
+        MessageChain messages = SessionData.INSTANCE.setSessionMap(studyType, contentType, key, value, scopeInfo, dataEnum);
+        subject.sendMessage(messages);
         return true;
     }
 
@@ -184,21 +137,9 @@ public class SessionManage {
     public Boolean deleteSession(MessageEvent event) {
         String messageString = event.getMessage().serializeToMiraiCode();
         Contact subject = event.getSubject();
-        //删除语法结构查询
-        if (!Pattern.matches(deletePattern, messageString)) {
-            subject.sendMessage("删除失败!删除结构为:");
-            subject.sendMessage("删除 (触发类容)");
-        }
-        //分割
-        String[] strings = messageString.split(" ");
-        //只需要关键词的key数组中有这个词就行，map不需要知道它在那
-        if (strings.length == 2) {
-            //随便建一个，只要携带key
-            SessionDataBase base = new SessionDataBase(strings[1], 0, null, null, null);
-            MessageChain messageChain = SessionData.INSTANCE.setSessionMap("-", base);
-            subject.sendMessage(messageChain);
-            return true;
-        }
+
+
+
         return false;
     }
 

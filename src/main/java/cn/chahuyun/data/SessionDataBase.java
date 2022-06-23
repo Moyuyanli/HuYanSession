@@ -35,6 +35,10 @@ public class SessionDataBase{
      */
     private final ArrayList<String> values = new ArrayList<String>();
     /**
+     * 轮询用验证次数
+     */
+    private int poll = 0;
+    /**
      * 触发条件
      */
     private DataEnum dataEnum;
@@ -56,7 +60,13 @@ public class SessionDataBase{
     public SessionDataBase(String key, int type, String value, DataEnum dataEnum, ScopeInfo scopeInfo) {
         this.key = key;
         this.type = type;
-        this.value = value;
+        //创建时进行判断
+        if (type == 3 || type == 4) {
+            this.value = "多词条回复";
+            this.values.add(value);
+        } else {
+            this.value = value;
+        }
         this.dataEnum = dataEnum;
         this.scopeInfo = scopeInfo;
     }
@@ -84,6 +94,16 @@ public class SessionDataBase{
     public void setValue(String value) {
         this.value = value;
     }
+    /**
+     * @description 获取轮询次数
+     * 获取一次自增1
+     * @author zhangjiaxing
+     * @date 2022/6/23 16:53
+     * @return int
+     */
+    public int getPoll() {
+        return poll++;
+    }
 
     public DataEnum getDataEnum() {
         return dataEnum;
@@ -105,6 +125,14 @@ public class SessionDataBase{
         return values;
     }
 
+    /**
+     * @description 添加或删除多词条单独信息
+     * @author zhangjiaxing
+     * @param b t 添加 f 删除
+     * @param value 添加或删除的内容
+     * @date 2022/6/23 16:47
+     * @return net.mamoe.mirai.message.data.MessageChain
+     */
     public MessageChain setValues(boolean b,String value) {
         if (b) {
             this.values.add(value);
