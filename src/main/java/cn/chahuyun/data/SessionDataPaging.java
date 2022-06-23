@@ -39,13 +39,18 @@ public class SessionDataPaging {
         MessageChainBuilder start = new MessageChainBuilder();
         MessageChainBuilder end = new MessageChainBuilder();
         MessageChainBuilder other = new MessageChainBuilder();
+        MessageChainBuilder poll = new MessageChainBuilder();
+        MessageChainBuilder random = new MessageChainBuilder();
         table.append("以下为所有查询到的触发关键词结果↓");
         forwardMessageBuilder.add(bot, table.build());
+
         accurate.append("所有的精准匹配触发消息:\n");
         vague.append("所有的模糊匹配触发消息:\n");
         start.append("所有的头部匹配触发消息:\n");
         end.append("所有的结尾匹配触发消息:\n");
         other.append("所有的其他匹配触发消息:\n");
+        poll.append("所有的多词条轮询触发消息:\n");
+        random.append("所有的多词条随机触发消息:\n");
         //获取全部消息
         ArrayList<SessionDataBase> values = new ArrayList<>(SessionData.INSTANCE.getSessionMap().values()) ;
         for (SessionDataBase base : values) {
@@ -58,33 +63,70 @@ public class SessionDataPaging {
                 trigger = "其他群触发";
             }
             //判断消息类别
-            if (base.getType() == 0) {
-                //判断匹配机制
-                switch (base.getDataEnum()) {
-                    case ACCURATE:
-                        accurate.append(base.getKey() + " ==> " + base.getValue() + " -> " + trigger + "\n");
-                        break;
-                    case VAGUE:
-                        vague.append(base.getKey() + " ==> " + base.getValue() + " -> " + trigger + "\n");
-                        break;
-                    case START:
-                        start.append(base.getKey() + " ==> " + base.getValue() + " -> " + trigger + "\n");
-                        break;
-                    case END:
-                        end.append(base.getKey() + " ==> " + base.getValue() + " -> " + trigger + "\n");
-                        break;
-                    default:
-                        break;
-                }
-            } else {
-                other.append(MiraiCode.deserializeMiraiCode(base.getKey()))
-                        .append(" ==> ")
-                        .append(MiraiCode.deserializeMiraiCode(base.getValue()))
-                        .append(" -> ")
-                        .append(trigger)
-                        .append(":")
-                        .append(base.getDataEnum().getType())
-                        .append("\n");
+            switch (base.getType()) {
+                case 0:
+                    //判断匹配机制
+                    switch (base.getDataEnum()) {
+                        case ACCURATE:
+                            accurate.append(base.getKey() + " ==> " + base.getValue() + " -> " + trigger + "\n");
+                            break;
+                        case VAGUE:
+                            vague.append(base.getKey() + " ==> " + base.getValue() + " -> " + trigger + "\n");
+                            break;
+                        case START:
+                            start.append(base.getKey() + " ==> " + base.getValue() + " -> " + trigger + "\n");
+                            break;
+                        case END:
+                            end.append(base.getKey() + " ==> " + base.getValue() + " -> " + trigger + "\n");
+                            break;
+                        default:
+                            break;
+                    }
+                    break;
+                case 1:
+                    other.append(MiraiCode.deserializeMiraiCode(base.getKey()))
+                            .append(" ==> ")
+                            .append(MiraiCode.deserializeMiraiCode(base.getValue()))
+                            .append(" -> ")
+                            .append(trigger)
+                            .append(":")
+                            .append(base.getDataEnum().getType())
+                            .append("\n");
+                    break;
+                case 2:
+                    ArrayList<String> pollBaseValues = base.getValues();
+                    poll.append(MiraiCode.deserializeMiraiCode(base.getKey()))
+                            .append(" ==> ")
+                            .append("多词条轮询回复")
+                            .append(" -> ")
+                            .append(trigger)
+                            .append(":")
+                            .append(base.getDataEnum().getType())
+                            .append("\n");
+                    for (String value : pollBaseValues) {
+                        poll.append(MiraiCode.deserializeMiraiCode(base.getKey()))
+                                .append(" ==> ")
+                                .append(MiraiCode.deserializeMiraiCode(value))
+                                .append("\n");
+                    }
+                    break;
+                case 3:
+                    ArrayList<String> randombaseValues = base.getValues();
+                    poll.append(MiraiCode.deserializeMiraiCode(base.getKey()))
+                            .append(" ==> ")
+                            .append("多词条随机回复")
+                            .append(" -> ")
+                            .append(trigger)
+                            .append(":")
+                            .append(base.getDataEnum().getType())
+                            .append("\n");
+                    for (String value : randombaseValues) {
+                        poll.append(MiraiCode.deserializeMiraiCode(base.getKey()))
+                                .append(" ==> ")
+                                .append(MiraiCode.deserializeMiraiCode(value))
+                                .append("\n");
+                    }
+                    break;
             }
         }
         forwardMessageBuilder.add(bot, accurate.build());
@@ -92,6 +134,8 @@ public class SessionDataPaging {
         forwardMessageBuilder.add(bot, start.build());
         forwardMessageBuilder.add(bot, end.build());
         forwardMessageBuilder.add(bot, other.build());
+        forwardMessageBuilder.add(bot, poll.build());
+        forwardMessageBuilder.add(bot, random.build());
         event.getSubject().sendMessage(forwardMessageBuilder.build());
         return true;
     }

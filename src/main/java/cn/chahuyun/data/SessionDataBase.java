@@ -1,6 +1,10 @@
 package cn.chahuyun.data;
 
 import cn.chahuyun.enumerate.DataEnum;
+import net.mamoe.mirai.message.data.MessageChain;
+import net.mamoe.mirai.message.data.MessageChainBuilder;
+
+import java.util.ArrayList;
 
 /**
  * SessionData
@@ -17,12 +21,19 @@ public class SessionDataBase{
     /**
      * 触发结果类型
      * 默认为字符 = 0 string类回复
+     * 默认为字符 = 1 图片类回复
+     * 默认为字符 = 2 多词条轮询类回复
+     * 默认为字符 = 3 多词条随机类回复
      */
     private int type = 0;
     /**
      * 触发结果-字符
      */
     private String value;
+    /**
+     * 多词条回复集合
+     */
+    private final ArrayList<String> values = new ArrayList<String>();
     /**
      * 触发条件
      */
@@ -89,4 +100,24 @@ public class SessionDataBase{
     public void setScopeInfo(ScopeInfo scopeInfo) {
         this.scopeInfo = scopeInfo;
     }
+
+    public ArrayList<String> getValues() {
+        return values;
+    }
+
+    public MessageChain setValues(boolean b,String value) {
+        if (b) {
+            this.values.add(value);
+            return new MessageChainBuilder().append("多词条回复添加成功！").build();
+        } else {
+            if (this.values.contains(value)) {
+                this.values.remove(value);
+                return new MessageChainBuilder().append("多词条回复删除成功！").build();
+            } else {
+                return new MessageChainBuilder().append("多词条回复删除失败！").build();
+            }
+
+        }
+    }
+
 }

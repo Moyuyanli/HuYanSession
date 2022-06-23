@@ -34,7 +34,7 @@ public class SessionManage {
     /**
      * 学习正则
      */
-    public String studyPattern = "(学习\\s+[\\d\\w\\S\\u4e00-\\u9fa5]+\\s+[\\d\\w\\S\\u4e00-\\u9fa5]+(\\s?(精准|模糊|头部|结尾))?(\\s?(当前|全局)?))";
+    public String studyPattern = "(学习[+|-]?\\s+[\\d\\w\\S\\u4e00-\\u9fa5]+\\s+[\\d\\w\\S\\u4e00-\\u9fa5]+(\\s?(精准|模糊|头部|结尾))?(\\s?(当前|全局)?)(\\s?(轮询|随机)?)?)";
     /**
      * 查询正则
      */
@@ -59,7 +59,7 @@ public class SessionManage {
         //判断学习语法结构是否正确
         if (!Pattern.matches(studyPattern, messageString)) {
             subject.sendMessage("学习失败!学习结构应为：");
-            subject.sendMessage("学习 (触发关键词) (回复内容) [精准|模糊|头部|结尾]");
+            subject.sendMessage("学习 (触发关键词) (回复内容) [精准|模糊|头部|结尾] [当前|全局] [轮询|随机]");
             return false;
         }
 
@@ -73,6 +73,8 @@ public class SessionManage {
         //匹配类型
         DataEnum dataEnum = DataEnum.ACCURATE;
         ScopeInfo scopeInfo = new ScopeInfo("当前", true, event.getSubject().getId());
+        int type = 0;
+        boolean contains = strings[0].contains("学习+") | strings[0].contains("学习-");
         if (strings.length >= 4) {
             String matches = strings[3];
             switch (matches) {
@@ -85,19 +87,29 @@ public class SessionManage {
                 case "全局":
                     //如果省略参数只填写匹配范围，用来识别匹配范围
                     scopeInfo = new ScopeInfo("全局", false, null);
+                case "随机":
+                    if (contains) {
+                        type = 3;
+                    }
                 default:break;
             }
         }
         //匹配范围
-        if (strings.length == 5) {
+        if (strings.length >= 5) {
             Long owner = PowerConfig.INSTANCE.getOwner();
             if (event.getSender().getId() == owner && strings[4].equals("全局")) {
                 scopeInfo = new ScopeInfo("全局", false, null);
             }
+            if (contains && strings[4].equals("随机")) {
+                type = 3;
+            }
         }
         //关键词类型 0-string 1其他
-        int type = 0;
-        if (Pattern.matches("\\[mirai:(\\w)+:[{}\\d\\w-.]+\\]",value)) {
+        if (contains && strings.length == 6 && strings[5].equals("随机")) {
+            type = 3;
+        } else if (contains && strings.length == 6 && strings[5].equals("轮询")) {
+            type = 2;
+        }else if (Pattern.matches("\\[mirai:(\\w)+:[{}\\d\\w-.]+\\]",value)) {
             type = 1;
         }
 
@@ -105,7 +117,12 @@ public class SessionManage {
         //新建对话信息
         SessionDataBase base = new SessionDataBase(key, type, value, dataEnum, scopeInfo);
         //put进存储数据
-        MessageChain returnMessChain = SessionData.INSTANCE.setSessionMap("+", base);
+        String s = "+";
+        if (contains) {
+            s = "++";
+        }
+        l.info("type-"+type);
+        MessageChain returnMessChain = SessionData.INSTANCE.setSessionMap(s, base);
         subject.sendMessage(returnMessChain);
         return true;
     }
@@ -126,13 +143,17 @@ public class SessionManage {
         //判断查询语法结构是否正确
         if (!Pattern.matches(queryPattern, messageString)) {
             subject.sendMessage("查询失败!查询结构应为：");
-            subject.sendMessage("查询 [页数/关键词]");
+            subject.sendMessage("查询 [关键词]");
             return false;
         }
         //当 消息仅为 查询 时 默认查询第一页消息
         if (messageString.length()<=3) {
             SessionDataPaging.INSTANCE.checkSessionList(event);
             return true;
+        }
+
+        if (!Pattern.matches("查询 [\\d\\w\\S\\u4e00-\\u9fa5]+", messageString)) {
+            return false;
         }
 
         //关键词查询
@@ -148,7 +169,6 @@ public class SessionManage {
         } else {
             subject.sendMessage("查询失败! 没有找到我能说的话！");
         }
-
 
         return false;
     }

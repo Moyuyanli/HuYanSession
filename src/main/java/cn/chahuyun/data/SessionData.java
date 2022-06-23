@@ -84,26 +84,95 @@ public class SessionData extends JavaAutoSavePluginData {
      * @date 2022/6/20 8:35
      */
     public MessageChain setSessionMap(String s, SessionDataBase base) {
+        //取出map
         Map<String, String> stringStringMap = this.sessionMap.get();
-        if (s.equals("+")) {
-            String jsonString = JSONObject.toJSONString(base);
-            stringStringMap.put(base.getKey(), jsonString);
-            return new MessageChainBuilder().append("学习成功! ")
-                    .append(MiraiCode.deserializeMiraiCode(base.getKey()))
-                    .append(" -> ")
-                    .append(MiraiCode.deserializeMiraiCode(base.getValue()))
-                    .build();
-        } else {
-            if (stringStringMap.containsKey(base.getKey())) {
-                stringStringMap.remove(base.getKey());
-                return new MessageChainBuilder().append("删除成功! ")
+        //判断基本学习添加
+        switch (s) {
+            case "+":
+                //序列化后添加
+                String jsonString = JSONObject.toJSONString(base);
+                stringStringMap.put(base.getKey(), jsonString);
+                return new MessageChainBuilder().append("学习成功! ")
                         .append(MiraiCode.deserializeMiraiCode(base.getKey()))
+                        .append(" -> ")
+                        .append(MiraiCode.deserializeMiraiCode(base.getValue()))
                         .build();
-            } else {
-                return new MessageChainBuilder().append("没有找到能够删除的东西啦~")
+            case "-":
+                //查询之后删除
+                if (stringStringMap.containsKey(base.getKey())) {
+                    stringStringMap.remove(base.getKey());
+                    return new MessageChainBuilder().append("删除成功! ")
+                            .append(MiraiCode.deserializeMiraiCode(base.getKey()))
+                            .build();
+                } else {
+                    return new MessageChainBuilder().append("没有找到能够删除的东西啦~")
+                            .build();
+                }
+            case "++":
+                //如果数据中没有该多词条回复，则先添加
+                if (!stringStringMap.containsKey(base.getKey())) {
+                    //序列化后添加
+                    //将值保存到多词条里面去，并且将轮询基数存到value里面
+                    base.setValues(true, base.getValue());
+                    base.setValue("0");
+
+                    String jsonToString = JSONObject.toJSONString(base);
+                    //添加
+                    stringStringMap.put(base.getKey(), jsonToString);
+                    return new MessageChainBuilder().append("学习多词条成功! ")
+                            .append(MiraiCode.deserializeMiraiCode(base.getKey()))
+                            .append(" -> ")
+                            .append("多词条回复")
+                            .build();
+                }else {
+                    //如果有，则取出来，然后添加回复
+                    Map<String, SessionDataBase> sessionMap = getSessionMap();
+                    //取出
+                    SessionDataBase sessionDataBase = sessionMap.get(base.getKey());
+                    //添加回复
+                    MessageChain messages = sessionDataBase.setValues(true, base.getValue());
+                    //反序列化然后覆盖数据
+                    String toJSONString = JSONObject.toJSONString(sessionDataBase);
+                    stringStringMap.put(base.getKey(), toJSONString);
+                    return messages;
+                }
+            case "--":
+                if (stringStringMap.containsKey(base.getKey())) {
+                    //如果有，则取出来，然后添加回复
+                    Map<String, SessionDataBase> sessionMap = getSessionMap();
+                    //取出
+                    SessionDataBase sessionDataBase = sessionMap.get(base.getKey());
+                    //删除回复
+                    MessageChain messages = sessionDataBase.setValues(false, base.getValue());
+                    //反序列化然后覆盖数据
+                    String toJSONString = JSONObject.toJSONString(sessionDataBase);
+                    stringStringMap.put(base.getKey(), toJSONString);
+                    return messages;
+                }
+            default:
+                return new MessageChainBuilder().append("数据操作出错了哦！")
                         .build();
-            }
         }
+    }
+
+    /**
+     * @description 将轮询次数+1
+     * @author zhangjiaxing
+     * @param key 触发词
+     * @date 2022/6/23 10:26
+     */
+    public void addPollNum(String key) {
+        //获取数据
+        Map<String, String> stringStringMap = this.sessionMap.get();
+        //找到该条数据
+        String SessionDataBaseJson = stringStringMap.get(key);
+        //序列化
+        SessionDataBase sessionDataBase = JSONObject.parseObject(SessionDataBaseJson, SessionDataBase.class);
+        //改变值
+        sessionDataBase.setValue(String.valueOf(Integer.parseInt(sessionDataBase.getValue()) + 1));
+        //再存进去
+        String toJSONString = JSONObject.toJSONString(sessionDataBase);
+        stringStringMap.put(key, toJSONString);
     }
 
     /**
