@@ -2,10 +2,9 @@ package cn.chahuyun;
 
 import cn.chahuyun.Session.DialogueBasic;
 import cn.chahuyun.command.CommandManage;
-import cn.chahuyun.config.PowerConfig;
+import cn.chahuyun.config.ConfigData;
 import cn.chahuyun.data.ScopeInfo;
 import cn.chahuyun.data.SessionData;
-import cn.chahuyun.data.SessionDataBase;
 import cn.chahuyun.enumerate.DataEnum;
 import cn.chahuyun.groupManager.GroupEventManager;
 import net.mamoe.mirai.console.command.CommandManager;
@@ -32,7 +31,7 @@ public final class HuYanSession extends JavaPlugin {
     public static final HuYanSession INSTANCE = new HuYanSession();
 
     private HuYanSession() {
-        super(new JvmPluginDescriptionBuilder("cn.chahuyun.HuYanSession", "1.5")
+        super(new JvmPluginDescriptionBuilder("cn.chahuyun.HuYanSession", "1.6")
                 .name("HuYanSession")
                 .info("壶言会话-服务于你的群聊!")
                 .author("Moyuyanli")
@@ -47,15 +46,15 @@ public final class HuYanSession extends JavaPlugin {
         getLogger().info("HuYanSession 加载!");
 
         //加载配置
-        this.reloadPluginConfig(PowerConfig.INSTANCE);
+        this.reloadPluginConfig(ConfigData.INSTANCE);
         getLogger().info("SessionConfig 已加载！");
-        Long owner = PowerConfig.INSTANCE.getOwner();
+        Long owner = ConfigData.INSTANCE.getOwner();
         if (owner == null || owner == 0) {
             getLogger().error("还没有添加主人,请添加主人!");
         } else {
             getLogger().info("主人已设置->"+owner);
         }
-        Long bot = PowerConfig.INSTANCE.getBot();
+        Long bot = ConfigData.INSTANCE.getBot();
         if (bot == null || bot == 0) {
             getLogger().error("还没有添加机器人,请添加机器人后再使用!");
         } else {
@@ -73,7 +72,7 @@ public final class HuYanSession extends JavaPlugin {
         EventChannel<MemberJoinEvent> memberJoinEventEventChannel = GlobalEventChannel.INSTANCE.filterIsInstance(MemberJoinEvent.class)
                 .filter(event -> event.getBot().getId() == bot)
                 .filter(event -> {
-                    ArrayList<Long> groupList = PowerConfig.INSTANCE.getGroupList();
+                    ArrayList<Long> groupList = (ArrayList<Long>) ConfigData.INSTANCE.getGroupList();
                     for (Long group : groupList) {
                         if( event.getGroup().getId() == group){
                             return true;

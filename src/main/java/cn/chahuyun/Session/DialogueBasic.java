@@ -3,7 +3,7 @@ package cn.chahuyun.Session;
 import cn.chahuyun.HuYanSession;
 import cn.chahuyun.Session.Criticaldialog.SessionDialogue;
 import cn.chahuyun.Session.Criticaldialog.SpecialDialogue;
-import cn.chahuyun.config.PowerConfig;
+import cn.chahuyun.config.ConfigData;
 import cn.chahuyun.config.PowerConfigBase;
 import cn.chahuyun.data.SessionData;
 import cn.chahuyun.data.SessionDataBase;
@@ -38,7 +38,7 @@ public class DialogueBasic {
     /**
      * 指令正则
      */
-    public String commandPattern = "查询 ?|学习(多词条)?\\s+|删除 |([+-]\\[mirai:at:\\d+\\] [\\w]+)";
+    public String commandPattern = "查询 ?|学习(多词条)?\\s+|删除(多词条)? |([+-]\\[mirai:at:\\d+\\] [\\w]+)";
     /**
      * 群管指令正则
      */
@@ -48,7 +48,7 @@ public class DialogueBasic {
      */
     public String dialoguePattern = "斗地主|帮助";
 
-    public Long owner = PowerConfig.INSTANCE.getOwner();
+    public Long owner = ConfigData.INSTANCE.getOwner();
     /**
      * @description 所有消息的入口
      * @author zhangjiaxing
@@ -137,7 +137,7 @@ public class DialogueBasic {
         //拼接权限识别字符
         String userPower = "m" + event.getSubject().getId()  + "." + event.getSender().getId();
         //获取配置中权限map
-        Map<String, PowerConfigBase> adminList = PowerConfig.INSTANCE.getPowerList();
+        Map<String, PowerConfigBase> adminList = ConfigData.INSTANCE.pickPowerList();
         //优先判断是否为主人
         //先判断map是否为空，如果为不为空，在判断该用户是否存在,不存在直接不判断能否使用指令
         if ( event.getSender().getId() == owner ||(adminList != null && adminList.containsKey(userPower))) {
@@ -210,7 +210,7 @@ public class DialogueBasic {
             case REPLY:
                 switch (messageToString){
                     case "斗地主":
-                        if (PowerConfig.INSTANCE.getDouSwitch().get()) {
+                        if (ConfigData.INSTANCE.getDouSwitch()) {
                             SpecialDialogue.INSTANCE.sessionDou(event);
                         }
                         break;

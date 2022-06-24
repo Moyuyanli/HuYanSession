@@ -1,6 +1,6 @@
 package cn.chahuyun.command;
 
-import cn.chahuyun.config.PowerConfig;
+import cn.chahuyun.config.ConfigData;
 import net.mamoe.mirai.console.command.CommandSender;
 import net.mamoe.mirai.console.command.java.JCompositeCommand;
 import net.mamoe.mirai.console.plugin.jvm.JvmPlugin;
@@ -37,22 +37,21 @@ public class CommandManage extends JCompositeCommand {
     @Description("设置他人添加管理权限")
     public void powerToOther(CommandSender sender,String s ,long group ,long qq ,String power) {
         String user = "m" + group + "." + qq;
-        MessageChain messages = PowerConfig.INSTANCE.setAdminList(s, user, power);
+        MessageChain messages = ConfigData.INSTANCE.setAdminList(s, user, power);
         sender.sendMessage(messages);
     }
-
 
     @SubCommand("addgroup")
     @Description("添加检测群")
     public void setGroup(CommandSender sender,long group) {
-        MessageChain messages = PowerConfig.INSTANCE.setGroupList(true, group);
+        MessageChain messages = ConfigData.INSTANCE.setGroupList(true, group);
         sender.sendMessage(messages);
     }
 
     @SubCommand("delgroup")
     @Description("删除检测群")
     public void delGroup(CommandSender sender,long group) {
-        MessageChain messages = PowerConfig.INSTANCE.setGroupList(false, group);
+        MessageChain messages = ConfigData.INSTANCE.setGroupList(false, group);
         sender.sendMessage(messages);
     }
 

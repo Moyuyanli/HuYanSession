@@ -32,27 +32,19 @@ public class SessionDialogue {
      */
     public  void session(MessageEvent messageEvent,SessionDataBase sessionDataBase) {
         Contact subject = messageEvent.getSubject();
-
-
         switch (sessionDataBase.getType()) {
-            case 0:
-                //type = 0 为string类回复
-                subject.sendMessage(MiraiCode.deserializeMiraiCode(sessionDataBase.getValue()));
-                break;
             case 2:
                 //轮询回复
                 l.info("轮询回复");
+                //获取key
+                String key = sessionDataBase.getKey();
                 //获取下一次轮询下标
-                int i = Integer.parseInt(sessionDataBase.getValue());
+                int i = SessionData.INSTANCE.addPollNum(key);
                 ArrayList<String> values = sessionDataBase.getValues();
                 //判断轮询坐标
                 i = i % values.size();
                 //发送
                 subject.sendMessage(MiraiCode.deserializeMiraiCode(values.get(i)));
-                //获取key
-                String key = sessionDataBase.getKey();
-                //轮询次数+1
-                SessionData.INSTANCE.addPollNum(key);
                 break;
             case 3:
                 l.info("随机回复");
@@ -64,7 +56,9 @@ public class SessionDialogue {
                 //发送
                 subject.sendMessage(MiraiCode.deserializeMiraiCode(valueList.get(nextInt)));
                 break;
-            default:break;
+            default:
+                subject.sendMessage(MiraiCode.deserializeMiraiCode(sessionDataBase.getValue()));
+                break;
         }
 
 

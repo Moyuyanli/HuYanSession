@@ -1,11 +1,13 @@
 package cn.chahuyun.data;
 
 
+import cn.chahuyun.HuYanSession;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.code.MiraiCode;
 import net.mamoe.mirai.message.data.ForwardMessageBuilder;
 import net.mamoe.mirai.message.data.MessageChainBuilder;
+import net.mamoe.mirai.utils.MiraiLogger;
 
 import java.util.ArrayList;
 
@@ -19,6 +21,8 @@ import java.util.ArrayList;
 public class SessionDataPaging {
 
     public static final SessionDataPaging INSTANCE = new SessionDataPaging();
+    private MiraiLogger l = HuYanSession.INSTANCE.getLogger();
+
 
     /**
      * @description 查询所有消息，并且分类
@@ -103,16 +107,16 @@ public class SessionDataPaging {
                             .append(":")
                             .append(base.getDataEnum().getType())
                             .append("\n");
-                    for (String value : pollBaseValues) {
+                    for (String valueZ : pollBaseValues) {
                         poll.append(MiraiCode.deserializeMiraiCode(base.getKey()))
                                 .append(" ==> ")
-                                .append(MiraiCode.deserializeMiraiCode(value))
+                                .append(MiraiCode.deserializeMiraiCode(valueZ))
                                 .append("\n");
                     }
                     break;
                 case 3:
                     ArrayList<String> randombaseValues = base.getValues();
-                    poll.append(MiraiCode.deserializeMiraiCode(base.getKey()))
+                    random.append(MiraiCode.deserializeMiraiCode(base.getKey()))
                             .append(" ==> ")
                             .append("多词条随机回复")
                             .append(" -> ")
@@ -120,10 +124,10 @@ public class SessionDataPaging {
                             .append(":")
                             .append(base.getDataEnum().getType())
                             .append("\n");
-                    for (String value : randombaseValues) {
-                        poll.append(MiraiCode.deserializeMiraiCode(base.getKey()))
+                    for (String valueS : randombaseValues) {
+                        random.append(MiraiCode.deserializeMiraiCode(base.getKey()))
                                 .append(" ==> ")
-                                .append(MiraiCode.deserializeMiraiCode(value))
+                                .append(MiraiCode.deserializeMiraiCode(valueS))
                                 .append("\n");
                     }
                     break;

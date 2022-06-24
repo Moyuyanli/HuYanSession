@@ -1,5 +1,6 @@
 package cn.chahuyun.data;
 
+import cn.chahuyun.HuYanSession;
 import cn.chahuyun.enumerate.DataEnum;
 import net.mamoe.mirai.message.data.MessageChain;
 import net.mamoe.mirai.message.data.MessageChainBuilder;
@@ -37,7 +38,7 @@ public class SessionDataBase{
     /**
      * 轮询用验证次数
      */
-    private int poll = 0;
+    private int poll;
     /**
      * 触发条件
      */
@@ -60,13 +61,7 @@ public class SessionDataBase{
     public SessionDataBase(String key, int type, String value, DataEnum dataEnum, ScopeInfo scopeInfo) {
         this.key = key;
         this.type = type;
-        //创建时进行判断
-        if (type == 3 || type == 4) {
-            this.value = "多词条回复";
-            this.values.add(value);
-        } else {
-            this.value = value;
-        }
+        this.value = value;
         this.dataEnum = dataEnum;
         this.scopeInfo = scopeInfo;
     }
@@ -94,15 +89,23 @@ public class SessionDataBase{
     public void setValue(String value) {
         this.value = value;
     }
+
+    public int getPoll() {
+        return poll;
+    }
+
+    public void setPoll(int poll) {
+        this.poll = poll;
+    }
+
     /**
-     * @description 获取轮询次数
-     * 获取一次自增1
+     * @description 返回+1poll
      * @author zhangjiaxing
-     * @date 2022/6/23 16:53
+     * @date 2022/6/24 10:40
      * @return int
      */
-    public int getPoll() {
-        return poll++;
+    public int getPollAdd() {
+        return this.poll++;
     }
 
     public DataEnum getDataEnum() {
@@ -138,6 +141,8 @@ public class SessionDataBase{
             this.values.add(value);
             return new MessageChainBuilder().append("多词条回复添加成功！").build();
         } else {
+            HuYanSession.INSTANCE.getLogger().info("c-"+this.values.contains(value));
+            HuYanSession.INSTANCE.getLogger().info("c-"+value);
             if (this.values.contains(value)) {
                 this.values.remove(value);
                 return new MessageChainBuilder().append("多词条回复删除成功！").build();

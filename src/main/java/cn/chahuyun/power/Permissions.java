@@ -1,7 +1,7 @@
 package cn.chahuyun.power;
 
 import cn.chahuyun.HuYanSession;
-import cn.chahuyun.config.PowerConfig;
+import cn.chahuyun.config.ConfigData;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.data.MessageChain;
 import net.mamoe.mirai.utils.MiraiLogger;
@@ -50,7 +50,7 @@ public class Permissions {
         //拼接权限类识别用户字符
         String user = "m"+event.getSubject().getId()+"."+qq;
         //进行设置
-        MessageChain messages = PowerConfig.INSTANCE.setAdminList(s,user,power);
+        MessageChain messages = ConfigData.INSTANCE.setAdminList(s,user,power);
         //返回消息
         event.getSubject().sendMessage(messages);
     }

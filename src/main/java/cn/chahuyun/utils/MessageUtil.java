@@ -4,7 +4,6 @@ import cn.chahuyun.HuYanSession;
 import cn.chahuyun.data.ScopeInfo;
 import cn.chahuyun.enumerate.DataEnum;
 import net.mamoe.mirai.event.events.MessageEvent;
-import net.mamoe.mirai.message.data.MessageChain;
 import net.mamoe.mirai.utils.MiraiLogger;
 
 import java.util.HashMap;
@@ -39,7 +38,7 @@ public class MessageUtil {
      * 删除正则
      * 删除(多词条)?\s+(\S)+
      */
-    public String deletePattern = "删除(多词条)?\\s+(\\S)+\\s?(\\S)?";
+    public String deletePattern = "删除(多词条)?\\s+(\\S)+\\s?(\\S+)?";
 
 
     /**
@@ -157,7 +156,6 @@ public class MessageUtil {
      * @return java.lang.String
      */
     public String  deleteParam() {
-
         //获取匹配数据
         String group = matcher.group();
         //删除换行
@@ -167,7 +165,7 @@ public class MessageUtil {
         if (split[0].equals("删除多词条")) {
             return "! " + split[1]+" "+split[2];
         }
-        return split[1];
+        return split[1] ;
 
     }
 

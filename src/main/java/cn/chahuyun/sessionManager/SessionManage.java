@@ -1,7 +1,6 @@
 package cn.chahuyun.sessionManager;
 
 import cn.chahuyun.HuYanSession;
-import cn.chahuyun.config.PowerConfig;
 import cn.chahuyun.data.ScopeInfo;
 import cn.chahuyun.data.SessionData;
 import cn.chahuyun.data.SessionDataBase;
@@ -15,7 +14,6 @@ import net.mamoe.mirai.message.data.MessageChain;
 import net.mamoe.mirai.message.data.MessageChainBuilder;
 import net.mamoe.mirai.utils.MiraiLogger;
 
-import java.util.Arrays;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -55,7 +53,7 @@ public class SessionManage {
         String code = event.getMessage().serializeToMiraiCode();
         //验证格式
         boolean studyCommand = messageUtil.isStudyCommand(event);
-        if (studyCommand) {
+        if (!studyCommand) {
             subject.sendMessage("学习失败!需要帮助请发送帮助!");
             return false;
         }
@@ -140,13 +138,13 @@ public class SessionManage {
 
         //验证格式
         boolean deleteCommand = messageUtil.isDeleteCommand(event);
-        if (deleteCommand) {
+        if (!deleteCommand) {
             subject.sendMessage("删除失败!需要帮助请发送帮助!");
             return false;
         }
         String param = messageUtil.deleteParam();
         MessageChain messages = SessionData.INSTANCE.delSessionData(param);
-        subject.sendMessage(messageString);
+        subject.sendMessage(messages);
         return false;
     }
 

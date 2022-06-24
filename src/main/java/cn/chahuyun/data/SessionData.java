@@ -5,12 +5,10 @@ import cn.chahuyun.enumerate.DataEnum;
 import com.alibaba.fastjson.JSONObject;
 import net.mamoe.mirai.console.data.Value;
 import net.mamoe.mirai.console.data.java.JavaAutoSavePluginData;
-import net.mamoe.mirai.message.code.MiraiCode;
 import net.mamoe.mirai.message.data.MessageChain;
 import net.mamoe.mirai.message.data.MessageChainBuilder;
 import net.mamoe.mirai.utils.MiraiLogger;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -28,7 +26,18 @@ public class SessionData extends JavaAutoSavePluginData {
      * 唯一构造
      */
     public static final SessionData INSTANCE = new SessionData();
-
+    /**
+     * list<SessionDataBase> 对话数据集合
+     */
+    private final Value<Map<String, String>> sessionMap = typedValue("sessionMap", createKType(Map.class, createKType(String.class), createKType(String.class)));
+    /**
+     * 群欢迎词
+     */
+    private final Value<Map<String, String>> groupWelcomeMessage = typedValue("groupWelcomeMessage", createKType(Map.class, createKType(String.class), createKType(String.class)));
+    /**
+     * 黑名单
+     */
+    private final Value<Map<Long, Long>> blackList = typedValue("blackList", createKType(Map.class, createKType(Long.class), createKType(Long.class)));
     private MiraiLogger l = HuYanSession.INSTANCE.getLogger();
 
     /**
@@ -37,23 +46,6 @@ public class SessionData extends JavaAutoSavePluginData {
     public SessionData() {
         super("SessionData");
     }
-
-    /**
-     * list<SessionDataBase> 对话数据集合
-     */
-    private final Value<Map<String, String>> sessionMap = typedValue("sessionMap", createKType(Map.class, createKType(String.class), createKType(String.class)));
-
-    /**
-     * 群欢迎词
-     */
-    private final Value<Map<String, String>> groupWelcomeMessage = typedValue("groupWelcomeMessage", createKType(Map.class, createKType(String.class), createKType(String.class)));
-
-    /**
-     * 黑名单
-     */
-    private final Value<Map<Long, Long>> blackList = typedValue("blackList", createKType(Map.class, createKType(Long.class), createKType(Long.class)));
-
-
 
     /**
      * @return java.util.Map<java.lang.String, cn.chahuyun.data.SessionDataBase>
@@ -90,16 +82,20 @@ public class SessionData extends JavaAutoSavePluginData {
         if (!stringStringMap.containsKey(key)) {
             //不存在则新建
             SessionDataBase base = new SessionDataBase(key, contentType, value, dataEnum, scopeInfo);
+            MessageChain messages;
+            //如果是多词条，收到调整一下词语结构
+            if (studyType) {
+                base.setValues(true, value);
+                base.setValue("多词条回复");
+                messages = new MessageChainBuilder().append("学习多词条回复成功!").build();
+            } else {
+                messages = new MessageChainBuilder().append("学习触发回复成功!").build();
+            }
             String toJSONString = JSONObject.toJSONString(base);
             stringStringMap.put(key, toJSONString);
-            //类型不同
-            if (studyType) {
-                return new MessageChainBuilder().append("学习多词条回复成功!").build();
-            }
-            return new MessageChainBuilder().append("学习触发回复成功!").build();
-        }
-        //存在，多词条添加
-        if (studyType) {
+            return messages;
+        } else if (studyType) {
+            //存在，多词条添加
             //先取
             String s = stringStringMap.get(key);
             SessionDataBase base = JSONObject.parseObject(s, SessionDataBase.class);
@@ -109,54 +105,71 @@ public class SessionData extends JavaAutoSavePluginData {
             //然后更新
             stringStringMap.put(key, jsonString);
             return messages;
+        } else {
+            //如果不是多词条，直接新建吧，不是很好判断参数的修改
+            SessionDataBase base = new SessionDataBase(key, contentType, value, dataEnum, scopeInfo);
+            String jsonString = JSONObject.toJSONString(base);
+            //覆盖
+            stringStringMap.put(key, jsonString);
+            return new MessageChainBuilder().append("修改触发词回复成功!").build();
         }
-        //如果不是多词条，直接新建吧，不是很好判断参数的修改
-        SessionDataBase base = new SessionDataBase(key, contentType, value, dataEnum, scopeInfo);
-        String jsonString = JSONObject.toJSONString(base);
-        //覆盖
-        stringStringMap.put(key, jsonString);
-        return new MessageChainBuilder().append("修改触发词回复成功!").build();
     }
 
 
     /**
+     * @param param
+     * @return net.mamoe.mirai.message.data.MessageChain
      * @description 删除词
      * @author zhangjiaxing
-     * @param param
      * @date 2022/6/23 22:36
-     * @return net.mamoe.mirai.message.data.MessageChain
      */
     public MessageChain delSessionData(String param) {
+        //分割
         String[] s = param.split(" ");
+        //获取map
         Map<String, String> stringStringMap = this.sessionMap.get();
+        //判断是不是多词条
         if (s[0].equals("!")) {
+            //寻找有没有该条多词条回复
             if (stringStringMap.containsKey(s[1])) {
+                //有就开始序列化
                 String s1 = stringStringMap.get(s[1]);
                 SessionDataBase base = JSONObject.parseObject(s1, SessionDataBase.class);
-                return base.setValues(false, s[2]);
+                //然后删除
+                MessageChain messages = base.setValues(false, s[2]);
+                String jsonString = JSONObject.toJSONString(base);
+                //然后保存
+                stringStringMap.put(s[1], jsonString);
+                return messages;
             }
         }
-        if (stringStringMap.containsKey(s[1])) {
-            stringStringMap.remove(s[1]);
+        //普通删除
+        if (stringStringMap.containsKey(s[0])) {
+            stringStringMap.remove(s[0]);
             return new MessageChainBuilder().append("删除关键词成功！").build();
         }
         return new MessageChainBuilder().append("删除关键词失败！").build();
     }
 
     /**
+     * @param key
+     * @return void
      * @description 轮询次数+1
      * @author zhangjiaxing
-     * @param key
      * @date 2022/6/23 22:43
-     * @return void
      */
-    public void addPollNum(String key) {
+    public int addPollNum(String key) {
+        //获取map
         Map<String, String> stringStringMap = this.sessionMap.get();
+        //找到该条轮询
         String s = stringStringMap.get(key);
         SessionDataBase base = JSONObject.parseObject(s, SessionDataBase.class);
-        base.getPoll();
+        //调取+方法
+        int poll = base.getPollAdd();
         String string = JSONObject.toJSONString(base);
+        //重新保存
         stringStringMap.put(key, string);
+        return poll;
     }
 
     /**

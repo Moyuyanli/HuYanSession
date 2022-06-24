@@ -29,7 +29,7 @@ public class PowerConfigBase {
     private boolean sessionPower = false;
 
     /**
-     * 群管理权限 - 计划
+     * 群管理权限
      * 正常群管理员，只不过以机器人触发
      */
     private boolean groupPower = false;

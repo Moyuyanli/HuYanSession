@@ -158,7 +158,11 @@ public class GroupManager {
         }
         //禁言
         assert member != null;
-        member.mute(time);
+        try {
+            member.mute(time);
+        } catch (Exception e) {
+            subject.sendMessage("禁言失败,你机器居然不是管理员???");
+        }
         subject.sendMessage(messages.build());
     }
 
