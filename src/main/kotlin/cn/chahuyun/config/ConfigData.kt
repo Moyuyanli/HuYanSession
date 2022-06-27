@@ -156,11 +156,11 @@ object ConfigData : AutoSavePluginConfig("config") {
     fun setGroupList(operate: Boolean, group: Long): MessageChain {
         return if (operate) {
             groupList.add(group)
-            MessageChainBuilder().append("群" + group + "检测添加成功!").build()
+            MessageChainBuilder().append("群  $group 检测添加成功!").build()
         } else {
             try {
                 groupList.remove(group)
-                MessageChainBuilder().append("群" + group + "检测删除成功!").build()
+                MessageChainBuilder().append("群 $group 检测删除成功!").build()
             } catch (e: Exception) {
                 MessageChainBuilder().append("没有该群!").build()
             }

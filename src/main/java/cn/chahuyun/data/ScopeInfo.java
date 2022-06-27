@@ -25,6 +25,8 @@ public class ScopeInfo {
      */
     private Long scopeCode;
 
+    
+
     public ScopeInfo(String scope, Boolean type, Long scopeCode) {
         Scope = scope;
         this.type = type;
