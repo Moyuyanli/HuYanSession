@@ -141,8 +141,6 @@ public class SessionDataBase{
             this.values.add(value);
             return new MessageChainBuilder().append("多词条回复添加成功！").build();
         } else {
-            HuYanSession.INSTANCE.getLogger().info("c-"+this.values.contains(value));
-            HuYanSession.INSTANCE.getLogger().info("c-"+value);
             if (this.values.contains(value)) {
                 this.values.remove(value);
                 return new MessageChainBuilder().append("多词条回复删除成功！").build();

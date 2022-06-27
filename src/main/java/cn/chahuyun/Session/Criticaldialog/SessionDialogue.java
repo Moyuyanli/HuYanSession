@@ -30,7 +30,7 @@ public class SessionDialogue {
      * @param sessionDataBase 对话类
      * @date 2022/6/16 15:17
      */
-    public  void session(MessageEvent messageEvent,SessionDataBase sessionDataBase) {
+    public void session(MessageEvent messageEvent,SessionDataBase sessionDataBase) {
         Contact subject = messageEvent.getSubject();
         switch (sessionDataBase.getType()) {
             case 2:

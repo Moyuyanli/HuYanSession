@@ -16,6 +16,7 @@ import net.mamoe.mirai.event.events.MemberJoinEvent;
 import net.mamoe.mirai.event.events.MessageEvent;
 
 import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -31,7 +32,7 @@ public final class HuYanSession extends JavaPlugin {
     public static final HuYanSession INSTANCE = new HuYanSession();
 
     private HuYanSession() {
-        super(new JvmPluginDescriptionBuilder("cn.chahuyun.HuYanSession", "1.6")
+        super(new JvmPluginDescriptionBuilder("cn.chahuyun.HuYanSession", "1.7")
                 .name("HuYanSession")
                 .info("壶言会话-服务于你的群聊!")
                 .author("Moyuyanli")
@@ -72,7 +73,11 @@ public final class HuYanSession extends JavaPlugin {
         EventChannel<MemberJoinEvent> memberJoinEventEventChannel = GlobalEventChannel.INSTANCE.filterIsInstance(MemberJoinEvent.class)
                 .filter(event -> event.getBot().getId() == bot)
                 .filter(event -> {
-                    ArrayList<Long> groupList = (ArrayList<Long>) ConfigData.INSTANCE.getGroupList();
+                    List<Long> list = ConfigData.INSTANCE.getGroupList();
+                    if (list.size() == 0) {
+                        this.getLogger().warning("没有检测群！");
+                    }
+                    ArrayList<Long> groupList = (ArrayList<Long>) list;
                     for (Long group : groupList) {
                         if( event.getGroup().getId() == group){
                             return true;

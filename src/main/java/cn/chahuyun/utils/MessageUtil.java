@@ -2,10 +2,22 @@ package cn.chahuyun.utils;
 
 import cn.chahuyun.HuYanSession;
 import cn.chahuyun.data.ScopeInfo;
+import cn.chahuyun.data.SessionData;
+import cn.chahuyun.data.SessionDataBase;
 import cn.chahuyun.enumerate.DataEnum;
+import kotlin.coroutines.CoroutineContext;
+import kotlin.coroutines.EmptyCoroutineContext;
+import kotlinx.coroutines.CoroutineScope;
+import net.mamoe.mirai.contact.Contact;
+import net.mamoe.mirai.event.ConcurrencyKind;
+import net.mamoe.mirai.event.EventChannel;
+import net.mamoe.mirai.event.EventPriority;
+import net.mamoe.mirai.event.GlobalEventChannel;
 import net.mamoe.mirai.event.events.MessageEvent;
+import net.mamoe.mirai.message.data.MessageChain;
 import net.mamoe.mirai.utils.MiraiLogger;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -163,13 +175,106 @@ public class MessageUtil {
         //分割参数
         String[] split = replace.split("\\s+");
         if (split[0].equals("删除多词条")) {
-            return "! " + split[1]+" "+split[2];
+            if (split.length == 3) {
+                return "! " + split[1] + " " + split[2];
+            } else {
+                return null;
+            }
         }
         return split[1] ;
 
     }
 
-    
 
+    /**
+     * 用于批量添加多词条的list和key
+     */
+    private ArrayList<String> repeatedlyList;
+    private String repeatedKey;
+
+    /**
+     * @description 判断是不是批量添加多词条，如果是，就直接进入方法不返回值了
+     * @author zhangjiaxing
+     * @param event 消息事件
+     * @date 2022/6/27 10:19
+     * @return void
+     */
+    public void isRepeatedlyAddMessage(MessageEvent event) {
+        String code = event.getMessage().serializeToMiraiCode();
+        Contact subject = event.getSubject();
+        //去换行
+        code = code.replace("\\n", "");
+        //判断格式
+        if (!Pattern.matches("添加多词条 (\\S+)", code)) {
+            subject.sendMessage("格式错误，请检查!");
+            return;
+        }
+        //获取参数
+        String[] s = code.split(" ");
+        Map<String, SessionDataBase> sessionMap = SessionData.INSTANCE.getSessionMap();
+        //判断有没有这条数据
+        if (!sessionMap.containsKey(s[1])) {
+            subject.sendMessage("没有找到该多词条，请查询！");
+            return;
+        }
+        //判断是不是多词条
+        int type = sessionMap.get(s[1]).getType();
+        if (type != 2 && type != 3) {
+            subject.sendMessage("没有找到该多词条，请查询！");
+            return;
+        }
+        //保存key和新建批量内容
+        repeatedKey = s[1];
+        repeatedlyList = new ArrayList<String>();
+        subject.sendMessage("请发送你要添加的内容，'!'删除上一次添加，'!!!'结束添加。");
+        //结束当前事件监听
+        event.intercept();
+        //开始循环
+        repeatedlyAddMessage(event);
+    }
+
+
+
+
+    /**
+     * @description 通过不断重复调用来实现循环添加，每一次调用都会重新监听一次消息
+     * @author zhangjiaxing
+     * @param event
+     * @date 2022/6/27 10:22
+     * @return void
+     */
+    public void repeatedlyAddMessage(MessageEvent event) {
+        EventChannel<MessageEvent> channel = GlobalEventChannel.INSTANCE.filterIsInstance(MessageEvent.class)
+                .filter(it -> it.getSender().getId() == event.getSender().getId());
+
+
+        channel.subscribeOnce(MessageEvent.class,EmptyCoroutineContext.INSTANCE,ConcurrencyKind.LOCKED, EventPriority.HIGH, mt -> {
+            String code = mt.getMessage().serializeToMiraiCode();
+            if (code.equals("!")||code.equals("！")) {
+                if (repeatedlyList.size() > 0) {
+                    repeatedlyList.remove(repeatedlyList.size() - 1);
+                    mt.getSubject().sendMessage("删除上一条添加成功-'!'删除上一次添加，'!!!'结束添加。");
+                    repeatedlyAddMessage(mt);
+                }
+            } else if (Pattern.matches("[!！]{3}", code)) {
+                MessageChain messages = SessionData.INSTANCE.addPolyletMessage(repeatedKey, repeatedlyList);
+                mt.getSubject().sendMessage(messages);
+                mt.intercept();
+            }else {
+                addMessage(mt);
+            }
+        });
+
+    }
+
+    public void addMessage(MessageEvent event) {
+        String code = event.getMessage().serializeToMiraiCode();
+        Contact subject = event.getSubject();
+
+        repeatedlyList.add(code);
+        subject.sendMessage("添加成功-'!'删除上一次添加，'!!!'结束添加。");
+        event.intercept();
+        repeatedlyAddMessage(event);
+    }
 
 }

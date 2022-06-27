@@ -38,7 +38,7 @@ public class DialogueBasic {
     /**
      * 指令正则
      */
-    public String commandPattern = "查询 ?|学习(多词条)?\\s+|删除(多词条)? |([+-]\\[mirai:at:\\d+\\] [\\w]+)";
+    public String commandPattern = "查询 ?|学习(多词条)?\\s+|删除(多词条)? |([+-]\\[mirai:at:\\d+\\] [\\w]+)|添加多词条 ";
     /**
      * 群管指令正则
      */
@@ -49,6 +49,7 @@ public class DialogueBasic {
     public String dialoguePattern = "斗地主|帮助";
 
     public Long owner = ConfigData.INSTANCE.getOwner();
+
     /**
      * @description 所有消息的入口
      * @author zhangjiaxing
@@ -185,7 +186,6 @@ public class DialogueBasic {
                 break;
             //COMMAND("指令消息",2)
             case COMMAND:
-                l.info(userPower);
                 if (owner == event.getSender().getId() || adminList.get(userPower).isSessionPower()) {
                     if (util.isStudyCommand(event)) {
                         l.info("学习指令");
@@ -196,6 +196,9 @@ public class DialogueBasic {
                     } else if (util.isDeleteCommand(event)) {
                         l.info("删除指令");
                         SessionManage.INSTANCE.deleteSession(event);
+                    } else if (Pattern.matches("添加多词条 (\\S+)", messageToString)) {
+                        l.info("添加多词条指令");
+                        util.isRepeatedlyAddMessage(event);
                     }
                 }
                 if ( owner == event.getSender().getId() || adminList.get(userPower).isAdminPower()) {

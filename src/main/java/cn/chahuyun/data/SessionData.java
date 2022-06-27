@@ -10,6 +10,7 @@ import net.mamoe.mirai.message.data.MessageChainBuilder;
 import net.mamoe.mirai.utils.MiraiLogger;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -124,6 +125,9 @@ public class SessionData extends JavaAutoSavePluginData {
      * @date 2022/6/23 22:36
      */
     public MessageChain delSessionData(String param) {
+        if (param == null) {
+            return new MessageChainBuilder().append("多词条回复删除失败！").build();
+        }
         //分割
         String[] s = param.split(" ");
         //获取map
@@ -200,4 +204,29 @@ public class SessionData extends JavaAutoSavePluginData {
     public Map<String, String> getGroupWelcomeMessage() {
         return groupWelcomeMessage.get();
     }
+
+    /**
+     * @description 添加多词条回复
+     * @author zhangjiaxing
+     * @param key 键
+     * @param list 列表
+     * @date 2022/6/27 9:38
+     * @return net.mamoe.mirai.message.data.MessageChain
+     */
+    public MessageChain addPolyletMessage(String key, List<String> list) {
+        String s = this.sessionMap.get().get(key);
+
+        SessionDataBase base = JSONObject.parseObject(s, SessionDataBase.class);
+        boolean b = base.getValues().addAll(list);
+
+        String jsonString = JSONObject.toJSONString(base);
+        this.sessionMap.get().put(key, jsonString);
+
+        if (b) {
+            return new MessageChainBuilder().append("多词条回复添加成功!").build();
+        } else {
+            return new MessageChainBuilder().append("多词条回复添加失败!").build();
+        }
+    }
+
 }
