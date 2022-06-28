@@ -87,7 +87,7 @@ public final class HuYanSession extends JavaPlugin {
                     if (list.size() == 0) {
                         this.getLogger().warning("没有检测群！");
                     }
-                    ArrayList<Long> groupList = (ArrayList<Long>) list;
+                    ArrayList<Long> groupList = new ArrayList<Long>(list);
                     for (Long group : groupList) {
                         if( event.getGroup().getId() == group){
                             return true;
@@ -105,7 +105,6 @@ public final class HuYanSession extends JavaPlugin {
                 .filter(event -> event.getBot().getId() == bot);
 
         //监听消息
-//        messageEvent.subscribeAlways(MessageEvent.class, DialogueBasic::isMessageWhereabouts);
         messageEvent.subscribeAlways(MessageEvent.class, MessageEventManager.INSTANCE::isMessageWhereabouts);
 
 

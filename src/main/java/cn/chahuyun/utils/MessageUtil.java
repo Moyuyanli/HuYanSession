@@ -155,7 +155,7 @@ public class MessageUtil {
     public boolean isDeleteCommand(MessageEvent event) {
         String code = event.getMessage().serializeToMiraiCode();
         //同理
-        matcher = Pattern.compile(deletePattern).matcher(code);
+        matcher = Pattern.compile(deletePattern).matcher(code); 
         return matcher.find();
     }
 
@@ -172,7 +172,7 @@ public class MessageUtil {
         String replace = group.replace("\\n", "");
         //分割参数
         String[] split = replace.split("\\s+");
-        if (split[0].equals("删除多词条")) {
+        if ("删除多词条".equals(split[0])) {
             if (split.length == 3) {
                 return "! " + split[1] + " " + split[2];
             } else {
