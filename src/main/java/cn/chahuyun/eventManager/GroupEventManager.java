@@ -1,7 +1,7 @@
-package cn.chahuyun.groupManager;
+package cn.chahuyun.eventManager;
 
 import cn.chahuyun.HuYanSession;
-import cn.chahuyun.data.SessionData;
+import cn.chahuyun.files.PluginData;
 import net.mamoe.mirai.event.events.MemberJoinEvent;
 import net.mamoe.mirai.message.code.MiraiCode;
 import net.mamoe.mirai.message.data.At;
@@ -36,7 +36,7 @@ public class GroupEventManager{
     public void onMemberJoinEvent(@NotNull MemberJoinEvent event) {
         l.info(event.getMember().getId()+"("+event.getMember().getNameCard()+")" +"入群");
         //获取欢迎词
-        Map<String, String> welcomeMessage = SessionData.INSTANCE.getGroupWelcomeMessage();
+        Map<String, String> welcomeMessage = PluginData.INSTANCE.getGroupWelcomeMessage();
         //为空为默认欢迎词
         if (welcomeMessage.keySet().size() == 0) {
             event.getGroup().sendMessage("小茶壶欢迎带佬入群~~~");

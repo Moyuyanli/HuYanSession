@@ -1,6 +1,6 @@
-package cn.chahuyun.command;
+package cn.chahuyun.commandManager;
 
-import cn.chahuyun.config.ConfigData;
+import cn.chahuyun.files.ConfigData;
 import net.mamoe.mirai.console.command.CommandSender;
 import net.mamoe.mirai.console.command.java.JCompositeCommand;
 import net.mamoe.mirai.console.plugin.jvm.JvmPlugin;

@@ -1,10 +1,10 @@
 package cn.chahuyun.sessionManager;
 
 import cn.chahuyun.HuYanSession;
-import cn.chahuyun.data.ScopeInfo;
-import cn.chahuyun.data.SessionData;
-import cn.chahuyun.data.SessionDataBase;
-import cn.chahuyun.data.SessionDataPaging;
+import cn.chahuyun.entity.ScopeInfoBase;
+import cn.chahuyun.files.PluginData;
+import cn.chahuyun.entity.SessionDataBase;
+import cn.chahuyun.utils.SessionPaging;
 import cn.chahuyun.enumerate.DataEnum;
 import cn.chahuyun.utils.MessageUtil;
 import net.mamoe.mirai.contact.Contact;
@@ -72,8 +72,8 @@ public class SessionManage {
         String key = (String) param.get("key");
         String value = (String) param.get("value");
         DataEnum dataEnum = (DataEnum) param.get("dataEnum");
-        ScopeInfo scopeInfo = (ScopeInfo) param.get("scopeInfo");
-        MessageChain messages = SessionData.INSTANCE.setSessionMap(studyType, contentType, key, value, scopeInfo, dataEnum);
+        ScopeInfoBase scopeInfoBase = (ScopeInfoBase) param.get("scopeInfo");
+        MessageChain messages = PluginData.INSTANCE.setSessionMap(studyType, contentType, key, value, scopeInfoBase, dataEnum);
         subject.sendMessage(messages);
         return true;
     }
@@ -99,7 +99,7 @@ public class SessionManage {
         }
         //当 消息仅为 查询 时 默认查询第一页消息
         if (messageString.length()<=3) {
-            SessionDataPaging.INSTANCE.checkSessionList(event);
+            SessionPaging.INSTANCE.checkSessionList(event);
             return true;
         }
 
@@ -109,7 +109,7 @@ public class SessionManage {
 
         //关键词查询
         String[] strings = messageString.split(" ");
-        Map<String, SessionDataBase> sessionDataBaseMap = SessionData.INSTANCE.getSessionMap();
+        Map<String, SessionDataBase> sessionDataBaseMap = PluginData.INSTANCE.getSessionMap();
         if (strings.length >= 2 && sessionDataBaseMap.containsKey(strings[1])) {
             subject.sendMessage(new MessageChainBuilder().append("查询成功! ")
                     .append(MiraiCode.deserializeMiraiCode(strings[1]))
@@ -143,7 +143,7 @@ public class SessionManage {
             return false;
         }
         String param = messageUtil.deleteParam();
-        MessageChain messages = SessionData.INSTANCE.delSessionData(param);
+        MessageChain messages = PluginData.INSTANCE.delSessionData(param);
         subject.sendMessage(messages);
         return false;
     }

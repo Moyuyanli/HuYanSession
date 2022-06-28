@@ -1,13 +1,11 @@
 package cn.chahuyun.utils;
 
 import cn.chahuyun.HuYanSession;
-import cn.chahuyun.data.ScopeInfo;
-import cn.chahuyun.data.SessionData;
-import cn.chahuyun.data.SessionDataBase;
+import cn.chahuyun.entity.ScopeInfoBase;
+import cn.chahuyun.files.PluginData;
+import cn.chahuyun.entity.SessionDataBase;
 import cn.chahuyun.enumerate.DataEnum;
-import kotlin.coroutines.CoroutineContext;
 import kotlin.coroutines.EmptyCoroutineContext;
-import kotlinx.coroutines.CoroutineScope;
 import net.mamoe.mirai.contact.Contact;
 import net.mamoe.mirai.event.ConcurrencyKind;
 import net.mamoe.mirai.event.EventChannel;
@@ -104,7 +102,7 @@ public class MessageUtil {
             contentType = 2;
         }
         //作用域和匹配机制
-        ScopeInfo scopeInfo = new ScopeInfo("当前", true, event.getSubject().getId());
+        ScopeInfoBase scopeInfoBase = new ScopeInfoBase("当前", true, event.getSubject().getId());
         DataEnum dataEnum = DataEnum.ACCURATE;
         //有参数就判断参数，没有就不判断
         if (split.length >= 4) {
@@ -118,7 +116,7 @@ public class MessageUtil {
                     case "结尾":
                         dataEnum = DataEnum.END;break;
                     case "全局":
-                        scopeInfo = new ScopeInfo("全局", false, null);break;
+                        scopeInfoBase = new ScopeInfoBase("全局", false, null);break;
                     case "随机":
                         if (studyType) {
                             contentType = 3;
@@ -140,7 +138,7 @@ public class MessageUtil {
          */
         map.put("studyType", studyType);
         map.put("contentType", contentType);
-        map.put("scopeInfo", scopeInfo);
+        map.put("scopeInfo", scopeInfoBase);
         map.put("dataEnum", dataEnum);
         map.put("key", key);
         map.put("value", value);
@@ -211,7 +209,7 @@ public class MessageUtil {
         }
         //获取参数
         String[] s = code.split(" ");
-        Map<String, SessionDataBase> sessionMap = SessionData.INSTANCE.getSessionMap();
+        Map<String, SessionDataBase> sessionMap = PluginData.INSTANCE.getSessionMap();
         //判断有没有这条数据
         if (!sessionMap.containsKey(s[1])) {
             subject.sendMessage("没有找到该多词条，请查询！");
@@ -257,7 +255,7 @@ public class MessageUtil {
                     repeatedlyAddMessage(mt);
                 }
             } else if (Pattern.matches("[!！]{3}", code)) {
-                MessageChain messages = SessionData.INSTANCE.addPolyletMessage(repeatedKey, repeatedlyList);
+                MessageChain messages = PluginData.INSTANCE.addPolyletMessage(repeatedKey, repeatedlyList);
                 mt.getSubject().sendMessage(messages);
                 mt.intercept();
             }else {

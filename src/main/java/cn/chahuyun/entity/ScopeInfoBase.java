@@ -1,4 +1,4 @@
-package cn.chahuyun.data;
+package cn.chahuyun.entity;
 
 /**
  * ScopeEnum
@@ -7,7 +7,7 @@ package cn.chahuyun.data;
  * @description 控制自定义消息的作用域
  * @date 2022/6/20 8:37
  */
-public class ScopeInfo {
+public class ScopeInfoBase {
 
     /**
      * 作用域名称
@@ -21,13 +21,15 @@ public class ScopeInfo {
     private Boolean type;
 
     /**
-     * 作用域坐标
+     * 作用域识别符
      */
-    private Long scopeCode;
+    private String scopeCode;
+
+
 
     
 
-    public ScopeInfo(String scope, Boolean type, Long scopeCode) {
+    public ScopeInfoBase(String scope, Boolean type, String scopeCode) {
         Scope = scope;
         this.type = type;
         this.scopeCode = scopeCode;
@@ -49,11 +51,11 @@ public class ScopeInfo {
         this.type = type;
     }
 
-    public Long getScopeCode() {
+    public String getScopeCode() {
         return scopeCode;
     }
 
-    public void setScopeCode(Long scopeCode) {
+    public void setScopeCode(String scopeCode) {
         this.scopeCode = scopeCode;
     }
 }

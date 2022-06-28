@@ -1,7 +1,7 @@
 package cn.chahuyun.groupManager;
 
 import cn.chahuyun.HuYanSession;
-import cn.chahuyun.data.SessionData;
+import cn.chahuyun.files.PluginData;
 import net.mamoe.mirai.contact.Contact;
 import net.mamoe.mirai.contact.NormalMember;
 import net.mamoe.mirai.event.events.MessageEvent;
@@ -58,7 +58,7 @@ public class GroupManager {
         if (strings.length == 4) {
             string = strings[1] + ":" + strings[2]+":"+strings[3];
         }
-        MessageChain messages = SessionData.INSTANCE.setGroupWelcomeMessage(s, string);
+        MessageChain messages = PluginData.INSTANCE.setGroupWelcomeMessage(s, string);
 
         subject.sendMessage(messages);
     }
@@ -78,7 +78,7 @@ public class GroupManager {
 
         MessageChain fastMessages = new MessageChainBuilder().append("以下为查询到的所有的迎新词↓").build();
         //查询所有欢迎词，然后遍历添加，以miraicode码
-        Map<String, String> groupWelcomeMessage = SessionData.INSTANCE.getGroupWelcomeMessage();
+        Map<String, String> groupWelcomeMessage = PluginData.INSTANCE.getGroupWelcomeMessage();
         MessageChainBuilder messageChainBuilder = new MessageChainBuilder();
         for (String s : groupWelcomeMessage.keySet()) {
             MessageChain messages = MiraiCode.deserializeMiraiCode(groupWelcomeMessage.get(s));

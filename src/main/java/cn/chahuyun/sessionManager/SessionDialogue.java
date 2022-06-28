@@ -1,8 +1,8 @@
-package cn.chahuyun.Session.Criticaldialog;
+package cn.chahuyun.sessionManager;
 
 import cn.chahuyun.HuYanSession;
-import cn.chahuyun.data.SessionData;
-import cn.chahuyun.data.SessionDataBase;
+import cn.chahuyun.files.PluginData;
+import cn.chahuyun.entity.SessionDataBase;
 import net.mamoe.mirai.contact.Contact;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.code.MiraiCode;
@@ -39,7 +39,7 @@ public class SessionDialogue {
                 //获取key
                 String key = sessionDataBase.getKey();
                 //获取下一次轮询下标
-                int i = SessionData.INSTANCE.addPollNum(key);
+                int i = PluginData.INSTANCE.addPollNum(key);
                 ArrayList<String> values = sessionDataBase.getValues();
                 //判断轮询坐标
                 i = i % values.size();

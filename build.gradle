@@ -33,8 +33,9 @@ repositories {
 dependencies {
     implementation 'com.alibaba:fastjson:2.0.7'
     implementation 'com.alibaba:druid:1.2.11'
-    compileOnly 'org.apache.logging.log4j:log4j-to-slf4j:2.17.2'
+    implementation 'org.quartz-scheduler:quartz:2.3.2'
 
+    compileOnly 'org.apache.logging.log4j:log4j-to-slf4j:2.17.2'
 
     testImplementation("junit:junit:4.11")
 }

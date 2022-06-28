@@ -1,7 +1,7 @@
 package cn.chahuyun.power;
 
 import cn.chahuyun.HuYanSession;
-import cn.chahuyun.config.ConfigData;
+import cn.chahuyun.files.ConfigData;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.data.MessageChain;
 import net.mamoe.mirai.utils.MiraiLogger;

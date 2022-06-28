@@ -1,12 +1,14 @@
 package cn.chahuyun;
 
-import cn.chahuyun.Session.DialogueBasic;
-import cn.chahuyun.command.CommandManage;
-import cn.chahuyun.config.ConfigData;
-import cn.chahuyun.data.ScopeInfo;
-import cn.chahuyun.data.SessionData;
+import cn.chahuyun.entity.TimingTaskBase;
+import cn.chahuyun.eventManager.MessageEventManager;
+import cn.chahuyun.commandManager.CommandManage;
+import cn.chahuyun.files.ConfigData;
+import cn.chahuyun.entity.ScopeInfoBase;
+import cn.chahuyun.files.PluginData;
 import cn.chahuyun.enumerate.DataEnum;
-import cn.chahuyun.groupManager.GroupEventManager;
+import cn.chahuyun.eventManager.GroupEventManager;
+import cn.chahuyun.files.TimingData;
 import net.mamoe.mirai.console.command.CommandManager;
 import net.mamoe.mirai.console.plugin.jvm.JavaPlugin;
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescriptionBuilder;
@@ -62,10 +64,18 @@ public final class HuYanSession extends JavaPlugin {
             getLogger().info("机器人已设置->"+bot);
         }
         //加载数据
-        this.reloadPluginData(SessionData.INSTANCE);
+        this.reloadPluginData(PluginData.INSTANCE);
         getLogger().info("SessionData 已加载！");
+        this.reloadPluginData(TimingData.INSTANCE);
+        getLogger().info("TimingData 已加载！");
         //添加默认信息
-        SessionData.INSTANCE.setSessionMap(false, 0, "乒", "乓", new ScopeInfo("全局", false, 0L), DataEnum.ACCURATE);
+        TimingData.INSTANCE.setTimingList(new TimingTaskBase(0,"定时器名称","定时器时间参数识别解析","定时器的cron",0,"回复内容",new ArrayList<String>(){
+            {
+                add("多参数回复内容，中间以英文的','号隔开，前面的回复类型0为默认的string内容，1为多参数回复");
+            }
+        },0));
+        PluginData.INSTANCE.setSessionMap(false, 0, "乒", "乓", new ScopeInfoBase("全局", false, "0"), DataEnum.ACCURATE);
+
 
         //注册指令
         CommandManager.INSTANCE.registerCommand(new CommandManage(HuYanSession.INSTANCE), true);
@@ -96,7 +106,9 @@ public final class HuYanSession extends JavaPlugin {
 
         //监听消息
 //        messageEvent.subscribeAlways(MessageEvent.class, DialogueBasic::isMessageWhereabouts);
-        messageEvent.subscribeAlways(MessageEvent.class, DialogueBasic.INSTANCE::isMessageWhereabouts);
+        messageEvent.subscribeAlways(MessageEvent.class, MessageEventManager.INSTANCE::isMessageWhereabouts);
+
+
 
 
     }

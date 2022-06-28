@@ -1,7 +1,9 @@
-package cn.chahuyun.data;
+package cn.chahuyun.utils;
 
 
 import cn.chahuyun.HuYanSession;
+import cn.chahuyun.files.PluginData;
+import cn.chahuyun.entity.SessionDataBase;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.code.MiraiCode;
@@ -18,9 +20,9 @@ import java.util.ArrayList;
  * @Description :会话分页显示
  * @Date 2022/6/16 21:31
  */
-public class SessionDataPaging {
+public class SessionPaging {
 
-    public static final SessionDataPaging INSTANCE = new SessionDataPaging();
+    public static final SessionPaging INSTANCE = new SessionPaging();
     private MiraiLogger l = HuYanSession.INSTANCE.getLogger();
 
 
@@ -56,7 +58,7 @@ public class SessionDataPaging {
         poll.append("所有的多词条轮询触发消息:\n");
         random.append("所有的多词条随机触发消息:\n");
         //获取全部消息
-        ArrayList<SessionDataBase> values = new ArrayList<>(SessionData.INSTANCE.getSessionMap().values()) ;
+        ArrayList<SessionDataBase> values = new ArrayList<>(PluginData.INSTANCE.getSessionMap().values()) ;
         for (SessionDataBase base : values) {
             //判断触发类别
             String trigger = "全局触发";

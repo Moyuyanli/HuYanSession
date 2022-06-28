@@ -1,6 +1,8 @@
-package cn.chahuyun.data;
+package cn.chahuyun.files;
 
 import cn.chahuyun.HuYanSession;
+import cn.chahuyun.entity.ScopeInfoBase;
+import cn.chahuyun.entity.SessionDataBase;
 import cn.chahuyun.enumerate.DataEnum;
 import com.alibaba.fastjson.JSONObject;
 import net.mamoe.mirai.console.data.Value;
@@ -21,12 +23,18 @@ import java.util.Map;
  * @description
  * @date 2022/6/16 14:25
  */
-public class SessionData extends JavaAutoSavePluginData {
+public class PluginData extends JavaAutoSavePluginData {
 
     /**
      * 唯一构造
      */
-    public static final SessionData INSTANCE = new SessionData();
+    public static final PluginData INSTANCE = new PluginData();
+    /**
+     * 文件名
+     */
+    public PluginData() {
+        super("SessionData");
+    }
     /**
      * list<SessionDataBase> 对话数据集合
      */
@@ -39,17 +47,11 @@ public class SessionData extends JavaAutoSavePluginData {
      * 黑名单
      */
     private final Value<Map<Long, Long>> blackList = typedValue("blackList", createKType(Map.class, createKType(Long.class), createKType(Long.class)));
+
     private MiraiLogger l = HuYanSession.INSTANCE.getLogger();
 
     /**
-     * 文件名
-     */
-    public SessionData() {
-        super("SessionData");
-    }
-
-    /**
-     * @return java.util.Map<java.lang.String, cn.chahuyun.data.SessionDataBase>
+     * @return java.util.Map<java.lang.String, cn.chahuyun.entity.SessionDataBase>
      * @description 获取是sessiondatabase的map
      * @author zhangjiaxing
      * @date 2022/6/17 16:37
@@ -76,13 +78,13 @@ public class SessionData extends JavaAutoSavePluginData {
      * @author zhangjiaxing
      * @date 2022/6/20 8:35
      */
-    public MessageChain setSessionMap(boolean studyType, int contentType, String key, String value, ScopeInfo scopeInfo, DataEnum dataEnum) {
+    public MessageChain setSessionMap(boolean studyType, int contentType, String key, String value, ScopeInfoBase scopeInfoBase, DataEnum dataEnum) {
         //取出map
         Map<String, String> stringStringMap = this.sessionMap.get();
         //判断数据中是否存在
         if (!stringStringMap.containsKey(key)) {
             //不存在则新建
-            SessionDataBase base = new SessionDataBase(key, contentType, value, dataEnum, scopeInfo);
+            SessionDataBase base = new SessionDataBase(key, contentType, value, dataEnum, scopeInfoBase);
             MessageChain messages;
             //如果是多词条，收到调整一下词语结构
             if (studyType) {
@@ -108,7 +110,7 @@ public class SessionData extends JavaAutoSavePluginData {
             return messages;
         } else {
             //如果不是多词条，直接新建吧，不是很好判断参数的修改
-            SessionDataBase base = new SessionDataBase(key, contentType, value, dataEnum, scopeInfo);
+            SessionDataBase base = new SessionDataBase(key, contentType, value, dataEnum, scopeInfoBase);
             String jsonString = JSONObject.toJSONString(base);
             //覆盖
             stringStringMap.put(key, jsonString);

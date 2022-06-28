@@ -1,4 +1,4 @@
-package cn.chahuyun.config;
+package cn.chahuyun.entity;
 
 /**
  * 说明

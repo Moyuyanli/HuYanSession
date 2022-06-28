@@ -1,7 +1,7 @@
-package cn.chahuyun.Session.Criticaldialog;
+package cn.chahuyun.sessionManager;
 
 import cn.chahuyun.HuYanSession;
-import cn.chahuyun.config.ConfigData;
+import cn.chahuyun.files.ConfigData;
 import net.mamoe.mirai.contact.Contact;
 import net.mamoe.mirai.contact.Group;
 import net.mamoe.mirai.event.GlobalEventChannel;
@@ -19,7 +19,7 @@ import java.util.TimerTask;
  * PuDialogue
  *
  * @author Zhangjiaxing
- * @description
+ * @description 特殊消息的对话
  * @date 2022/6/16 10:23
  */
 public class SpecialDialogue {

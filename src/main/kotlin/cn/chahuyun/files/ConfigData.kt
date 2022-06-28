@@ -1,6 +1,7 @@
-package cn.chahuyun.config
+package cn.chahuyun.files
 
 import cn.chahuyun.HuYanSession
+import cn.chahuyun.entity.PowerConfigBase
 import com.alibaba.fastjson.JSONArray
 import net.mamoe.mirai.console.data.AutoSavePluginConfig
 import net.mamoe.mirai.console.data.ValueDescription
@@ -50,7 +51,7 @@ object ConfigData : AutoSavePluginConfig("config") {
     val powerList: MutableMap<String, String> by value()
 
     /**
-     * @return java.util.Map<java.lang.String></java.lang.String>, cn.chahuyun.config.PowerConfigBase>
+     * @return java.util.Map<java.lang.String></java.lang.String>, cn.chahuyun.entity.PowerConfigBase>
      * @description 获取权限map
      * @author zhangjiaxing
      * @date 2022/6/19 0:51

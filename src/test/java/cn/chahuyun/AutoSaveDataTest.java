@@ -1,20 +1,15 @@
 package cn.chahuyun;
 
-import cn.chahuyun.Session.Criticaldialog.SpecialDialogue;
-import cn.chahuyun.data.ScopeInfo;
-import cn.chahuyun.data.SessionDataBase;
-import cn.chahuyun.enumerate.DataEnum;
-import cn.chahuyun.data.SessionData;
+import cn.chahuyun.entity.SessionDataBase;
+import cn.chahuyun.files.PluginData;
 import net.mamoe.mirai.console.plugin.PluginManager;
 import net.mamoe.mirai.console.plugin.jvm.JavaPlugin;
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescriptionBuilder;
 import net.mamoe.mirai.console.terminal.MiraiConsoleImplementationTerminal;
 import net.mamoe.mirai.console.terminal.MiraiConsoleTerminalLoader;
-import net.mamoe.mirai.event.GlobalEventChannel;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
@@ -38,8 +33,8 @@ public class AutoSaveDataTest {
 
     @Test
     public void testData() {
-        MockPlugin.INSTANCE.reloadPluginData(SessionData.INSTANCE);
-        Map<String, SessionDataBase> sessionMap = SessionData.INSTANCE.getSessionMap();
+        MockPlugin.INSTANCE.reloadPluginData(PluginData.INSTANCE);
+        Map<String, SessionDataBase> sessionMap = PluginData.INSTANCE.getSessionMap();
 //        SessionData.INSTANCE.setSessionMap("+",new SessionDataBase("乒", 0, "乓", DataEnum.ACCURATE, new ScopeInfo("全局", false, 0L)));
 
 //        Map<String, SessionDataBase> map = SessionData.INSTANCE.getSessionMap();

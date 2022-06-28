@@ -1,12 +1,12 @@
-package cn.chahuyun.Session;
+package cn.chahuyun.eventManager;
 
 import cn.chahuyun.HuYanSession;
-import cn.chahuyun.Session.Criticaldialog.SessionDialogue;
-import cn.chahuyun.Session.Criticaldialog.SpecialDialogue;
-import cn.chahuyun.config.ConfigData;
-import cn.chahuyun.config.PowerConfigBase;
-import cn.chahuyun.data.SessionData;
-import cn.chahuyun.data.SessionDataBase;
+import cn.chahuyun.sessionManager.SessionDialogue;
+import cn.chahuyun.sessionManager.SpecialDialogue;
+import cn.chahuyun.files.ConfigData;
+import cn.chahuyun.entity.PowerConfigBase;
+import cn.chahuyun.files.PluginData;
+import cn.chahuyun.entity.SessionDataBase;
 import cn.chahuyun.enumerate.MessEnum;
 import cn.chahuyun.groupManager.GroupManager;
 import cn.chahuyun.power.Permissions;
@@ -28,9 +28,9 @@ import java.util.regex.Pattern;
  * @description 触发基本对话
  * @date 2022/6/8 9:18
  */
-public class DialogueBasic {
+public class MessageEventManager {
 
-    public static final DialogueBasic INSTANCE = new DialogueBasic();
+    public static final MessageEventManager INSTANCE = new MessageEventManager();
 
     private  MiraiLogger l = HuYanSession.INSTANCE.getLogger();
 
@@ -57,7 +57,7 @@ public class DialogueBasic {
      * @date 2022/6/16 15:25
      * @return void
      */
-    public  void isMessageWhereabouts(MessageEvent event) {
+    public void isMessageWhereabouts(MessageEvent event) {
         //判断消息传递类型
         MessEnum messEnum = null;
         //获取到的消息
@@ -67,7 +67,7 @@ public class DialogueBasic {
         判断是否是对话类消息
          */
         //获取对话数据
-        ArrayList<SessionDataBase> sessionPattern = new ArrayList<>(SessionData.INSTANCE.getSessionMap().values()) ;
+        ArrayList<SessionDataBase> sessionPattern = new ArrayList<>(PluginData.INSTANCE.getSessionMap().values()) ;
         //创建触发对话结果
         SessionDataBase sessionDataBase = null;
         //循环判断
