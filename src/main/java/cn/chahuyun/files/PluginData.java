@@ -43,10 +43,6 @@ public class PluginData extends JavaAutoSavePluginData {
      * 群欢迎词
      */
     private final Value<Map<String, String>> groupWelcomeMessage = typedValue("groupWelcomeMessage", createKType(Map.class, createKType(String.class), createKType(String.class)));
-    /**
-     * 黑名单
-     */
-    private final Value<Map<Long, Long>> blackList = typedValue("blackList", createKType(Map.class, createKType(Long.class), createKType(Long.class)));
 
     private MiraiLogger l = HuYanSession.INSTANCE.getLogger();
 

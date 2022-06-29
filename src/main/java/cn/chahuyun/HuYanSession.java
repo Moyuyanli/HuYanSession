@@ -1,6 +1,7 @@
 package cn.chahuyun;
 
 import cn.chahuyun.entity.TimingTaskBase;
+import cn.chahuyun.eventManager.FriendMessageEventManager;
 import cn.chahuyun.eventManager.MessageEventManager;
 import cn.chahuyun.commandManager.CommandManage;
 import cn.chahuyun.files.ConfigData;
@@ -14,6 +15,7 @@ import net.mamoe.mirai.console.plugin.jvm.JavaPlugin;
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescriptionBuilder;
 import net.mamoe.mirai.event.EventChannel;
 import net.mamoe.mirai.event.GlobalEventChannel;
+import net.mamoe.mirai.event.events.FriendMessageEvent;
 import net.mamoe.mirai.event.events.MemberJoinEvent;
 import net.mamoe.mirai.event.events.MessageEvent;
 
@@ -104,8 +106,13 @@ public final class HuYanSession extends JavaPlugin {
         EventChannel<MessageEvent> messageEvent = GlobalEventChannel.INSTANCE.filterIsInstance(MessageEvent.class)
                 .filter(event -> event.getBot().getId() == bot);
 
-        //监听消息
+        /*
+         * 监听消息
+         * 并发监听，虽说不会冲突，但是会降低一点运行效率
+         */
+        messageEvent.subscribeAlways(FriendMessageEvent.class, FriendMessageEventManager.INSTANCE::isMessageType);
         messageEvent.subscribeAlways(MessageEvent.class, MessageEventManager.INSTANCE::isMessageWhereabouts);
+
 
 
 
