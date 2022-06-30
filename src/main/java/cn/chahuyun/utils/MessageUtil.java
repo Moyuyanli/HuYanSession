@@ -2,15 +2,18 @@ package cn.chahuyun.utils;
 
 import cn.chahuyun.HuYanSession;
 import cn.chahuyun.entity.ScopeInfoBase;
+import cn.chahuyun.entity.TimingTaskBase;
 import cn.chahuyun.files.PluginData;
 import cn.chahuyun.entity.SessionDataBase;
 import cn.chahuyun.enumerate.DataEnum;
+import cn.chahuyun.files.TimingData;
 import kotlin.coroutines.EmptyCoroutineContext;
 import net.mamoe.mirai.contact.Contact;
 import net.mamoe.mirai.event.ConcurrencyKind;
 import net.mamoe.mirai.event.EventChannel;
 import net.mamoe.mirai.event.EventPriority;
 import net.mamoe.mirai.event.GlobalEventChannel;
+import net.mamoe.mirai.event.events.FriendMessageEvent;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.data.MessageChain;
 import net.mamoe.mirai.utils.MiraiLogger;
@@ -102,7 +105,7 @@ public class MessageUtil {
             contentType = 2;
         }
         //作用域和匹配机制
-        ScopeInfoBase scopeInfoBase = new ScopeInfoBase("当前", true, event.getSubject().getId());
+        ScopeInfoBase scopeInfoBase = new ScopeInfoBase("当前", true, event.getSubject().getId(),0);
         DataEnum dataEnum = DataEnum.ACCURATE;
         //有参数就判断参数，没有就不判断
         if (split.length >= 4) {
@@ -116,7 +119,7 @@ public class MessageUtil {
                     case "结尾":
                         dataEnum = DataEnum.END;break;
                     case "全局":
-                        scopeInfoBase = new ScopeInfoBase("全局", false, null);break;
+                        scopeInfoBase = new ScopeInfoBase("全局", false, null,0);break;
                     case "随机":
                         if (studyType) {
                             contentType = 3;
@@ -273,6 +276,138 @@ public class MessageUtil {
         subject.sendMessage("添加成功-'!'删除上一次添加，'!!!'结束添加。");
         event.intercept();
         repeatedlyAddMessage(event);
+    }
+
+
+    private String timingName;
+    private String timeResolve;
+    private String cronString;
+    private int scopeNum;
+    private String value;
+
+    public void addTiming(MessageEvent event,int stage) {
+        Contact subject = event.getSubject();
+        String code = event.getMessage().serializeToMiraiCode();
+
+
+        switch (stage) {
+            case 0:
+                subject.sendMessage("开始添加定时器，请发送定时器名称：");
+                replyTimingMessage(event, stage + 1);
+                event.intercept();
+                break;
+            case 1:
+                timingName = event.getMessage().contentToString();
+                subject.sendMessage("定时器名称设置成功，请发送定时器频率：");
+                replyTimingMessage(event, stage + 1);
+                event.intercept();
+                break;
+            case 2:
+                timingTimeResolve(event, stage);
+                event.intercept();
+                break;
+            case 3:
+                if (Pattern.matches("[是1对]|确定|确认", code)) {
+                    subject.sendMessage("请发送定时器作用群组编号，发送0为全局。");
+                    replyTimingMessage(event, stage + 1);
+                } else {
+                    subject.sendMessage("请重新发送定时器频率：");
+                    replyTimingMessage(event,stage-1);
+                }
+                event.intercept();
+                break;
+            case 4:
+                scopeNum = Integer.parseInt(code);
+                subject.sendMessage("请发送定时发送的内容：");
+                replyTimingMessage(event,stage+1);
+                event.intercept();
+                break;
+            case 5:
+                value = code;
+                stage++;
+                break;
+            default:break;
+        }
+        if (stage == 6) {
+            TimingTaskBase base = new TimingTaskBase(TimingData.INSTANCE.getTimingNum(),
+                    timingName,
+                    timeResolve,
+                    cronString,
+                    0,
+                    value,
+                    null,
+                    0,
+                    new ScopeInfoBase("群组", true, null, scopeNum)
+            );
+            TimingData.INSTANCE.addTimingList(base);
+            subject.sendMessage("定时器添加完成！");
+        }
+    }
+
+    private void replyTimingMessage(MessageEvent event, int stage) {
+        GlobalEventChannel.INSTANCE.filterIsInstance(FriendMessageEvent.class)
+                .filter(at -> at.getSubject().getId() == event.getSubject().getId())
+                .subscribeOnce(FriendMessageEvent.class, EmptyCoroutineContext.INSTANCE, ConcurrencyKind.LOCKED, EventPriority.HIGH, it -> {
+                    addTiming(it, stage);
+                });
+    }
+
+    /**
+     * 中文时间匹配正则
+     */
+    private final String timingStringPattern = "每(\\S+)?(小时|天|周)(早上)?(\\S点|\\d+:\\d+)?(([一二三四五六天日])([到和])?(周[一二三四五六天日])?)?(的(\\S点|\\d+:\\d+))?";
+
+    private boolean timingTimeResolve(MessageEvent event, int stage) {
+        Contact subject = event.getSubject();
+        String code = event.getMessage().serializeToMiraiCode();
+
+        Matcher matcher = Pattern.compile("\\$cron\\(.+\\)").matcher(code);
+        String group;
+        if (matcher.find()) {
+            group = matcher.group();
+            cronString = spotVariable(group);
+            subject.sendMessage("识别到cron表达式 "+cronString+"，是否确认？");
+            replyTimingMessage(event,stage+1);
+            return true;
+        }
+
+        matcher = Pattern.compile(timingStringPattern).matcher(code);
+        if (!matcher.find()) {
+            subject.sendMessage("我不认识该时间频率，更多请查看本插件帮助！");
+            replyTimingMessage(event,stage);
+            return false;
+        }
+        group = matcher.group();
+
+        return false;
+
+    }
+
+
+    public String spotVariable(String code) {
+        String[] split = code.split("\\(");
+        String[] strings = split[1].split("\\)");
+        return strings[0];
+    }
+
+    private String spotCronString(String group) {
+        String[] nums = "零 一 二 三 四 五 六 七 八 九 十".split(" ");
+
+        for (int i = 0; i < nums.length; i++) {
+            String num = nums[i];
+            group = group.replace(num, String.valueOf(i));
+        }
+
+        if (group.indexOf("每") != 1) {
+            return null;
+        }
+
+        group =  group.substring(1);
+        Matcher matcher = Pattern.compile("[天周]|(\\d+)").matcher(group);
+
+        return null;
+
+
     }
 
 }

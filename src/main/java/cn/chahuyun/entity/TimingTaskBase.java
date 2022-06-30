@@ -21,7 +21,7 @@ public class TimingTaskBase {
     /**
      * 定时器时间解析
      */
-    private String dataResolve;
+    private String timeResolve;
     /**
      * 定时器cron
      */
@@ -47,15 +47,16 @@ public class TimingTaskBase {
      */
     private ScopeInfoBase Scope;
 
-    public TimingTaskBase(int id, String name, String dataResolve, String cronString, int type, String value, List<String> values, int poll) {
+    public TimingTaskBase(int id, String name, String timeResolve, String cronString, int type, String value, List<String> values, int poll, ScopeInfoBase scope) {
         this.id = id;
         this.name = name;
-        this.dataResolve = dataResolve;
+        this.timeResolve = timeResolve;
         this.cronString = cronString;
         this.type = type;
         this.value = value;
         this.values = values;
         this.poll = poll;
+        Scope = scope;
     }
 
     public int getId() {
@@ -74,12 +75,12 @@ public class TimingTaskBase {
         this.name = name;
     }
 
-    public String getDataResolve() {
-        return dataResolve;
+    public String getTimeResolve() {
+        return timeResolve;
     }
 
-    public void setDataResolve(String dataResolve) {
-        this.dataResolve = dataResolve;
+    public void setTimeResolve(String timeResolve) {
+        this.timeResolve = timeResolve;
     }
 
     public String getCronString() {

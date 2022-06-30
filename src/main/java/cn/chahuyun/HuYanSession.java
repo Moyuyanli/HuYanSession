@@ -70,13 +70,7 @@ public final class HuYanSession extends JavaPlugin {
         getLogger().info("SessionData 已加载！");
         this.reloadPluginData(TimingData.INSTANCE);
         getLogger().info("TimingData 已加载！");
-        //添加默认信息
-        TimingData.INSTANCE.setTimingList(new TimingTaskBase(0,"定时器名称","定时器时间参数识别解析","定时器的cron",0,"回复内容",new ArrayList<String>(){
-            {
-                add("多参数回复内容，中间以英文的','号隔开，前面的回复类型0为默认的string内容，1为多参数回复");
-            }
-        },0));
-        PluginData.INSTANCE.setSessionMap(false, 0, "乒", "乓", new ScopeInfoBase("全局", false, "0"), DataEnum.ACCURATE);
+        PluginData.INSTANCE.setSessionMap(false, 0, "乒", "乓", new ScopeInfoBase("全局", false, null,0), DataEnum.ACCURATE);
 
 
         //注册指令

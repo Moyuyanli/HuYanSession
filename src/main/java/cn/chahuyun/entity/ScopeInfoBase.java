@@ -12,7 +12,7 @@ public class ScopeInfoBase {
     /**
      * 作用域名称
      */
-    private String Scope;
+    private String scope;
 
     /**
      * true 当前
@@ -25,22 +25,22 @@ public class ScopeInfoBase {
      */
     private String scopeCode;
 
+    private int scopeNum;
 
 
-    
-
-    public ScopeInfoBase(String scope, Boolean type, String scopeCode) {
-        Scope = scope;
+    public ScopeInfoBase(String scope, Boolean type, Long scopeCode, int scopeNum) {
+        this.scope = scope;
         this.type = type;
         this.scopeCode = scopeCode;
+        this.scopeNum = scopeNum;
     }
 
     public String getScope() {
-        return Scope;
+        return scope;
     }
 
     public void setScope(String scope) {
-        Scope = scope;
+        scope = scope;
     }
 
     public Boolean getType() {

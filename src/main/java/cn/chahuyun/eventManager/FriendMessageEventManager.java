@@ -1,9 +1,12 @@
 package cn.chahuyun.eventManager;
 
 import cn.chahuyun.HuYanSession;
+import cn.chahuyun.utils.MessageUtil;
 import net.mamoe.mirai.contact.Contact;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.utils.MiraiLogger;
+
+import java.util.regex.Pattern;
 
 /**
  * FriendMessageEventManager
@@ -27,12 +30,16 @@ public class FriendMessageEventManager {
         Contact subject = event.getSubject();
         String code = event.getMessage().serializeToMiraiCode();
 
-
+        if (Pattern.matches("添加定时任务", code)) {
+            MessageUtil.INSTANCE.addTiming(event,0);
+        }
 
 
 
 
     }
+
+
 
 
 
