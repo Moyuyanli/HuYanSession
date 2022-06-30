@@ -175,23 +175,23 @@ public class PluginData extends JavaAutoSavePluginData {
     }
 
     /**
-     * @param s       标签
+     * @param aod t 添加 f 删除
      * @param message 欢迎词
      * @return net.mamoe.mirai.message.data.MessageChain
      * @description 群消息欢迎词
      * @author zhangjiaxing
      * @date 2022/6/21 9:06
      */
-    public MessageChain setGroupWelcomeMessage(String s, String message) {
+    public MessageChain setGroupWelcomeMessage(boolean aod, String message) {
         Map<String, String> stringStringMap = this.groupWelcomeMessage.get();
-        String substring = s.substring(0, 1);
-        s = s.substring(1);
-        if (substring.equals("+")) {
-            stringStringMap.put(s, message);
+        String[] strings = message.split(":");
+        String key = strings[0];
+        if (aod) {
+            stringStringMap.put(key, message);
             return new MessageChainBuilder().append("欢迎词添加成功！").build();
         } else {
-            if (stringStringMap.containsKey(s)) {
-                stringStringMap.remove(s);
+            if (stringStringMap.containsKey(key)) {
+                stringStringMap.remove(key);
                 return new MessageChainBuilder().append("欢迎词删除成功！").build();
             } else {
                 return new MessageChainBuilder().append("没找到该欢迎词哦~").build();

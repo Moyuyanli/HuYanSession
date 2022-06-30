@@ -21,7 +21,7 @@ public class FriendMessageEventManager {
     private MiraiLogger l = HuYanSession.INSTANCE.getLogger();
 
     /**
-     * @description 接收到所有好友发送的消息处理
+     * 接收到所有好友发送的消息处理
      * @author zhangjiaxing
      * @param event 消息事件
      * @date 2022/6/29 8:40
@@ -33,6 +33,8 @@ public class FriendMessageEventManager {
         if (Pattern.matches("添加定时任务", code)) {
             MessageUtil.INSTANCE.addTiming(event,0);
         }
+
+        if (Pattern.matches("+group[:：]"))
 
 
 

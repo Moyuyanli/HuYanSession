@@ -60,7 +60,7 @@ public class MessageUtil {
     public Matcher matcher;
 
     /**
-     * @description 判断是否是学习类指令
+     *  判断是否是学习类指令
      * @author zhangjiaxing
      * @param event 消息事件
      * @date 2022/6/23 16:37
@@ -76,7 +76,7 @@ public class MessageUtil {
     }
 
     /**
-     * @description 学习参数解析
+     *  学习参数解析
      * @author zhangjiaxing
      * @param event 消息事件
      * @date 2022/6/23 16:38
@@ -149,7 +149,7 @@ public class MessageUtil {
     }
 
     /**
-     * @description 判断是否是删除指令
+     *  判断是否是删除指令
      * @author zhangjiaxing
      * @param event
      * @date 2022/6/23 22:15
@@ -163,7 +163,7 @@ public class MessageUtil {
     }
 
     /**
-     * @description 删除
+     *  删除
      * @author zhangjiaxing
      * @date 2022/6/23 22:15
      * @return java.lang.String
@@ -194,7 +194,7 @@ public class MessageUtil {
     private String repeatedKey;
 
     /**
-     * @description 判断是不是批量添加多词条，如果是，就直接进入方法不返回值了
+     *  判断是不是批量添加多词条，如果是，就直接进入方法不返回值了
      * @author zhangjiaxing
      * @param event 消息事件
      * @date 2022/6/27 10:19
@@ -238,7 +238,7 @@ public class MessageUtil {
 
 
     /**
-     * @description 通过不断重复调用来实现循环添加，每一次调用都会重新监听一次消息
+     * 通过不断重复调用来实现循环添加，每一次调用都会重新监听一次消息
      * @author zhangjiaxing
      * @param event
      * @date 2022/6/27 10:22
@@ -251,7 +251,7 @@ public class MessageUtil {
 
         channel.subscribeOnce(MessageEvent.class,EmptyCoroutineContext.INSTANCE,ConcurrencyKind.LOCKED, EventPriority.HIGH, mt -> {
             String code = mt.getMessage().serializeToMiraiCode();
-            if (code.equals("!")||code.equals("！")) {
+            if ("!".equals(code)|| "！".equals(code)) {
                 if (repeatedlyList.size() > 0) {
                     repeatedlyList.remove(repeatedlyList.size() - 1);
                     mt.getSubject().sendMessage("删除上一条添加成功-'!'删除上一次添加，'!!!'结束添加。");
@@ -268,6 +268,12 @@ public class MessageUtil {
 
     }
 
+    /**
+     * 多词条消息轮询回复的重复调用方法
+     * @author zhangjiaxing
+     * @param event 消息事件
+     * @date 2022/6/30 19:29
+     */
     public void addMessage(MessageEvent event) {
         String code = event.getMessage().serializeToMiraiCode();
         Contact subject = event.getSubject();
@@ -285,6 +291,13 @@ public class MessageUtil {
     private int scopeNum;
     private String value;
 
+    /**
+     * 添加定时任务
+     * @author zhangjiaxing
+     * @param event 消息事件
+     * @param stage 添加步骤编号
+     * @date 2022/6/30 19:31
+     */
     public void addTiming(MessageEvent event,int stage) {
         Contact subject = event.getSubject();
         String code = event.getMessage().serializeToMiraiCode();
@@ -344,6 +357,13 @@ public class MessageUtil {
         }
     }
 
+    /**
+     * 添加定时任务的重复调用
+     * @author zhangjiaxing
+     * @param event 消息事件
+     * @param stage 添加步骤编号
+     * @date 2022/6/30 19:32
+     */
     private void replyTimingMessage(MessageEvent event, int stage) {
         GlobalEventChannel.INSTANCE.filterIsInstance(FriendMessageEvent.class)
                 .filter(at -> at.getSubject().getId() == event.getSubject().getId())
@@ -357,6 +377,14 @@ public class MessageUtil {
      */
     private final String timingStringPattern = "每(\\S+)?(小时|天|周)(早上)?(\\S点|\\d+:\\d+)?(([一二三四五六天日])([到和])?(周[一二三四五六天日])?)?(的(\\S点|\\d+:\\d+))?";
 
+    /**
+     * 添加定时任务的时间频率识别
+     * @author zhangjiaxing
+     * @param event 消息事件
+     * @param stage 添加步骤编号
+     * @date 2022/6/30 19:32
+     * @return boolean
+     */
     private boolean timingTimeResolve(MessageEvent event, int stage) {
         Contact subject = event.getSubject();
         String code = event.getMessage().serializeToMiraiCode();
@@ -383,13 +411,26 @@ public class MessageUtil {
 
     }
 
-
+    /**
+     * 识别cron表达式
+     * @author zhangjiaxing
+     * @param code 消息
+     * @date 2022/6/30 19:33
+     * @return java.lang.String
+     */
     public String spotVariable(String code) {
         String[] split = code.split("\\(");
         String[] strings = split[1].split("\\)");
         return strings[0];
     }
 
+    /**
+     * todo 定时任务时间频率的中文识别
+     * @author zhangjiaxing
+     * @param group 消息
+     * @date 2022/6/30 19:33
+     * @return java.lang.String
+     */
     private String spotCronString(String group) {
         String[] nums = "零 一 二 三 四 五 六 七 八 九 十".split(" ");
 
@@ -406,7 +447,6 @@ public class MessageUtil {
         Matcher matcher = Pattern.compile("[天周]|(\\d+)").matcher(group);
 
         return null;
-
 
     }
 

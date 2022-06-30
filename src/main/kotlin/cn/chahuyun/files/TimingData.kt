@@ -11,7 +11,12 @@ object TimingData : AutoSavePluginData("TimingTask") {
 
     private val timingList : MutableMap<Int,String> by value()
 
-
+    /**
+     * 添加定时任务
+     * @author zhangjiaxing
+     * @param base 定时任务实体
+     * @date 2022/6/30 19:24
+     */
     fun addTimingList(base: TimingTaskBase) {
         val toJSONString = JSONObject.toJSONString(base)
         var index: Int
@@ -22,6 +27,12 @@ object TimingData : AutoSavePluginData("TimingTask") {
         timingList[index] = toJSONString
     }
 
+    /**
+     * 取定时任务的map
+     * @author zhangjiaxing
+     * @date 2022/6/30 19:25
+     * @return 定时任务列表map
+     */
     fun readTimingList(): MutableMap<Int,TimingTaskBase> {
         val rTimingList:MutableMap<Int,TimingTaskBase> = mutableMapOf()
         for (entry in timingList) {
@@ -31,6 +42,13 @@ object TimingData : AutoSavePluginData("TimingTask") {
         return rTimingList
     }
 
+    /**
+     * 删除定时任务
+     * @author zhangjiaxing
+     * @param null
+     * @date 2022/6/30 19:26
+     * @return 消息
+     */
     fun deleteTimingList(index:Int):MessageChain{
         return if (timingList.containsKey(index)) {
             timingList.remove(index)
@@ -40,6 +58,12 @@ object TimingData : AutoSavePluginData("TimingTask") {
         }
     }
 
+    /**
+     * 获取最新定时任务编号
+     * @author zhangjiaxing
+     * @date 2022/6/30 19:26
+     * @return 定时任务编号
+     */
     fun getTimingNum():Int{
         return timingList.size
     }

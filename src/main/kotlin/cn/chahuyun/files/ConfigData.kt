@@ -32,7 +32,7 @@ object ConfigData : AutoSavePluginConfig("config") {
     @ValueDescription("机器人识别qq")
     val bot: Long  by value()
     @ValueDescription("是否开启斗地主帮助")
-    val douSwitch: Boolean by value(false)
+    val douSwitch: Boolean by value()
     @ValueDescription("是否开启详细帮助链接提示")
     val linkSwitch: Boolean  by value()
     @ValueDescription("是否开启帮助在群内显示")
@@ -51,8 +51,8 @@ object ConfigData : AutoSavePluginConfig("config") {
     val powerList: MutableMap<String, String> by value()
 
     /**
+     * 获取权限map
      * @return java.util.Map<java.lang.String></java.lang.String>, cn.chahuyun.entity.PowerConfigBase>
-     * @description 获取权限map
      * @author zhangjiaxing
      * @date 2022/6/19 0:51
      */
@@ -67,11 +67,11 @@ object ConfigData : AutoSavePluginConfig("config") {
     }
 
     /**
+     * 根据传递消息进行权限的修改
      * @param s     修改类型
      * @param user  用户匹配
      * @param power 权限
      * @return net.mamoe.mirai.message.data.MessageChain
-     * @description 根据传递消息进行权限的修改
      * @author zhangjiaxing
      * @date 2022/6/19 2:43
      */
@@ -154,6 +154,14 @@ object ConfigData : AutoSavePluginConfig("config") {
         }
     }
 
+    /**
+     * 添加检测群
+     * @author zhangjiaxing
+     * @param operate true为+ f -
+     * @param group 群号
+     * @date 2022/6/30 19:23
+     * @return 消息
+     */
     fun setGroupList(operate: Boolean, group: Long): MessageChain {
         return if (operate) {
             groupList.add(group)

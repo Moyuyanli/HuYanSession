@@ -26,8 +26,10 @@ public class GroupManager {
 
     private MiraiLogger l = HuYanSession.INSTANCE.getLogger();
 
-    //添加删除迎新词正则
-    private final String setMessagePattern = "([\\+\\-][\\d\\w\\u4e00-\\u9fa5]+[:：][\\d\\w\\S\\u4e00-\\u9fa5]+)";
+    /**
+     * 添加删除迎新词正则
+     */
+    private final String setMessagePattern = "(hyc( \\S){1,2})";
 
     private final String prohibitPattern = "(\\[mirai:at:\\d+\\] \\d+[s|d|h|m])";
 
@@ -48,17 +50,16 @@ public class GroupManager {
         //获取匹配内容
         String group = matcher.group();
         //分割
-        String[] strings = group.split("[:：]");
-        String s = strings[0];
+        String[] strings = group.split(" ");
+        boolean aod = strings.length == 3;
         String string = null;
         if (strings.length == 2) {
             string = strings[1];
         }
-        //跟miraicode冲突了 T_T
-        if (strings.length == 4) {
-            string = strings[1] + ":" + strings[2]+":"+strings[3];
+        if (strings.length == 3) {
+            string = strings[1] + ":" + strings[2];
         }
-        MessageChain messages = PluginData.INSTANCE.setGroupWelcomeMessage(s, string);
+        MessageChain messages = PluginData.INSTANCE.setGroupWelcomeMessage(aod, string);
 
         subject.sendMessage(messages);
     }
