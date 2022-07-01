@@ -1,11 +1,5 @@
 package cn.chahuyun.entity;
 
-import cn.chahuyun.HuYanSession;
-import com.alibaba.fastjson.JSONObject;
-import net.mamoe.mirai.utils.MiraiLogger;
-import org.quartz.*;
-import org.quartz.impl.StdSchedulerFactory;
-
 import java.util.List;
 
 /**
@@ -57,91 +51,6 @@ public class TimingTaskBase {
      * false 关闭 true 开启
      */
     private Boolean state;
-
-    private MiraiLogger l = HuYanSession.INSTANCE.getLogger();
-
-
-    /**
-     * 单一调度器
-     */
-    private Scheduler scheduler ;
-
-    /**
-     * 加载定时器
-     * @author zhangjiaxing
-     * @date 2022/7/1 11:28
-     * @return boolean
-     */
-    public boolean initTiming(){
-        try {
-            //获取唯一的调度器
-            scheduler = StdSchedulerFactory.getDefaultScheduler();
-        } catch (SchedulerException e) {
-            l.error("定时任务"+ id +"调度器加载失败");
-            l.error("定时任务"+ e.getMessage());
-        }
-        //cron表达式
-        CronScheduleBuilder cronSchedule = CronScheduleBuilder.cronSchedule(cronString);
-        //定时器
-        CronTrigger cronTrigger = TriggerBuilder.newTrigger().withIdentity(name).withSchedule(cronSchedule).build();
-        String jsonString = JSONObject.toJSONString(values);
-        String toJSONString = JSONObject.toJSONString(scope);
-        //任务deta
-        JobDetail jobDetail = JobBuilder.newJob(TimingJobBase.class).withIdentity(id + name)
-                .usingJobData("id", id)
-                .usingJobData("name", name)
-                .usingJobData("type", type)
-                .usingJobData("value", value)
-                .usingJobData("values", jsonString)
-                .usingJobData("poll", poll)
-                .usingJobData("scope", toJSONString)
-                .build();
-
-        try {
-            assert scheduler != null;
-            scheduler.scheduleJob(jobDetail, cronTrigger);
-            return true;
-        } catch (SchedulerException e) {
-            l.error("定时任务"+ id + "号调度器任务添加失败");
-            l.error("定时任务" + e.getMessage());
-            return false;
-        }
-    }
-
-    /**
-     * 开启定时器
-     * @author zhangjiaxing
-     * @date 2022/7/1 15:32
-     */
-    public boolean startTiming(){
-        try {
-            scheduler.start();
-            state = true;
-            return true;
-        } catch (SchedulerException e) {
-            l.error("定时任务"+ id + "调度器启动失败");
-            l.error("定时任务"+ e.getMessage());
-            return false;
-        }
-
-    }
-
-    /**
-     * 关闭定时器
-     * @author zhangjiaxing
-     * @date 2022/7/1 15:32
-     */
-    public boolean shutTiming(){
-        try {
-            scheduler.pauseTrigger(TriggerKey.triggerKey(name));
-            state = false;
-            return true;
-        } catch (SchedulerException e) {
-            l.error("定时任务"+ id + "调度器关闭失败");
-            l.error("定时任务"+ e.getMessage());
-            return false;
-        }
-    }
 
     public TimingTaskBase(int id, String name, String timeResolve, String cronString, int type, String value, List<String> values, int poll, ScopeInfoBase scope) {
         this.id = id;

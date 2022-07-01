@@ -37,7 +37,7 @@ public final class HuYanSession extends JavaPlugin {
     public static final HuYanSession INSTANCE = new HuYanSession();
 
     private HuYanSession() {
-        super(new JvmPluginDescriptionBuilder("cn.chahuyun.HuYanSession", "1.7")
+        super(new JvmPluginDescriptionBuilder("cn.chahuyun.HuYanSession", "1.9")
                 .name("HuYanSession")
                 .info("壶言会话-服务于你的群聊!")
                 .author("Moyuyanli")

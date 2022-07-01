@@ -3,6 +3,8 @@ package cn.chahuyun.timingManager;
 import cn.chahuyun.HuYanSession;
 import cn.chahuyun.entity.TimingTaskBase;
 import cn.chahuyun.files.TimingData;
+import cn.chahuyun.utils.QuartzUtil;
+import com.alibaba.fastjson.JSONObject;
 import net.mamoe.mirai.contact.Contact;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.data.ForwardMessageBuilder;
@@ -20,11 +22,9 @@ import java.util.Map;
  */
 public class TimingManager {
 
-    public static TimingManager INSTANCE = new TimingManager();
+    public static final TimingManager INSTANCE = new TimingManager();
     private MiraiLogger l = HuYanSession.INSTANCE.getLogger();
 
-
-    Map<Integer, TimingTaskBase> timingTaskBaseMap = TimingData.INSTANCE.readTimingList();
 
     /**
      * 加载定时任务
@@ -32,11 +32,11 @@ public class TimingManager {
      * @date 2022/7/1 15:35
      */
     public void init() {
+        Map<Integer, TimingTaskBase> timingTaskBaseMap = TimingData.INSTANCE.readTimingList();
         //读取所有定时器，然后都加载一遍，开启的就给他开启了
         for (Map.Entry<Integer, TimingTaskBase> taskBaseEntry : timingTaskBaseMap.entrySet()) {
-            taskBaseEntry.getValue().initTiming();
-            if (taskBaseEntry.getValue().getState()) {
-                taskBaseEntry.getValue().startTiming();
+            if (!taskBaseEntry.getValue().getState()) {
+                QuartzUtil.addSchdulerJob(taskBaseEntry.getValue());
             }
         }
     }
@@ -51,6 +51,7 @@ public class TimingManager {
         Contact subject = event.getSubject();
         String code = event.getMessage().serializeToMiraiCode();
 
+        Map<Integer, TimingTaskBase> timingTaskBaseMap = TimingData.INSTANCE.readTimingList();
 
         boolean ooc = code.startsWith("+");
         String[] split = code.split("[:：]");
@@ -59,16 +60,17 @@ public class TimingManager {
         TimingTaskBase taskBase = null;
         try {
             taskBase = timingTaskBaseMap.get(key);
+            String s = JSONObject.toJSONString(taskBase);
+            l.info(s);
         } catch (Exception e) {
             subject.sendMessage("没有找到该定时器！");
             return;
         }
-
         if (ooc) {
             if (taskBase.getState()) {
                 subject.sendMessage("定时器" + taskBase.getName() + "已经是开启状态了，无法开启");
             }
-            if (taskBase.startTiming()) {
+            if (QuartzUtil.updateSchdulerJob(taskBase)) {
                 subject.sendMessage("定时器" + taskBase.getName() + "开启成功！");
             } else {
                 subject.sendMessage("定时器" + taskBase.getName() + "开启失败！");
@@ -78,7 +80,7 @@ public class TimingManager {
             if (!taskBase.getState()) {
                 subject.sendMessage("定时器" + taskBase.getName() + "已经是关闭状态了，无法关闭");
             }
-            if (taskBase.shutTiming()) {
+            if (QuartzUtil.deleteSchedulerJob(taskBase)) {
                 subject.sendMessage("定时器" + taskBase.getName() + "关闭成功！");
             } else {
                 subject.sendMessage("定时器" + taskBase.getName() + "关闭失败！");

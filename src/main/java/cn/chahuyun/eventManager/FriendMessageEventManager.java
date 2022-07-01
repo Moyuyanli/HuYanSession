@@ -31,9 +31,6 @@ public class FriendMessageEventManager {
     public void isMessageType(MessageEvent event) {
         Contact subject = event.getSubject();
         String code = event.getMessage().contentToString();
-
-        l.info("好友消息");
-
         //定时任务
         if (Pattern.matches("添加定时任务|%ds", code)) {
             MessageUtil.INSTANCE.addTiming(event,0);
@@ -43,11 +40,8 @@ public class FriendMessageEventManager {
             TimingManager.INSTANCE.checkTiming(event);
         }
 
-        l.info(code);
-        l.info("pattern-"+Pattern.matches("^[+-]group[:：](\\d+)( \\d+)*", code));
         //群组
         if (Pattern.matches("[+-]group[:：](\\d+)( \\d+)*", code)) {
-            l.info("code1->"+code.startsWith("+"));
             if (code.startsWith("+")) {
                 ScopeGroupManager.INSTANCE.addScopeGroup(event);
             } else {
