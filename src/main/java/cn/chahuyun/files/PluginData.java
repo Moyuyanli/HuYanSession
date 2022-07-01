@@ -174,19 +174,18 @@ public class PluginData extends JavaAutoSavePluginData {
     }
 
     /**
-     * @param aod t 添加 f 删除
-     * @param message 欢迎词
-     * @return net.mamoe.mirai.message.data.MessageChain
      * 群消息欢迎词
+     * @param aod t 添加 f 删除
+     * @param key 标签
+     * @param value 欢迎词内容
+     * @return net.mamoe.mirai.message.data.MessageChain
      * @author zhangjiaxing
      * @date 2022/6/21 9:06
      */
-    public MessageChain setGroupWelcomeMessage(boolean aod, String message,ScopeInfoBase infoBase) {
+    public MessageChain setGroupWelcomeMessage(boolean aod,String key,String value,ScopeInfoBase infoBase) {
         Map<String, String> stringStringMap = this.groupWelcomeMessage.get();
-        String[] strings = message.split(":");
-        String key = strings[0];
         if (aod) {
-            GroupWelcomeBase base = new GroupWelcomeBase(key, strings[1], infoBase);
+            GroupWelcomeBase base = new GroupWelcomeBase(key, value, infoBase);
             String jsonString = JSONObject.toJSONString(base);
             stringStringMap.put(key, jsonString);
             return new MessageChainBuilder().append("欢迎词添加成功！").build();
@@ -216,8 +215,12 @@ public class PluginData extends JavaAutoSavePluginData {
             String value = entry.getValue();
             //序列化
             GroupWelcomeBase base = JSONObject.parseObject(value, GroupWelcomeBase.class);
-            //是否是当前群
-            if (base.getScopeInfo().getType()) {
+            //主人
+            long owner = ConfigData.INSTANCE.getOwner();
+            if (group == owner) {
+                groupWelcomeBaseList.add(base);
+                //是否是当前群
+            }else if (base.getScopeInfo().getType()) {
                 if (Objects.equals(base.getScopeInfo().getScopeCode(), group)) {
                     groupWelcomeBaseList.add(base);
                 }

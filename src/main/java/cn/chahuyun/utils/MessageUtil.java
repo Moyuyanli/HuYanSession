@@ -46,7 +46,7 @@ public class MessageUtil {
      * 学习正则
      * 学习(多词条)?([\s]+[\S]+){2}(\s+(精准|模糊|头部|结尾|当前|全局|轮询|随机)){0,3}
      */
-    public String studyPattern = "学习(多词条)?([\\s]+[\\S]+){2}(\\s+(精准|模糊|头部|结尾|当前|全局|轮询|随机|(群组\\d+))){0,3}";
+    public String studyPattern = "学习(多词条)?([\\s]+[\\S]+){2}(\\s+(精准|模糊|头部|结尾|当前|全局|轮询|随机|(gr\\d+))){0,3}";
 
     /**
      * 删除正则
@@ -137,7 +137,7 @@ public class MessageUtil {
                         }
                         break;
                     default:
-                        if (Pattern.matches("群组\\d+", s)) {
+                        if (Pattern.matches("gr\\d+", s)) {
                             int groupNum = Integer.parseInt(s.substring(2));
                             boolean containsKey = GroupData.INSTANCE.getGroupList().containsKey(groupNum);
                             if (!containsKey) {
@@ -231,14 +231,6 @@ public class MessageUtil {
         }
         //获取参数
         String[] split = code.split(" ");
-        //识别换行信息
-        split[1] = split[1].replace("\\n", "\n");
-        //后面的第一个参数如果是换行的话，给清除
-        String substring = split[2];
-        if (substring.startsWith("\\n")) {
-            substring = substring.substring(2);
-        }
-        split[2] = substring.replace("\\n", "\n");
         Map<String, SessionDataBase> sessionMap = PluginData.INSTANCE.getSessionMap();
         //判断有没有这条数据
         if (!sessionMap.containsKey(split[1])) {

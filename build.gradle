@@ -12,8 +12,9 @@ group = 'cn.chahuyun'
 /**
  * 完成群组管理 - 1.8.12
  * 完成定时任务管理 - 1.9.12
+ * 修复一系列bug - 1.9.13
  */
-version = '1.9.12-Bate'
+version = '1.9.13-Bate'
 
 
 repositories {

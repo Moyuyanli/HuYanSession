@@ -35,7 +35,7 @@ public class TimingManager {
         Map<Integer, TimingTaskBase> timingTaskBaseMap = TimingData.INSTANCE.readTimingList();
         //读取所有定时器，然后都加载一遍，开启的就给他开启了
         for (Map.Entry<Integer, TimingTaskBase> taskBaseEntry : timingTaskBaseMap.entrySet()) {
-            if (!taskBaseEntry.getValue().getState()) {
+            if (taskBaseEntry.getValue().getState()) {
                 QuartzUtil.addSchdulerJob(taskBaseEntry.getValue());
             }
         }
@@ -69,6 +69,7 @@ public class TimingManager {
         if (ooc) {
             if (taskBase.getState()) {
                 subject.sendMessage("定时器" + taskBase.getName() + "已经是开启状态了，无法开启");
+                return;
             }
             if (QuartzUtil.updateSchdulerJob(taskBase)) {
                 subject.sendMessage("定时器" + taskBase.getName() + "开启成功！");
@@ -79,6 +80,7 @@ public class TimingManager {
         } else {
             if (!taskBase.getState()) {
                 subject.sendMessage("定时器" + taskBase.getName() + "已经是关闭状态了，无法关闭");
+                return;
             }
             if (QuartzUtil.deleteSchedulerJob(taskBase)) {
                 subject.sendMessage("定时器" + taskBase.getName() + "关闭成功！");

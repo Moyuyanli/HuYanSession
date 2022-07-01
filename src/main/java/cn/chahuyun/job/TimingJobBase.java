@@ -31,7 +31,9 @@ public class TimingJobBase implements Job {
     public void execute(JobExecutionContext context) {
         JobDataMap jobDataMap = context.getJobDetail().getJobDataMap();
         TimingTaskBase base = (TimingTaskBase) jobDataMap.get("data");
+
         MiraiLogger l = (MiraiLogger) jobDataMap.get("logger");
+
         ScopeInfoBase scope = base.getScope();
 
         l.info("定时器"+base.getId()+"-"+base.getName()+"执行!");

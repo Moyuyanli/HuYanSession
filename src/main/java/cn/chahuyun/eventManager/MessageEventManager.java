@@ -44,7 +44,7 @@ public class MessageEventManager {
     /**
      * 群管指令正则
      */
-    public String groupPattern = "(hyc( \\S){1,2})|查询[欢迎新]+词|(\\[mirai:at:\\d+\\] \\d+[s|d|h|m])|(踢人\\[mirai:at:\\d+\\])";
+    public String groupPattern = "([+-]hyc[:：](\\S+)(\\s\\S+){0,2})|hyc[:：]|(\\[mirai:at:\\d+\\] \\d+[s|d|h|m])|(踢人\\[mirai:at:\\d+\\])";
     /**
      * 回复消息正则
      */
@@ -246,10 +246,10 @@ public class MessageEventManager {
             //GROUP("群管消息", 4)
             case GROUP:
                 String groupMessage = groupMatcher.group();
-                if (groupMessage.equals("查询欢迎词") || groupMessage.equals("查询迎新词") ) {
+                if (Pattern.matches("hyc[:：]",messageToString) ) {
                     l.info("查询迎新词指令");
                     GroupManager.INSTANCE.checkGroupWelcomeMessage(event);
-                }else if (Pattern.matches("(hyc( \\S){1,3})", messageToString)) {
+                }else if (Pattern.matches("([+-]hyc[:：](\\S+)(\\s\\S+){0,2})", messageToString)) {
                     l.info("添加迎新词指令");
                     GroupManager.INSTANCE.setGroupWelcomeMessage(event);
                 }else if (Pattern.matches("(\\[mirai:at:\\d+\\] \\d+[s|d|h|m])",messageToString)){

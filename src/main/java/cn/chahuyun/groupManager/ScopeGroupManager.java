@@ -41,7 +41,7 @@ public class ScopeGroupManager {
         String[] split = code.split(" ");
         //判断参数数量是否符合规则
         if (split.length <= 1) {
-            subject.sendMessage("添加群组格式错误！eg：+group:(群组编号) (群号1) ...");
+            subject.sendMessage("添加群组格式错误！eg：+gr:(群组编号) (群号1) ...");
             return;
         }
         //下标
@@ -116,10 +116,16 @@ public class ScopeGroupManager {
             messages.append("群组编号：").append(entry.getKey().toString()).append("\n");
             List<Long> value = entry.getValue();
             for (Long group : value) {
+                String groupName = "未知";
+                try {
+                    groupName = Objects.requireNonNull(event.getBot().getGroup(group)).getName();
+                } catch (Exception e) {
+                    l.warning("机器人没有这个群！");
+                }
                 messages.append(String.valueOf(group))
                         .append("->")
                         //前面的方法是如果不为空就返回
-                        .append(Objects.requireNonNull(event.getBot().getGroup(group)).getName())
+                        .append(groupName)
                         .append("\n");
             }
             FMB.add(bot,messages.build());

@@ -1,6 +1,7 @@
 package cn.chahuyun.eventManager;
 
 import cn.chahuyun.HuYanSession;
+import cn.chahuyun.files.ConfigData;
 import cn.chahuyun.groupManager.ScopeGroupManager;
 import cn.chahuyun.timingManager.TimingManager;
 import cn.chahuyun.utils.MessageUtil;
@@ -31,28 +32,28 @@ public class FriendMessageEventManager {
     public void isMessageType(MessageEvent event) {
         Contact subject = event.getSubject();
         String code = event.getMessage().contentToString();
-        //定时任务
-        if (Pattern.matches("添加定时任务|%ds", code)) {
-            MessageUtil.INSTANCE.addTiming(event,0);
-        }else if (Pattern.matches("[+-]ds[:：]\\d+", code)) {
-            TimingManager.INSTANCE.operateTiming(event);
-        } else if (Pattern.matches("ds[:：](\\d+)?", code)) {
-            TimingManager.INSTANCE.checkTiming(event);
-        }
 
-        //群组
-        if (Pattern.matches("[+-]group[:：](\\d+)( \\d+)*", code)) {
-            if (code.startsWith("+")) {
-                ScopeGroupManager.INSTANCE.addScopeGroup(event);
-            } else {
-                ScopeGroupManager.INSTANCE.delScopeGroup(event);
+        long owner = ConfigData.INSTANCE.getOwner();
+        if (subject.getId() == owner) {
+            //定时任务
+            if (Pattern.matches("添加定时任务|%ds", code)) {
+                MessageUtil.INSTANCE.addTiming(event,0);
+            }else if (Pattern.matches("[+-]ds[:：]\\d+", code)) {
+                TimingManager.INSTANCE.operateTiming(event);
+            } else if (Pattern.matches("ds[:：](\\d+)?", code)) {
+                TimingManager.INSTANCE.checkTiming(event);
             }
-        }else if (Pattern.matches("group[:：]", code)) {
-            ScopeGroupManager.INSTANCE.checkScopeGroup(event);
+            //群组
+            if (Pattern.matches("[+-]gr[:：](\\d+)( \\d+)*", code)) {
+                if (code.startsWith("+")) {
+                    ScopeGroupManager.INSTANCE.addScopeGroup(event);
+                } else {
+                    ScopeGroupManager.INSTANCE.delScopeGroup(event);
+                }
+            }else if (Pattern.matches("gr[:：]", code)) {
+                ScopeGroupManager.INSTANCE.checkScopeGroup(event);
+            }
         }
-
-
-
 
     }
 

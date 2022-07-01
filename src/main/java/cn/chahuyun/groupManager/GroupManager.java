@@ -31,7 +31,7 @@ public class GroupManager {
     /**
      * 添加删除迎新词正则
      */
-    private final String setMessagePattern = "(hyc( \\S){1,3})";
+    private final String setMessagePattern = "[+-]hyc[:：](\\S+)( \\S+){0,2}";
 
     private final String prohibitPattern = "(\\[mirai:at:\\d+\\] \\d+[s|d|h|m])";
 
@@ -53,41 +53,32 @@ public class GroupManager {
         String group = matcher.group();
         //分割
         String[] strings = group.split(" ");
-        boolean aod = strings.length != 2;
-        String string = null;
-        ScopeInfoBase base = null;
-        //判断参数
-        switch (strings.length) {
-            case 2:
-                string = strings[1];
-                break;
-            case 3:
-                string = strings[1] + ":" + strings[2] + ":";
-                base = new ScopeInfoBase("当前", true,false, subject.getId(), 0);
-                break;
-            case 4:
-                if (Pattern.matches("全局|群组\\d+", strings[3])) {
-                    string = strings[1] + ":" + strings[2] + ":" + strings[3];
-                    if (strings[3].equals("全局")) {
-                        base = new ScopeInfoBase("全局", false,false, subject.getId(), 0);
-                    } else {
-                        int groupNum = Integer.parseInt(strings[3].substring(2));
-                        boolean containsKey = GroupData.INSTANCE.getGroupList().containsKey(groupNum);
-                        if (containsKey) {
-                            event.getSubject().sendMessage("没有该群组信息，请检查群组!");
-                            return;
-                        }
-                        base = new ScopeInfoBase("群组", false, true ,subject.getId(), groupNum);
-                    }
-                } else {
-                    subject.sendMessage("参数错误，请查看后使用！");
-                    return;
-                }
-                break;
+        boolean aod = strings[0].split("[:：]")[0].startsWith("+");
+        String key = strings[0].split("[:：]")[1];
+        String value = null;
+        if (aod) {
+            value = strings[1];
         }
-        assert string != null;
-        MessageChain messages = PluginData.INSTANCE.setGroupWelcomeMessage(aod,string,base);
-
+        ScopeInfoBase base = new ScopeInfoBase("当前", true,false, subject.getId(), 0);
+        if (strings.length >= 3) {
+            if (Pattern.matches("全局|gr\\d+", strings[2])) {
+                if (strings[2].equals("全局")) {
+                    base = new ScopeInfoBase("全局", false, false, subject.getId(), 0);
+                } else {
+                    int groupNum = Integer.parseInt(strings[2].substring(2));
+                    boolean containsKey = GroupData.INSTANCE.getGroupList().containsKey(groupNum);
+                    if (!containsKey) {
+                        event.getSubject().sendMessage("没有该群组信息，请检查群组!");
+                        return;
+                    }
+                    base = new ScopeInfoBase("群组", false, true, subject.getId(), groupNum);
+                }
+            } else {
+                subject.sendMessage("参数错误，请查看后使用！");
+                return;
+            }
+        }
+        MessageChain messages = PluginData.INSTANCE.setGroupWelcomeMessage(aod,key,value,base);
         subject.sendMessage(messages);
     }
 
