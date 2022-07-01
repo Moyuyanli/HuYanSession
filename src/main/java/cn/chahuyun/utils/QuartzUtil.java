@@ -1,8 +1,8 @@
 package cn.chahuyun.utils;
 
 import cn.chahuyun.HuYanSession;
-import cn.chahuyun.job.TimingJobBase;
 import cn.chahuyun.entity.TimingTaskBase;
+import cn.chahuyun.job.TimingJobBase;
 import net.mamoe.mirai.utils.MiraiLogger;
 import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
