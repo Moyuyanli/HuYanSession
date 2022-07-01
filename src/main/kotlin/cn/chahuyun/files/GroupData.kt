@@ -1,8 +1,6 @@
 package cn.chahuyun.files
 
 import net.mamoe.mirai.console.data.AutoSavePluginData
-import net.mamoe.mirai.console.data.Value
-import net.mamoe.mirai.console.data.java.JavaAutoSavePluginData
 import net.mamoe.mirai.console.data.value
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.buildMessageChain
@@ -12,12 +10,12 @@ object GroupData : AutoSavePluginData("GroupData") {
     /**
      * 黑名单
      */
-    private val blackList: MutableMap<String , String> by value()
+    val blackList: MutableMap<String , String> by value()
 
     /**
      * 群组信息
      */
-    private val groupList : MutableMap<Int , MutableList<Long>> by value()
+    val groupList : MutableMap<Int , MutableList<Long>> by value()
 
     /**
      * 添加群组
@@ -51,7 +49,7 @@ object GroupData : AutoSavePluginData("GroupData") {
      */
     fun delGroupList(index: Int, group: Long): MessageChain {
         return if (groupList.containsKey(index)) {
-            if (group != null) {
+            if (group != -1L) {
                 groupList[index]?.remove(group)
                 buildMessageChain { +"群组 $index 删除群 $group 成功！" }
             }else{
@@ -62,6 +60,7 @@ object GroupData : AutoSavePluginData("GroupData") {
             buildMessageChain { +"删除失败，没有找到该群组!" }
         }
     }
+
 
 
 }

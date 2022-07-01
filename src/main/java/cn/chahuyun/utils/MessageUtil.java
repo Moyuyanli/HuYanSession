@@ -2,10 +2,11 @@ package cn.chahuyun.utils;
 
 import cn.chahuyun.HuYanSession;
 import cn.chahuyun.entity.ScopeInfoBase;
-import cn.chahuyun.entity.TimingTaskBase;
-import cn.chahuyun.files.PluginData;
 import cn.chahuyun.entity.SessionDataBase;
+import cn.chahuyun.entity.TimingTaskBase;
 import cn.chahuyun.enumerate.DataEnum;
+import cn.chahuyun.files.GroupData;
+import cn.chahuyun.files.PluginData;
 import cn.chahuyun.files.TimingData;
 import kotlin.coroutines.EmptyCoroutineContext;
 import net.mamoe.mirai.contact.Contact;
@@ -21,6 +22,7 @@ import net.mamoe.mirai.utils.MiraiLogger;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -45,7 +47,7 @@ public class MessageUtil {
      * 学习正则
      * 学习(多词条)?([\s]+[\S]+){2}(\s+(精准|模糊|头部|结尾|当前|全局|轮询|随机)){0,3}
      */
-    public String studyPattern = "学习(多词条)?([\\s]+[\\S]+){2}(\\s+(精准|模糊|头部|结尾|当前|全局|轮询|随机)){0,3}";
+    public String studyPattern = "学习(多词条)?([\\s]+[\\S]+){2}(\\s+(精准|模糊|头部|结尾|当前|全局|轮询|随机|(群组\\d+))){0,3}";
 
     /**
      * 删除正则
@@ -85,10 +87,16 @@ public class MessageUtil {
     public Map<String, Object> spotStudyCommandParam(MessageEvent event) {
         //获取匹配数据
         String group = matcher.group();
-        //删除换行
-        String replace = group.replace("\\n", "");
         //分割参数
-        String[] split = replace.split("\\s+");
+        String[] split = group.split("\\s+");
+        //识别换行信息
+        split[1] = split[1].replace("\\n", "\n");
+        //后面的第一个参数如果是换行的话，给清除
+        String substring = split[2];
+        if (substring.startsWith("\\n")) {
+            substring = substring.substring(2);
+        }
+        split[2] = substring.replace("\\n", "\n");
         //判断学习方式类型
         boolean studyType = split[0].equals("学习多词条");
         //获取值
@@ -105,7 +113,7 @@ public class MessageUtil {
             contentType = 2;
         }
         //作用域和匹配机制
-        ScopeInfoBase scopeInfoBase = new ScopeInfoBase("当前", true, event.getSubject().getId(),0);
+        ScopeInfoBase scopeInfoBase = new ScopeInfoBase("当前", true, false, event.getSubject().getId(), 0);
         DataEnum dataEnum = DataEnum.ACCURATE;
         //有参数就判断参数，没有就不判断
         if (split.length >= 4) {
@@ -113,19 +121,33 @@ public class MessageUtil {
                 String s = split[i];
                 switch (s) {
                     case "模糊":
-                        dataEnum = DataEnum.VAGUE;break;
+                        dataEnum = DataEnum.VAGUE;
+                        break;
                     case "头部":
-                        dataEnum = DataEnum.START;break;
+                        dataEnum = DataEnum.START;
+                        break;
                     case "结尾":
-                        dataEnum = DataEnum.END;break;
+                        dataEnum = DataEnum.END;
+                        break;
                     case "全局":
-                        scopeInfoBase = new ScopeInfoBase("全局", false, null,0);break;
+                        scopeInfoBase = new ScopeInfoBase("全局", false, false, null, 0);
+                        break;
                     case "随机":
                         if (studyType) {
                             contentType = 3;
                         }
                         break;
-                    default:break;
+                    default:
+                        if (Pattern.matches("群组\\d+", s)) {
+                            int groupNum = Integer.parseInt(s.substring(2));
+                            boolean containsKey = GroupData.INSTANCE.getGroupList().containsKey(groupNum);
+                            if (!containsKey) {
+                                event.getSubject().sendMessage("没有该群组信息，请检查群组!");
+                                return null;
+                            }
+                            scopeInfoBase = new ScopeInfoBase("群组", false, true, null, groupNum);
+                        }
+                        break;
                 }
             }
         }
@@ -151,7 +173,7 @@ public class MessageUtil {
     /**
      *  判断是否是删除指令
      * @author zhangjiaxing
-     * @param event
+     * @param event 消息事件
      * @date 2022/6/23 22:15
      * @return boolean
      */
@@ -203,29 +225,35 @@ public class MessageUtil {
     public void isRepeatedlyAddMessage(MessageEvent event) {
         String code = event.getMessage().serializeToMiraiCode();
         Contact subject = event.getSubject();
-        //去换行
-        code = code.replace("\\n", "");
         //判断格式
         if (!Pattern.matches("添加多词条 (\\S+)", code)) {
             subject.sendMessage("格式错误，请检查!");
             return;
         }
         //获取参数
-        String[] s = code.split(" ");
+        String[] split = code.split(" ");
+        //识别换行信息
+        split[1] = split[1].replace("\\n", "\n");
+        //后面的第一个参数如果是换行的话，给清除
+        String substring = split[2];
+        if (substring.startsWith("\\n")) {
+            substring = substring.substring(2);
+        }
+        split[2] = substring.replace("\\n", "\n");
         Map<String, SessionDataBase> sessionMap = PluginData.INSTANCE.getSessionMap();
         //判断有没有这条数据
-        if (!sessionMap.containsKey(s[1])) {
+        if (!sessionMap.containsKey(split[1])) {
             subject.sendMessage("没有找到该多词条，请查询！");
             return;
         }
         //判断是不是多词条
-        int type = sessionMap.get(s[1]).getType();
+        int type = sessionMap.get(split[1]).getType();
         if (type != 2 && type != 3) {
             subject.sendMessage("没有找到该多词条，请查询！");
             return;
         }
         //保存key和新建批量内容
-        repeatedKey = s[1];
+        repeatedKey = split[1];
         repeatedlyList = new ArrayList<String>();
         subject.sendMessage("请发送你要添加的内容，'!'删除上一次添加，'!!!'结束添加。");
         //结束当前事件监听
@@ -331,6 +359,13 @@ public class MessageUtil {
                 break;
             case 4:
                 scopeNum = Integer.parseInt(code);
+                if (scopeNum != 0) {
+                    boolean containsKey = GroupData.INSTANCE.getGroupList().containsKey(scopeNum);
+                    if (!containsKey) {
+                        subject.sendMessage("没有该群组信息，请检查群组!");
+                        return;
+                    }
+                }
                 subject.sendMessage("请发送定时发送的内容：");
                 replyTimingMessage(event,stage+1);
                 event.intercept();
@@ -342,6 +377,12 @@ public class MessageUtil {
             default:break;
         }
         if (stage == 6) {
+            ScopeInfoBase scopeInfoBase;
+            if (scopeNum == 0) {
+                scopeInfoBase = new ScopeInfoBase("全局", false, false, null, scopeNum);
+            } else {
+                scopeInfoBase = new ScopeInfoBase("群组", false, true, null, scopeNum);
+            }
             TimingTaskBase base = new TimingTaskBase(TimingData.INSTANCE.getTimingNum(),
                     timingName,
                     timeResolve,
@@ -350,7 +391,7 @@ public class MessageUtil {
                     value,
                     null,
                     0,
-                    new ScopeInfoBase("群组", true, null, scopeNum)
+                    scopeInfoBase
             );
             TimingData.INSTANCE.addTimingList(base);
             subject.sendMessage("定时器添加完成！");
@@ -387,14 +428,15 @@ public class MessageUtil {
      */
     private boolean timingTimeResolve(MessageEvent event, int stage) {
         Contact subject = event.getSubject();
-        String code = event.getMessage().serializeToMiraiCode();
+        String code = event.getMessage().contentToString();
 
-        Matcher matcher = Pattern.compile("\\$cron\\(.+\\)").matcher(code);
+        Matcher matcher = Pattern.compile("\\$cron\\((\\S+ ){5}\\S\\)").matcher(code);
         String group;
         if (matcher.find()) {
             group = matcher.group();
+            l.info("group-"+group);
             cronString = spotVariable(group);
-            subject.sendMessage("识别到cron表达式 "+cronString+"，是否确认？");
+            subject.sendMessage("识别到cron表达式->"+cronString+"<-，是否确认？");
             replyTimingMessage(event,stage+1);
             return true;
         }

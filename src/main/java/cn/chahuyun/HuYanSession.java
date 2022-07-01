@@ -1,15 +1,16 @@
 package cn.chahuyun;
 
-import cn.chahuyun.entity.TimingTaskBase;
-import cn.chahuyun.eventManager.FriendMessageEventManager;
-import cn.chahuyun.eventManager.MessageEventManager;
 import cn.chahuyun.commandManager.CommandManage;
-import cn.chahuyun.files.ConfigData;
 import cn.chahuyun.entity.ScopeInfoBase;
-import cn.chahuyun.files.PluginData;
 import cn.chahuyun.enumerate.DataEnum;
+import cn.chahuyun.eventManager.FriendMessageEventManager;
 import cn.chahuyun.eventManager.GroupEventManager;
+import cn.chahuyun.eventManager.MessageEventManager;
+import cn.chahuyun.files.ConfigData;
+import cn.chahuyun.files.GroupData;
+import cn.chahuyun.files.PluginData;
 import cn.chahuyun.files.TimingData;
+import cn.chahuyun.timingManager.TimingManager;
 import net.mamoe.mirai.console.command.CommandManager;
 import net.mamoe.mirai.console.plugin.jvm.JavaPlugin;
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescriptionBuilder;
@@ -66,12 +67,17 @@ public final class HuYanSession extends JavaPlugin {
             getLogger().info("机器人已设置->"+bot);
         }
         //加载数据
+        this.reloadPluginData(GroupData.INSTANCE);
+        getLogger().info("GroupData 已加载！");
+
         this.reloadPluginData(PluginData.INSTANCE);
         getLogger().info("SessionData 已加载！");
+        PluginData.INSTANCE.setSessionMap(false, 0, "乒", "乓", new ScopeInfoBase("全局", false,false, null,0), DataEnum.ACCURATE);
+
         this.reloadPluginData(TimingData.INSTANCE);
         getLogger().info("TimingData 已加载！");
-        PluginData.INSTANCE.setSessionMap(false, 0, "乒", "乓", new ScopeInfoBase("全局", false, null,0), DataEnum.ACCURATE);
-
+        TimingManager.INSTANCE.init();
+        getLogger().info("所有定时器已加载！");
 
         //注册指令
         CommandManager.INSTANCE.registerCommand(new CommandManage(HuYanSession.INSTANCE), true);

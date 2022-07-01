@@ -68,4 +68,18 @@ object TimingData : AutoSavePluginData("TimingTask") {
         return timingList.size
     }
 
+    /**
+     * 设置定时器状态
+     * @author zhangjiaxing
+     * @param key 定时器编号
+     * @param boolean 新状态
+     * @date 2022/7/1 15:56
+     */
+    fun setTimingState(key: Int, boolean: Boolean) {
+        val body = timingList[key]
+        val base = JSONObject.parseObject(body, TimingTaskBase::class.java)
+        base.state = boolean
+        timingList[key] = JSONObject.toJSONString(base)
+    }
+
 }

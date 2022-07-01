@@ -16,21 +16,31 @@ public class ScopeInfoBase {
 
     /**
      * true 当前
-     * false 全局
+     * false 群组或全局
      */
     private Boolean type;
 
     /**
+     * true 群组
+     * false 全局
+     */
+    private Boolean groupType;
+
+    /**
      * 作用域识别符
      */
-    private String scopeCode;
+    private Long scopeCode;
 
+    /**
+     * 群组编号
+     */
     private int scopeNum;
 
 
-    public ScopeInfoBase(String scope, Boolean type, Long scopeCode, int scopeNum) {
+    public ScopeInfoBase(String scope, Boolean type, Boolean groupType, Long scopeCode, int scopeNum) {
         this.scope = scope;
         this.type = type;
+        this.groupType = groupType;
         this.scopeCode = scopeCode;
         this.scopeNum = scopeNum;
     }
@@ -51,11 +61,27 @@ public class ScopeInfoBase {
         this.type = type;
     }
 
-    public String getScopeCode() {
+    public Long getScopeCode() {
         return scopeCode;
     }
 
-    public void setScopeCode(String scopeCode) {
+    public void setScopeCode(Long scopeCode) {
         this.scopeCode = scopeCode;
+    }
+
+    public int getScopeNum() {
+        return scopeNum;
+    }
+
+    public void setScopeNum(int scopeNum) {
+        this.scopeNum = scopeNum;
+    }
+
+    public Boolean getGroupType() {
+        return groupType;
+    }
+
+    public void setGroupType(Boolean groupType) {
+        this.groupType = groupType;
     }
 }

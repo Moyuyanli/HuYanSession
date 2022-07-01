@@ -1,6 +1,7 @@
 package cn.chahuyun.files;
 
 import cn.chahuyun.HuYanSession;
+import cn.chahuyun.entity.GroupWelcomeBase;
 import cn.chahuyun.entity.ScopeInfoBase;
 import cn.chahuyun.entity.SessionDataBase;
 import cn.chahuyun.enumerate.DataEnum;
@@ -11,9 +12,7 @@ import net.mamoe.mirai.message.data.MessageChain;
 import net.mamoe.mirai.message.data.MessageChainBuilder;
 import net.mamoe.mirai.utils.MiraiLogger;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * SessionData
@@ -118,7 +117,7 @@ public class PluginData extends JavaAutoSavePluginData {
     /**
      * @param param
      * @return net.mamoe.mirai.message.data.MessageChain
-     * @description 删除词
+     * 删除词
      * @author zhangjiaxing
      * @date 2022/6/23 22:36
      */
@@ -178,16 +177,18 @@ public class PluginData extends JavaAutoSavePluginData {
      * @param aod t 添加 f 删除
      * @param message 欢迎词
      * @return net.mamoe.mirai.message.data.MessageChain
-     * @description 群消息欢迎词
+     * 群消息欢迎词
      * @author zhangjiaxing
      * @date 2022/6/21 9:06
      */
-    public MessageChain setGroupWelcomeMessage(boolean aod, String message) {
+    public MessageChain setGroupWelcomeMessage(boolean aod, String message,ScopeInfoBase infoBase) {
         Map<String, String> stringStringMap = this.groupWelcomeMessage.get();
         String[] strings = message.split(":");
         String key = strings[0];
         if (aod) {
-            stringStringMap.put(key, message);
+            GroupWelcomeBase base = new GroupWelcomeBase(key, strings[1], infoBase);
+            String jsonString = JSONObject.toJSONString(base);
+            stringStringMap.put(key, jsonString);
             return new MessageChainBuilder().append("欢迎词添加成功！").build();
         } else {
             if (stringStringMap.containsKey(key)) {
@@ -199,8 +200,46 @@ public class PluginData extends JavaAutoSavePluginData {
         }
     }
 
-    public Map<String, String> getGroupWelcomeMessage() {
-        return groupWelcomeMessage.get();
+    /**
+     * 获取群欢迎词列表
+     * @author zhangjiaxing
+     * @param group 群号
+     * @date 2022/7/1 11:00
+     * @return java.util.List<cn.chahuyun.entity.GroupWelcomeBase>
+     */
+    public List<GroupWelcomeBase> getGroupWelcomeMessage(Long group) {
+        Map<String, String> stringStringMap = groupWelcomeMessage.get();
+        //返回指定群的列表
+        List<GroupWelcomeBase> groupWelcomeBaseList = new ArrayList<>();
+        //判断是否是在该群的欢迎词之内
+        for (Map.Entry<String, String> entry : stringStringMap.entrySet()) {
+            String value = entry.getValue();
+            //序列化
+            GroupWelcomeBase base = JSONObject.parseObject(value, GroupWelcomeBase.class);
+            //是否是当前群
+            if (base.getScopeInfo().getType()) {
+                if (Objects.equals(base.getScopeInfo().getScopeCode(), group)) {
+                    groupWelcomeBaseList.add(base);
+                }
+            } else {
+                //是否是群组
+                if (base.getScopeInfo().getGroupType()) {
+                    //群组列表
+                    List<Long> longs = GroupData.INSTANCE.getGroupList().get(base.getScopeInfo().getScopeNum());
+                    //是否在群组内
+                    for (Long aLong : longs) {
+                        if (Objects.equals(aLong, group)) {
+                            groupWelcomeBaseList.add(base);
+                        }
+                    }
+                    //全局
+                } else {
+                    groupWelcomeBaseList.add(base);
+                }
+            }
+
+        }
+        return groupWelcomeBaseList;
     }
 
     /**

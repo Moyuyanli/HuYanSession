@@ -2,11 +2,11 @@ package cn.chahuyun.sessionManager;
 
 import cn.chahuyun.HuYanSession;
 import cn.chahuyun.entity.ScopeInfoBase;
-import cn.chahuyun.files.PluginData;
 import cn.chahuyun.entity.SessionDataBase;
-import cn.chahuyun.utils.SessionPaging;
 import cn.chahuyun.enumerate.DataEnum;
+import cn.chahuyun.files.PluginData;
 import cn.chahuyun.utils.MessageUtil;
+import cn.chahuyun.utils.SessionPaging;
 import net.mamoe.mirai.contact.Contact;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.code.MiraiCode;
@@ -46,19 +46,21 @@ public class SessionManage {
      * @author zhangjiaxing
      * @param event 消息事件
      * @date 2022/6/16 20:56
-     * @return boolean
      */
-    public boolean studySession(MessageEvent event) {
+    public void studySession(MessageEvent event) {
         Contact subject = event.getSubject();
         String code = event.getMessage().serializeToMiraiCode();
         //验证格式
         boolean studyCommand = messageUtil.isStudyCommand(event);
         if (!studyCommand) {
             subject.sendMessage("学习失败!需要帮助请发送帮助!");
-            return false;
+            return;
         }
         //取参添加
         Map<String, Object> param = messageUtil.spotStudyCommandParam(event);
+        if (param == null) {
+            return;
+        }
         /*
           studyType 学习类型
           contentType 数据保存类型
@@ -75,7 +77,6 @@ public class SessionManage {
         ScopeInfoBase scopeInfoBase = (ScopeInfoBase) param.get("scopeInfo");
         MessageChain messages = PluginData.INSTANCE.setSessionMap(studyType, contentType, key, value, scopeInfoBase, dataEnum);
         subject.sendMessage(messages);
-        return true;
     }
 
 

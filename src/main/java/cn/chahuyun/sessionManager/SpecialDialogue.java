@@ -57,7 +57,6 @@ public class SpecialDialogue {
      * @author zhangjiaxing
      * @param event 消息事件
      * @date 2022/6/18 0:09
-     * @return void
      */
     public  void sessionDou(MessageEvent event) {
         Contact subject = event.getSubject();

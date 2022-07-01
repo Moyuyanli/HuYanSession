@@ -1,6 +1,8 @@
 package cn.chahuyun.eventManager;
 
 import cn.chahuyun.HuYanSession;
+import cn.chahuyun.groupManager.ScopeGroupManager;
+import cn.chahuyun.timingManager.TimingManager;
 import cn.chahuyun.utils.MessageUtil;
 import net.mamoe.mirai.contact.Contact;
 import net.mamoe.mirai.event.events.MessageEvent;
@@ -28,13 +30,32 @@ public class FriendMessageEventManager {
      */
     public void isMessageType(MessageEvent event) {
         Contact subject = event.getSubject();
-        String code = event.getMessage().serializeToMiraiCode();
+        String code = event.getMessage().contentToString();
 
-        if (Pattern.matches("添加定时任务", code)) {
+        l.info("好友消息");
+
+        //定时任务
+        if (Pattern.matches("添加定时任务|%ds", code)) {
             MessageUtil.INSTANCE.addTiming(event,0);
+        }else if (Pattern.matches("[+-]ds[:：]\\d+", code)) {
+            TimingManager.INSTANCE.operateTiming(event);
+        } else if (Pattern.matches("ds[:：](\\d+)?", code)) {
+            TimingManager.INSTANCE.checkTiming(event);
         }
 
-        if (Pattern.matches("+group[:：]"))
+        l.info(code);
+        l.info("pattern-"+Pattern.matches("^[+-]group[:：](\\d+)( \\d+)*", code));
+        //群组
+        if (Pattern.matches("[+-]group[:：](\\d+)( \\d+)*", code)) {
+            l.info("code1->"+code.startsWith("+"));
+            if (code.startsWith("+")) {
+                ScopeGroupManager.INSTANCE.addScopeGroup(event);
+            } else {
+                ScopeGroupManager.INSTANCE.delScopeGroup(event);
+            }
+        }else if (Pattern.matches("group[:：]", code)) {
+            ScopeGroupManager.INSTANCE.checkScopeGroup(event);
+        }
 
 
 

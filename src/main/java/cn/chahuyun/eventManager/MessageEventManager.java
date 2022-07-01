@@ -1,21 +1,23 @@
 package cn.chahuyun.eventManager;
 
 import cn.chahuyun.HuYanSession;
-import cn.chahuyun.sessionManager.SessionDialogue;
-import cn.chahuyun.sessionManager.SpecialDialogue;
-import cn.chahuyun.files.ConfigData;
 import cn.chahuyun.entity.PowerConfigBase;
-import cn.chahuyun.files.PluginData;
 import cn.chahuyun.entity.SessionDataBase;
 import cn.chahuyun.enumerate.MessEnum;
+import cn.chahuyun.files.ConfigData;
+import cn.chahuyun.files.GroupData;
+import cn.chahuyun.files.PluginData;
 import cn.chahuyun.groupManager.GroupManager;
 import cn.chahuyun.power.Permissions;
+import cn.chahuyun.sessionManager.SessionDialogue;
 import cn.chahuyun.sessionManager.SessionManage;
+import cn.chahuyun.sessionManager.SpecialDialogue;
 import cn.chahuyun.utils.MessageUtil;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.utils.MiraiLogger;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -42,20 +44,19 @@ public class MessageEventManager {
     /**
      * 群管指令正则
      */
-    public String groupPattern = "([+-][\\d\\w\\u4e00-\\u9fa5]+[:：][\\d\\w\\S\\u4e00-\\u9fa5]+)|查询[欢迎新]+词|(\\[mirai:at:\\d+\\] \\d+[s|d|h|m])|(踢人\\[mirai:at:\\d+\\])";
+    public String groupPattern = "(hyc( \\S){1,2})|查询[欢迎新]+词|(\\[mirai:at:\\d+\\] \\d+[s|d|h|m])|(踢人\\[mirai:at:\\d+\\])";
     /**
      * 回复消息正则
      */
-    public String dialoguePattern = "斗地主|帮助";
+    public String dialoguePattern = "斗地主|帮助|[!！]定时|[!！]ds";
 
     public Long owner = ConfigData.INSTANCE.getOwner();
 
     /**
-     * @description 所有消息的入口
+     * 所有消息的入口
      * @author zhangjiaxing
      * @param event 消息监视器
      * @date 2022/6/16 15:25
-     * @return void
      */
     public void isMessageWhereabouts(MessageEvent event) {
         //判断消息传递类型
@@ -74,7 +75,25 @@ public class MessageEventManager {
         for (SessionDataBase base : sessionPattern) {
             //判断是全局还是当前群
             if (base.getScopeInfo().getType()) {
+                //当前
                 if (base.getScopeInfo().getScopeCode() != event.getSubject().getId()) {
+                    continue;
+                }
+            } else if (base.getScopeInfo().getGroupType()){
+                //群组
+                int scopeNum = base.getScopeInfo().getScopeNum();
+                //是 跳过当前这条回复 否 不跳
+                boolean mark = true;
+                //是群组，根据群组编号拿群组信息
+                List<Long> longs = GroupData.INSTANCE.getGroupList().get(scopeNum);
+                //判断，如果有就改为不让跳过
+                for (Long group : longs) {
+                    if (group == event.getSubject().getId()) {
+                        mark = false;
+                        break;
+                    }
+                }
+                if (mark) {
                     continue;
                 }
             }
@@ -230,7 +249,7 @@ public class MessageEventManager {
                 if (groupMessage.equals("查询欢迎词") || groupMessage.equals("查询迎新词") ) {
                     l.info("查询迎新词指令");
                     GroupManager.INSTANCE.checkGroupWelcomeMessage(event);
-                }else if (Pattern.matches("([+-][\\d\\w\\u4e00-\\u9fa5]+[:：][\\d\\w\\S\\u4e00-\\u9fa5]+)", messageToString)) {
+                }else if (Pattern.matches("(hyc( \\S){1,3})", messageToString)) {
                     l.info("添加迎新词指令");
                     GroupManager.INSTANCE.setGroupWelcomeMessage(event);
                 }else if (Pattern.matches("(\\[mirai:at:\\d+\\] \\d+[s|d|h|m])",messageToString)){

@@ -1,6 +1,9 @@
 package cn.chahuyun.groupManager;
 
 import cn.chahuyun.HuYanSession;
+import cn.chahuyun.entity.GroupWelcomeBase;
+import cn.chahuyun.entity.ScopeInfoBase;
+import cn.chahuyun.files.GroupData;
 import cn.chahuyun.files.PluginData;
 import net.mamoe.mirai.contact.Contact;
 import net.mamoe.mirai.contact.NormalMember;
@@ -9,7 +12,7 @@ import net.mamoe.mirai.message.code.MiraiCode;
 import net.mamoe.mirai.message.data.*;
 import net.mamoe.mirai.utils.MiraiLogger;
 
-import java.util.Map;
+import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -23,13 +26,12 @@ import java.util.regex.Pattern;
 public class GroupManager {
 
     public static final GroupManager INSTANCE = new GroupManager();
-
     private MiraiLogger l = HuYanSession.INSTANCE.getLogger();
 
     /**
      * 添加删除迎新词正则
      */
-    private final String setMessagePattern = "(hyc( \\S){1,2})";
+    private final String setMessagePattern = "(hyc( \\S){1,3})";
 
     private final String prohibitPattern = "(\\[mirai:at:\\d+\\] \\d+[s|d|h|m])";
 
@@ -51,15 +53,40 @@ public class GroupManager {
         String group = matcher.group();
         //分割
         String[] strings = group.split(" ");
-        boolean aod = strings.length == 3;
+        boolean aod = strings.length != 2;
         String string = null;
-        if (strings.length == 2) {
-            string = strings[1];
+        ScopeInfoBase base = null;
+        //判断参数
+        switch (strings.length) {
+            case 2:
+                string = strings[1];
+                break;
+            case 3:
+                string = strings[1] + ":" + strings[2] + ":";
+                base = new ScopeInfoBase("当前", true,false, subject.getId(), 0);
+                break;
+            case 4:
+                if (Pattern.matches("全局|群组\\d+", strings[3])) {
+                    string = strings[1] + ":" + strings[2] + ":" + strings[3];
+                    if (strings[3].equals("全局")) {
+                        base = new ScopeInfoBase("全局", false,false, subject.getId(), 0);
+                    } else {
+                        int groupNum = Integer.parseInt(strings[3].substring(2));
+                        boolean containsKey = GroupData.INSTANCE.getGroupList().containsKey(groupNum);
+                        if (containsKey) {
+                            event.getSubject().sendMessage("没有该群组信息，请检查群组!");
+                            return;
+                        }
+                        base = new ScopeInfoBase("群组", false, true ,subject.getId(), groupNum);
+                    }
+                } else {
+                    subject.sendMessage("参数错误，请查看后使用！");
+                    return;
+                }
+                break;
         }
-        if (strings.length == 3) {
-            string = strings[1] + ":" + strings[2];
-        }
-        MessageChain messages = PluginData.INSTANCE.setGroupWelcomeMessage(aod, string);
+        assert string != null;
+        MessageChain messages = PluginData.INSTANCE.setGroupWelcomeMessage(aod,string,base);
 
         subject.sendMessage(messages);
     }
@@ -70,7 +97,6 @@ public class GroupManager {
      * @author zhangjiaxing
      * @param event 消息事件
      * @date 2022/6/21 11:15
-     * @return void
      */
     public void checkGroupWelcomeMessage(MessageEvent event) {
         Contact subject = event.getSubject();
@@ -79,12 +105,12 @@ public class GroupManager {
 
         MessageChain fastMessages = new MessageChainBuilder().append("以下为查询到的所有的迎新词↓").build();
         //查询所有欢迎词，然后遍历添加，以miraicode码
-        Map<String, String> groupWelcomeMessage = PluginData.INSTANCE.getGroupWelcomeMessage();
+        ArrayList<GroupWelcomeBase> groupWelcomeMessage = (ArrayList<GroupWelcomeBase>) PluginData.INSTANCE.getGroupWelcomeMessage(event.getSubject().getId());
         MessageChainBuilder messageChainBuilder = new MessageChainBuilder();
-        for (String s : groupWelcomeMessage.keySet()) {
-            MessageChain messages = MiraiCode.deserializeMiraiCode(groupWelcomeMessage.get(s));
+        for (GroupWelcomeBase base : groupWelcomeMessage) {
+            MessageChain messages = MiraiCode.deserializeMiraiCode(base.getValue());
             messageChainBuilder.append("标识”")
-                    .append(s)
+                    .append(base.getKey())
                     .append("”:")
                     .append(messages)
                     .append("\n");
