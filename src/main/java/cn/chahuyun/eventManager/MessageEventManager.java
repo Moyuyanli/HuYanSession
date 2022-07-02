@@ -68,34 +68,38 @@ public class MessageEventManager {
         判断是否是对话类消息
          */
         //获取对话数据
-        ArrayList<SessionDataBase> sessionPattern = new ArrayList<>(PluginData.INSTANCE.getSessionMap().values()) ;
+        ArrayList<SessionDataBase> sessionPattern = new ArrayList<>(PluginData.INSTANCE.loadSessionMap().values()) ;
         //创建触发对话结果
         SessionDataBase sessionDataBase = null;
         //循环判断
         for (SessionDataBase base : sessionPattern) {
-            //判断是全局还是当前群
-            if (base.getScopeInfo().getType()) {
-                //当前
-                if (base.getScopeInfo().getScopeCode() != event.getSubject().getId()) {
-                    continue;
-                }
-            } else if (base.getScopeInfo().getGroupType()){
-                //群组
-                int scopeNum = base.getScopeInfo().getScopeNum();
-                //是 跳过当前这条回复 否 不跳
-                boolean mark = true;
-                //是群组，根据群组编号拿群组信息
-                List<Long> longs = GroupData.INSTANCE.getGroupList().get(scopeNum);
-                //判断，如果有就改为不让跳过
-                for (Long group : longs) {
-                    if (group == event.getSubject().getId()) {
-                        mark = false;
-                        break;
+            try {
+                //判断是全局还是当前群
+                if (base.getScopeInfo().getType()) {
+                    //当前
+                    if (base.getScopeInfo().getScopeCode() != event.getSubject().getId()) {
+                        continue;
+                    }
+                } else if (base.getScopeInfo().getGroupType()){
+                    //群组
+                    int scopeNum = base.getScopeInfo().getScopeNum();
+                    //是 跳过当前这条回复 否 不跳
+                    boolean mark = true;
+                    //是群组，根据群组编号拿群组信息
+                    List<Long> longs = GroupData.INSTANCE.getGroupList().get(scopeNum);
+                    //判断，如果有就改为不让跳过
+                    for (Long group : longs) {
+                        if (group == event.getSubject().getId()) {
+                            mark = false;
+                            break;
+                        }
+                    }
+                    if (mark) {
+                        continue;
                     }
                 }
-                if (mark) {
-                    continue;
-                }
+            } catch (Exception e) {
+                l.info("老数据不兼容");
             }
             //匹配
             switch (base.getDataEnum()) {

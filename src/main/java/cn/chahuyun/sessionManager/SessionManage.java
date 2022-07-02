@@ -110,7 +110,7 @@ public class SessionManage {
 
         //关键词查询
         String[] strings = messageString.split(" ");
-        Map<String, SessionDataBase> sessionDataBaseMap = PluginData.INSTANCE.getSessionMap();
+        Map<String, SessionDataBase> sessionDataBaseMap = PluginData.INSTANCE.loadSessionMap();
         if (strings.length >= 2 && sessionDataBaseMap.containsKey(strings[1])) {
             subject.sendMessage(new MessageChainBuilder().append("查询成功! ")
                     .append(MiraiCode.deserializeMiraiCode(strings[1]))

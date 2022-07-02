@@ -58,7 +58,7 @@ public class SessionPaging {
         poll.append("所有的多词条轮询触发消息:\n");
         random.append("所有的多词条随机触发消息:\n");
         //获取全部消息
-        ArrayList<SessionDataBase> values = new ArrayList<>(PluginData.INSTANCE.getSessionMap().values()) ;
+        ArrayList<SessionDataBase> values = new ArrayList<>(PluginData.INSTANCE.loadSessionMap().values()) ;
         for (SessionDataBase base : values) {
             //判断触发类别
             String trigger = "全局触发";

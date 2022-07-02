@@ -231,7 +231,7 @@ public class MessageUtil {
         }
         //获取参数
         String[] split = code.split(" ");
-        Map<String, SessionDataBase> sessionMap = PluginData.INSTANCE.getSessionMap();
+        Map<String, SessionDataBase> sessionMap = PluginData.INSTANCE.loadSessionMap();
         //判断有没有这条数据
         if (!sessionMap.containsKey(split[1])) {
             subject.sendMessage("没有找到该多词条，请查询！");

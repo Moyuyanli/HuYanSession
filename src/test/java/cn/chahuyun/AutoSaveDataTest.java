@@ -34,7 +34,7 @@ public class AutoSaveDataTest {
     @Test
     public void testData() {
         MockPlugin.INSTANCE.reloadPluginData(PluginData.INSTANCE);
-        Map<String, SessionDataBase> sessionMap = PluginData.INSTANCE.getSessionMap();
+//        Map<String, SessionDataBase> sessionMap = PluginData.INSTANCE.getSessionMap();
 //        SessionData.INSTANCE.setSessionMap("+",new SessionDataBase("乒", 0, "乓", DataEnum.ACCURATE, new ScopeInfo("全局", false, 0L)));
 
 //        Map<String, SessionDataBase> map = SessionData.INSTANCE.getSessionMap();
