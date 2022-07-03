@@ -14,8 +14,10 @@ group = 'cn.chahuyun'
  * 完成定时任务管理 - 1.9.12
  * 修复一系列bug - 1.9.13
  * 更改pluginData的类为kt，修复群消息的bug - 1.9.14
+ * 兼容了一下旧版回复数据 - 1.9.15
+ * 修复定时不存时不提示只报错 - 1.9.16
  */
-version = '1.9.14-Bate'
+version = '1.9.16-Bate'
 
 
 repositories {

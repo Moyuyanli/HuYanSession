@@ -60,10 +60,12 @@ public class TimingManager {
         TimingTaskBase taskBase = null;
         try {
             taskBase = timingTaskBaseMap.get(key);
-            String s = JSONObject.toJSONString(taskBase);
-            l.info(s);
+            if (taskBase == null) {
+                subject.sendMessage("没有找到该定时器！");
+                return;
+            }
         } catch (Exception e) {
-            subject.sendMessage("没有找到该定时器！");
+            subject.sendMessage("查找定时器数据时出错！");
             return;
         }
         if (ooc) {

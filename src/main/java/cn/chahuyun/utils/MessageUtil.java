@@ -370,7 +370,7 @@ public class MessageUtil {
         if (stage == 6) {
             ScopeInfoBase scopeInfoBase;
             if (scopeNum == 0) {
-                scopeInfoBase = new ScopeInfoBase("全局", false, false, null, scopeNum);
+                scopeInfoBase = new ScopeInfoBase("全局", false, false, null, 0);
             } else {
                 scopeInfoBase = new ScopeInfoBase("群组", false, true, null, scopeNum);
             }

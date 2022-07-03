@@ -34,7 +34,7 @@ public class MessageEventManager {
 
     public static final MessageEventManager INSTANCE = new MessageEventManager();
 
-    private  MiraiLogger l = HuYanSession.INSTANCE.getLogger();
+    private MiraiLogger l = HuYanSession.INSTANCE.getLogger();
 
     private final MessageUtil util = MessageUtil.INSTANCE;
     /**
@@ -54,8 +54,9 @@ public class MessageEventManager {
 
     /**
      * 所有消息的入口
-     * @author zhangjiaxing
+     *
      * @param event 消息监视器
+     * @author zhangjiaxing
      * @date 2022/6/16 15:25
      */
     public void isMessageWhereabouts(MessageEvent event) {
@@ -68,39 +69,46 @@ public class MessageEventManager {
         判断是否是对话类消息
          */
         //获取对话数据
-        ArrayList<SessionDataBase> sessionPattern = new ArrayList<>(PluginData.INSTANCE.loadSessionMap().values()) ;
+        ArrayList<SessionDataBase> sessionPattern = new ArrayList<>(PluginData.INSTANCE.loadSessionMap().values());
         //创建触发对话结果
         SessionDataBase sessionDataBase = null;
+        boolean judge = false;
         //循环判断
         for (SessionDataBase base : sessionPattern) {
+
+            boolean groupType = false;
+
             try {
-                //判断是全局还是当前群
-                if (base.getScopeInfo().getType()) {
-                    //当前
-                    if (base.getScopeInfo().getScopeCode() != event.getSubject().getId()) {
-                        continue;
-                    }
-                } else if (base.getScopeInfo().getGroupType()){
-                    //群组
-                    int scopeNum = base.getScopeInfo().getScopeNum();
-                    //是 跳过当前这条回复 否 不跳
-                    boolean mark = true;
-                    //是群组，根据群组编号拿群组信息
-                    List<Long> longs = GroupData.INSTANCE.getGroupList().get(scopeNum);
-                    //判断，如果有就改为不让跳过
-                    for (Long group : longs) {
-                        if (group == event.getSubject().getId()) {
-                            mark = false;
-                            break;
-                        }
-                    }
-                    if (mark) {
-                        continue;
+                groupType = base.getScopeInfo().getGroupType();
+            } catch (Exception e) {
+                judge = true;
+            }
+
+            //判断是全局还是当前群
+            if (base.getScopeInfo().getType()) {
+                //当前
+                if (base.getScopeInfo().getScopeCode() != event.getSubject().getId()) {
+                    continue;
+                }
+            } else if (groupType) {
+                //群组
+                int scopeNum = base.getScopeInfo().getScopeNum();
+                //是 跳过当前这条回复 否 不跳
+                boolean mark = true;
+                //是群组，根据群组编号拿群组信息
+                List<Long> longs = GroupData.INSTANCE.getGroupList().get(scopeNum);
+                //判断，如果有就改为不让跳过
+                for (Long group : longs) {
+                    if (group == event.getSubject().getId()) {
+                        mark = false;
+                        break;
                     }
                 }
-            } catch (Exception e) {
-                l.info("老数据不兼容");
+                if (mark) {
+                    continue;
+                }
             }
+
             //匹配
             switch (base.getDataEnum()) {
                 //TypeInt = 1 -> 精准匹配
@@ -124,7 +132,6 @@ public class MessageEventManager {
                     String firstSubstring;
                     if (messageToString.length() >= base.getKey().length()) {
                         firstSubstring = messageToString.substring(0, base.getKey().length());
-//                        l.info("进行头部匹配 -> "+firstSubstring);
                     } else {
                         firstSubstring = messageToString;
                     }
@@ -139,7 +146,6 @@ public class MessageEventManager {
                     String endSubstring;
                     if (messageToString.length() >= base.getKey().length()) {
                         endSubstring = messageToString.substring(messageToString.length() - base.getKey().length());
-//                        l.info("进行结尾匹配 -> "+endSubstring);
                     } else {
                         endSubstring = messageToString;
                     }
@@ -153,18 +159,22 @@ public class MessageEventManager {
                     break;
             }
         }
+        if (judge) {
+            l.warning( "您有多条消息回复为旧版数据，请更新!");
+        }
+
 
 
         /*
         判断是否是指令消息
          */
         //拼接权限识别字符
-        String userPower = "m" + event.getSubject().getId()  + "." + event.getSender().getId();
+        String userPower = "m" + event.getSubject().getId() + "." + event.getSender().getId();
         //获取配置中权限map
         Map<String, PowerConfigBase> adminList = ConfigData.INSTANCE.pickPowerList();
         //优先判断是否为主人
         //先判断map是否为空，如果为不为空，在判断该用户是否存在,不存在直接不判断能否使用指令
-        if ( event.getSender().getId() == owner ||(adminList != null && adminList.containsKey(userPower))) {
+        if (event.getSender().getId() == owner || (adminList != null && adminList.containsKey(userPower))) {
             Matcher matcher = Pattern.compile(commandPattern).matcher(messageToString);
             if (matcher.find()) {
                 messEnum = MessEnum.COMMAND;
@@ -175,7 +185,7 @@ public class MessageEventManager {
         /*
         判断是否是回复消息
          */
-        if (Pattern.matches(dialoguePattern,messageToString)) {
+        if (Pattern.matches(dialoguePattern, messageToString)) {
             messEnum = MessEnum.REPLY;
         }
 
@@ -197,14 +207,14 @@ public class MessageEventManager {
         if (messEnum == null) {
             return;
         } else {
-            l.info("识别到"+messEnum.getMessageType());
+            l.info("识别到" + messEnum.getMessageType());
         }
 
         //分支
         switch (messEnum) {
             //SESSION("会话消息",1)
             case SESSION:
-                SessionDialogue.INSTANCE.session(event,sessionDataBase);
+                SessionDialogue.INSTANCE.session(event, sessionDataBase);
                 messEnum = null;
                 break;
             //COMMAND("指令消息",2)
@@ -224,7 +234,7 @@ public class MessageEventManager {
                         util.isRepeatedlyAddMessage(event);
                     }
                 }
-                if ( owner == event.getSender().getId() || adminList.get(userPower).isAdminPower()) {
+                if (owner == event.getSender().getId() || adminList.get(userPower).isAdminPower()) {
                     if (Pattern.matches("([+-]\\[mirai:at:\\d+\\] [\\w]+)", messageToString)) {
                         l.info("权限指令");
                         Permissions.INSTANCE.messageToPower(event);
@@ -234,7 +244,7 @@ public class MessageEventManager {
                 break;
             //REPLY("回复消息",3)
             case REPLY:
-                switch (messageToString){
+                switch (messageToString) {
                     case "斗地主":
                         if (ConfigData.INSTANCE.getDouSwitch()) {
                             SpecialDialogue.INSTANCE.sessionDou(event);
@@ -250,13 +260,13 @@ public class MessageEventManager {
             //GROUP("群管消息", 4)
             case GROUP:
                 String groupMessage = groupMatcher.group();
-                if (Pattern.matches("hyc[:：]",messageToString) ) {
+                if (Pattern.matches("hyc[:：]", messageToString)) {
                     l.info("查询迎新词指令");
                     GroupManager.INSTANCE.checkGroupWelcomeMessage(event);
-                }else if (Pattern.matches("([+-]hyc[:：](\\S+)(\\s\\S+){0,2})", messageToString)) {
+                } else if (Pattern.matches("([+-]hyc[:：](\\S+)(\\s\\S+){0,2})", messageToString)) {
                     l.info("添加迎新词指令");
                     GroupManager.INSTANCE.setGroupWelcomeMessage(event);
-                }else if (Pattern.matches("(\\[mirai:at:\\d+\\] \\d+[s|d|h|m])",messageToString)){
+                } else if (Pattern.matches("(\\[mirai:at:\\d+\\] \\d+[s|d|h|m])", messageToString)) {
                     l.info("禁言指令");
                     GroupManager.INSTANCE.prohibit(event);
                 } else if (Pattern.matches("(踢人\\[mirai:at:\\d+\\])", messageToString)) {
