@@ -159,9 +159,7 @@ public class MessageEventManager {
                     break;
             }
         }
-        if (judge) {
-            l.warning( "您有多条消息回复为旧版数据，请更新!");
-        }
+
 
 
 

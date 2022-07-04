@@ -37,10 +37,12 @@ public class FriendMessageEventManager {
         if (subject.getId() == owner) {
             //定时任务
             if (Pattern.matches("添加定时任务|%ds", code)) {
-                MessageUtil.INSTANCE.addTiming(event,0);
-            }else if (Pattern.matches("[+-]ds[:：]\\d+", code)) {
+                TimingManager.INSTANCE.addTiming(event,0);
+            } else if (Pattern.matches("删除定时任务|%ds:\\d+",code)) {
+                TimingManager.INSTANCE.deleteTiming(event);
+            } else if (Pattern.matches("(开启|关闭)定时任务[:：]\\d+|[+-]ds[:：]\\d+", code)) {
                 TimingManager.INSTANCE.operateTiming(event);
-            } else if (Pattern.matches("ds[:：](\\d+)?", code)) {
+            } else if (Pattern.matches("查询定时任务|ds[:：](\\d+)?", code)) {
                 TimingManager.INSTANCE.checkTiming(event);
             }
             //群组

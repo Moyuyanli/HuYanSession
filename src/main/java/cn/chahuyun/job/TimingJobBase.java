@@ -6,6 +6,7 @@ import cn.chahuyun.files.ConfigData;
 import cn.chahuyun.files.GroupData;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.Group;
+import net.mamoe.mirai.message.code.MiraiCode;
 import net.mamoe.mirai.utils.MiraiLogger;
 import org.quartz.Job;
 import org.quartz.JobDataMap;
@@ -53,7 +54,7 @@ public class TimingJobBase implements Job {
                     l.error("定时任务"+ base.getId() + e.getMessage());
                 }
                 assert group != null;
-                group.sendMessage(base.getValue());
+                group.sendMessage(MiraiCode.deserializeMiraiCode(base.getValue()));
             }
 
         }

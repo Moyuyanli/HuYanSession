@@ -11,6 +11,7 @@ import cn.chahuyun.files.GroupData;
 import cn.chahuyun.files.PluginData;
 import cn.chahuyun.files.TimingData;
 import cn.chahuyun.timingManager.TimingManager;
+import cn.chahuyun.utils.MessageUtil;
 import net.mamoe.mirai.console.command.CommandManager;
 import net.mamoe.mirai.console.plugin.jvm.JavaPlugin;
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescriptionBuilder;
@@ -73,6 +74,7 @@ public final class HuYanSession extends JavaPlugin {
         this.reloadPluginData(PluginData.INSTANCE);
         getLogger().info("SessionData 已加载！");
         PluginData.INSTANCE.setSessionMap(false, 0, "乒", "乓", new ScopeInfoBase("全局", false,false, null,0), DataEnum.ACCURATE);
+        MessageUtil.INSTANCE.init();
 
         this.reloadPluginData(TimingData.INSTANCE);
         getLogger().info("TimingData 已加载！");

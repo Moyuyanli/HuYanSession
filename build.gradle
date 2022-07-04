@@ -16,8 +16,11 @@ group = 'cn.chahuyun'
  * 更改pluginData的类为kt，修复群消息的bug - 1.9.14
  * 兼容了一下旧版回复数据 - 1.9.15
  * 修复定时不存时不提示只报错 - 1.9.16
+ * 添加了定时器的删除 -1.9.17
+ * 修正了定时器的miraiCode识别 - 1.9.18
+ * 修正了旧数据兼容问题 - 1.9.19
  */
-version = '1.9.16-Bate'
+version = '1.9.19-Bate'
 
 
 repositories {
