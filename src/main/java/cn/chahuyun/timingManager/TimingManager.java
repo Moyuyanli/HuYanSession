@@ -126,9 +126,28 @@ public class TimingManager {
                         .append(baseEntry.getValue().getState() ? "-开启" : "-关闭")
                         .append("\n");
             }
-            subject.sendMessage(mCB.build());
+        }else
+        if (split.length == 2) {
+            int key = Integer.parseInt(split[1]);
+            if (!taskBaseMap.containsKey(key)) {
+                subject.sendMessage("没有找到该定时器!");
+                return;
+            }
+            mCB.append("查询到该定时任务:"+key+"\n");
+            for (Map.Entry<Integer, TimingTaskBase> entry : taskBaseMap.entrySet()) {
+                if (entry.getKey() == key) {
+                    TimingTaskBase base = entry.getValue();
+                    mCB.append("定时器编号:").append(String.valueOf(base.getId())).append("\n")
+                            .append("定时器名称:").append(base.getName()).append("\n")
+                            .append("定时器频率:").append(base.getTimeResolve() == null ? "目前不支持" : base.getTimeResolve()).append("\n")
+                            .append("定时器Cron表达式:").append(base.getCronString()).append("\n")
+                            .append("定时器的回复内容:").append(base.getValue())
+                            .append("定时器状态:").append(base.getState()?"启用中":"关闭");
+                }
+            }
         }
 
+        subject.sendMessage(mCB.build());
 
     }
 
@@ -147,10 +166,6 @@ public class TimingManager {
         int key = Integer.parseInt(split[1]);
 
         Map<Integer, TimingTaskBase> taskBaseMap = TimingData.INSTANCE.readTimingList();
-
-        if (!taskBaseMap.containsKey(key)) {
-            subject.sendMessage("没有找到该定时器!");
-        }
 
         MessageChain messages = TimingData.INSTANCE.deleteTimingList(key);
         subject.sendMessage(messages);

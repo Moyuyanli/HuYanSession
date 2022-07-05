@@ -1,16 +1,7 @@
 # HuYanSession 壶言会话———自定义回复和小群管插件
 
-      基于的mirai-console的插件
 
-这里下载插件↓
-[Release](https://github.com/Moyuyanli/HuYanSession/releases)
-[MiraiForum](https://mirai.mamoe.net/topic/1310/%E5%A3%B6%E8%A8%80-%E4%B8%80%E6%AC%BE%E8%87%AA%E5%AE%9A%E4%B9%89%E6%B6%88%E6%81%AF%E5%9B%9E%E5%A4%8D%E6%8F%92%E4%BB%B6)
-
-### 目前最新 version:1.9.12-Bate
-
-添加了群组功能，具体请重新阅读文档
-添加了自定义定时任务功能(测试),还未完善
-欢迎测试，顺便提出建议
+![](https://img.shields.io/badge/插件类型-Console-%2355db30?style=flat-square)  [![GitHub release (latest by date)](https://img.shields.io/github/v/release/Moyuyanli/HuYanSession?style=flat-square)](https://github.com/Moyuyanli/HuYanSession/releases)  [![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/downloads-pre/Moyuyanli/HuYanSession/1.9.19-Bate/total?style=flat-square)](https://github.com/Moyuyanli/HuYanSession/releases/download/1.9.19-Bate/HuYanSession-1.9.19-Bate.mirai2.jar)   ![GitHub top language](https://img.shields.io/github/languages/top/Moyuyanli/HuYanSession?style=flat-square)   [![](https://img.shields.io/badge/MiraiForum-%E5%A3%B6%E8%A8%80%E4%BC%9A%E8%AF%9D-%23478cc6?style=flat-square)](https://mirai.mamoe.net/topic/1310/%E5%A3%B6%E8%A8%80-%E4%B8%80%E6%AC%BE%E5%90%84%E7%A7%8D%E8%87%AA%E5%AE%9A%E4%B9%89%E5%9B%9E%E5%A4%8D%E6%B6%88%E6%81%AF%E6%8F%92%E4%BB%B6)
 
 ---
 
@@ -108,10 +99,6 @@
 
     删除 触发内容
 
-> ^fold
->
-> 要折叠的内容
->
 
 ---
 ### 群组操作

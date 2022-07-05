@@ -44,7 +44,11 @@ public class SessionDialogue {
                 //判断轮询坐标
                 i = i % values.size();
                 //发送
-                subject.sendMessage(MiraiCode.deserializeMiraiCode(values.get(i)));
+                try {
+                    subject.sendMessage(MiraiCode.deserializeMiraiCode(values.get(i)));
+                } catch (Exception e) {
+                    l.warning("你的机器被禁言了哦!");
+                }
                 break;
             case 3:
                 l.info("随机回复");
@@ -54,10 +58,18 @@ public class SessionDialogue {
                 ArrayList<String> valueList = sessionDataBase.getValues();
                 int nextInt = random.nextInt(valueList.size());
                 //发送
-                subject.sendMessage(MiraiCode.deserializeMiraiCode(valueList.get(nextInt)));
+                try {
+                    subject.sendMessage(MiraiCode.deserializeMiraiCode(valueList.get(nextInt)));
+                } catch (Exception e) {
+                    l.warning("你的机器被禁言了哦!");
+                }
                 break;
             default:
-                subject.sendMessage(MiraiCode.deserializeMiraiCode(sessionDataBase.getValue()));
+                try {
+                    subject.sendMessage(MiraiCode.deserializeMiraiCode(sessionDataBase.getValue()));
+                } catch (Exception e) {
+                    l.warning("你的机器被禁言了哦!");
+                }
                 break;
         }
 
