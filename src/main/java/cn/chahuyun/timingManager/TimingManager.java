@@ -141,8 +141,17 @@ public class TimingManager {
                             .append("定时器名称:").append(base.getName()).append("\n")
                             .append("定时器频率:").append(base.getTimeResolve() == null ? "目前不支持" : base.getTimeResolve()).append("\n")
                             .append("定时器Cron表达式:").append(base.getCronString()).append("\n")
-                            .append("定时器的回复内容:").append(base.getValue()).append("\n")
-                            .append("定时器状态:").append(base.getState()?"启用中":"关闭");
+                            .append("定时器作用域:");
+                    ScopeInfoBase scopeInfoBase = base.getScope();
+                    if (scopeInfoBase.getType()) {
+                        mCB.append("群-").append(scopeInfoBase.getScopeCode() + "\n");
+                    } else if (scopeInfoBase.getGroupType()) {
+                        mCB.append("群组-").append(scopeInfoBase.getScopeNum() + "\n");
+                    } else {
+                        mCB.append("全局\n");
+                    }
+                    mCB.append("定时器的回复内容:").append(base.getValue()).append("\n")
+                    .append("定时器状态:").append(base.getState()?"启用中":"关闭");
                 }
             }
         }
