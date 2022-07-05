@@ -157,7 +157,7 @@ public class TimingManager {
         Contact subject = event.getSubject();
 
         String toString = event.getMessage().contentToString();
-        if (!Pattern.matches("%ds[:：]\\d+", toString)) {
+        if (!Pattern.matches("删除定时任务[:：]\\d+|%ds[:：]\\d+", toString)) {
             subject.sendMessage("格式错误，指令详情请查看帮助");
             return;
         }
@@ -165,7 +165,6 @@ public class TimingManager {
         String[] split = code.split("[:：]");
         int key = Integer.parseInt(split[1]);
 
-        Map<Integer, TimingTaskBase> taskBaseMap = TimingData.INSTANCE.readTimingList();
 
         MessageChain messages = TimingData.INSTANCE.deleteTimingList(key);
         subject.sendMessage(messages);
