@@ -1,4 +1,4 @@
-package cn.chahuyun.groupManager;
+package cn.chahuyun.manager;
 
 import cn.chahuyun.HuYanSession;
 import cn.chahuyun.entity.GroupWelcomeBase;
@@ -26,13 +26,16 @@ import java.util.regex.Pattern;
 public class GroupManager {
 
     public static final GroupManager INSTANCE = new GroupManager();
-    private MiraiLogger l = HuYanSession.INSTANCE.getLogger();
+    private final MiraiLogger l = HuYanSession.INSTANCE.getLogger();
 
     /**
      * 添加删除迎新词正则
      */
     private final String setMessagePattern = "[+-]hyc[:：](\\S+)( \\S+){0,2}";
 
+    /**
+     * 禁言正则
+     */
     private final String prohibitPattern = "(\\[mirai:at:\\d+\\] \\d+[s|d|h|m])";
 
     /**
@@ -201,9 +204,54 @@ public class GroupManager {
         }
         NormalMember member = event.getBot().getGroup(event.getSubject().getId()).get(qq);
 
+        assert member != null;
         member.kick("踢出");
 
     }
+
+
+    /**
+     * 添加禁言消息
+     * @author zhangjiaxing
+     * @param event 消息事件
+     * @date 2022/7/6 17:12
+     */
+    public void addGroupProhibit(MessageEvent event) {
+        Contact subject = event.getSubject();
+        String code = event.getMessage().serializeToMiraiCode();
+
+
+        String[] split = code.split("\\s+");
+        String[] strings = split[0].split("[:：]");
+        String key = strings[1];
+        String value = split[1];
+
+        ScopeInfoBase scope = new ScopeInfoBase("当前", true, false, subject.getId(), 0);
+        String prohibit = "1m";
+
+        if (split.length >= 3) {
+            for (int i =2; i < split.length; i++) {
+                String s = split[i];
+                if (Pattern.matches("\\d+[smhd]", s)) {
+                    prohibit = s;
+                } else if (Pattern.matches("当前|gr\\d+|全局", s)) {
+                    switch (s) {
+                        case "当前" : break;
+                        case "全局" :
+                            scope = new ScopeInfoBase("全局", false, false, subject.getId(), 0);
+                            break;
+                        default:
+                            int num = Integer.parseInt(s.substring(2));
+                            scope = new ScopeInfoBase("群组", false, false, subject.getId(), num);
+                            break;
+                    }
+                }
+            }
+        }
+
+
+    }
+
 
 
 }

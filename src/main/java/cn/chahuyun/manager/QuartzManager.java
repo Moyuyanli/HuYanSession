@@ -1,4 +1,4 @@
-package cn.chahuyun.utils;
+package cn.chahuyun.manager;
 
 import cn.chahuyun.HuYanSession;
 import cn.chahuyun.entity.TimingTaskBase;
@@ -11,13 +11,13 @@ import org.quartz.impl.triggers.CronTriggerImpl;
 import java.text.ParseException;
 
 /**
- * @description  定时器
+ * @description  定时器消息管理
  * @author  huobing
  * @date  2022/7/1  21:39
  **/
-public class QuartzUtil {
+public class QuartzManager {
 
-    private static MiraiLogger l = HuYanSession.INSTANCE.getLogger();
+    private final static MiraiLogger l = HuYanSession.INSTANCE.getLogger();
 
     private static Scheduler scheduler = null;
 

@@ -1,20 +1,17 @@
-package cn.chahuyun.utils;
+package cn.chahuyun.manager;
 
 import cn.chahuyun.HuYanSession;
 import cn.chahuyun.entity.ScopeInfoBase;
 import cn.chahuyun.entity.SessionDataBase;
-import cn.chahuyun.entity.TimingTaskBase;
 import cn.chahuyun.enumerate.DataEnum;
 import cn.chahuyun.files.GroupData;
 import cn.chahuyun.files.PluginData;
-import cn.chahuyun.files.TimingData;
 import kotlin.coroutines.EmptyCoroutineContext;
 import net.mamoe.mirai.contact.Contact;
 import net.mamoe.mirai.event.ConcurrencyKind;
 import net.mamoe.mirai.event.EventChannel;
 import net.mamoe.mirai.event.EventPriority;
 import net.mamoe.mirai.event.GlobalEventChannel;
-import net.mamoe.mirai.event.events.FriendMessageEvent;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.data.MessageChain;
 import net.mamoe.mirai.utils.MiraiLogger;
@@ -29,13 +26,13 @@ import java.util.regex.Pattern;
  * MessageUtil
  *
  * @author Zhangjiaxing
- * @description 消息类的大部分统一方法工具类
+ * @description 普通指令消息管理
  * @date 2022/6/22 11:31
  */
-public class MessageUtil {
+public class MessageManager {
 
-    public static final MessageUtil INSTANCE = new MessageUtil();
-    private MiraiLogger l = HuYanSession.INSTANCE.getLogger();
+    public static final MessageManager INSTANCE = new MessageManager();
+    private final MiraiLogger l = HuYanSession.INSTANCE.getLogger();
 
     /**
      * miraiCode匹配正则
@@ -277,7 +274,7 @@ public class MessageUtil {
                     repeatedlyAddMessage(mt);
                 }
             } else if (Pattern.matches("[!！]{3}", code)) {
-                MessageChain messages = PluginData.INSTANCE.addPolyletMessage(repeatedKey, repeatedlyList);
+                MessageChain messages = PluginData.INSTANCE.addPolyglotMessage(repeatedKey, repeatedlyList);
                 mt.getSubject().sendMessage(messages);
                 mt.intercept();
             }else {

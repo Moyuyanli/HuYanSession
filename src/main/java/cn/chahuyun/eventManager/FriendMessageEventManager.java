@@ -2,9 +2,8 @@ package cn.chahuyun.eventManager;
 
 import cn.chahuyun.HuYanSession;
 import cn.chahuyun.files.ConfigData;
-import cn.chahuyun.groupManager.ScopeGroupManager;
-import cn.chahuyun.timingManager.TimingManager;
-import cn.chahuyun.utils.MessageUtil;
+import cn.chahuyun.manager.ScopeGroupManager;
+import cn.chahuyun.manager.TimingManager;
 import net.mamoe.mirai.contact.Contact;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.utils.MiraiLogger;

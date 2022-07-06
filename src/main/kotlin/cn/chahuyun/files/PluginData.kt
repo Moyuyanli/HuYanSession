@@ -1,6 +1,7 @@
 package cn.chahuyun.files
 
 import cn.chahuyun.HuYanSession
+import cn.chahuyun.entity.GroupProhibitBase
 import cn.chahuyun.entity.GroupWelcomeBase
 import cn.chahuyun.entity.ScopeInfoBase
 import cn.chahuyun.entity.SessionDataBase
@@ -12,6 +13,7 @@ import net.mamoe.mirai.console.data.AutoSavePluginData
 import net.mamoe.mirai.console.data.value
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.MessageChainBuilder
+import net.mamoe.mirai.message.data.buildMessageChain
 
 /**
  * SessionData
@@ -28,19 +30,22 @@ object PluginData : AutoSavePluginData("SessionData") {
     /**
      * list<SessionDataBase> 对话数据集合
     </SessionDataBase> */
-    val sessionMap: MutableMap<String, String>  by value()
+    private val sessionMap: MutableMap<String, String>  by value()
 
 
     /**
      * 群欢迎词
      */
-    val groupWelcomeMessage: MutableMap<String, String> by value()
+    private val groupWelcomeMessage: MutableMap<String, String> by value()
 
-
+    /**
+     * 群禁言词
+     */
+    val groupProhibitMessage: MutableMap<String, String> by value()
 
     /**
      * @return java.util.Map<java.lang.String></java.lang.String>, cn.chahuyun.entity.SessionDataBase>
-     * @description 获取是sessiondatabase的map
+     * @description 获取是sessionDataBase的map
      * @author zhangjiaxing
      * @date 2022/6/17 16:37
      */
@@ -249,7 +254,7 @@ object PluginData : AutoSavePluginData("SessionData") {
      * @date 2022/6/27 9:38
      * @return net.mamoe.mirai.message.data.MessageChain
      */
-    fun addPolyletMessage(key: String, list: List<String?>?): MessageChain {
+    fun addPolyglotMessage(key: String, list: List<String?>?): MessageChain {
         val s = sessionMap[key]
         val base = JSONObject.parseObject(s, SessionDataBase::class.java)
         val b = base.values.addAll(list!!)
@@ -260,6 +265,47 @@ object PluginData : AutoSavePluginData("SessionData") {
         } else {
             MessageChainBuilder().append("多词条回复添加失败!").build()
         }
+    }
+
+    /**
+     * 添加和删除禁言词
+     * @author zhangjiaxing
+     * @param aod t 添加 f 删除
+     * @param key 标识
+     * @param base 禁言词实体类
+     * @date 2022/7/6 16:51
+     * @return 消息
+     */
+    fun operateGroupProhibitMessage(aod: Boolean, key: String, base: GroupProhibitBase): MessageChain {
+
+        return if (aod) {
+            val jsonString = JSONObject.toJSONString(base)
+            groupProhibitMessage[key] = jsonString
+            buildMessageChain { +"$key 禁言词添加成功!" }
+        } else {
+            val containsKey = groupProhibitMessage.containsKey(key)
+            if (!containsKey) {
+                return buildMessageChain { +"没有找到该禁言词 $key !" }
+            }
+            groupProhibitMessage.remove(key)
+            buildMessageChain { +"$key 禁言词删除成功!" }
+        }
+    }
+
+
+    /**
+     * 获取禁言词map
+     * @author zhangjiaxing
+     * @date 2022/7/6 17:00
+     * @return 禁言词map
+     */
+    fun loadGroupProhibitMessage(): Map<String, GroupProhibitBase> {
+        val groupProhibitBase : MutableMap<String,GroupProhibitBase> = HashMap()
+        for (entry in groupProhibitMessage) {
+            val parseObject = JSONObject.parseObject(entry.value,GroupProhibitBase::class.java)
+            groupProhibitBase[entry.key] = parseObject
+        }
+        return groupProhibitBase
     }
 
 

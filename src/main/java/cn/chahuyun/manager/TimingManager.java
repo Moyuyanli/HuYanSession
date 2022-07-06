@@ -1,12 +1,10 @@
-package cn.chahuyun.timingManager;
+package cn.chahuyun.manager;
 
 import cn.chahuyun.HuYanSession;
 import cn.chahuyun.entity.ScopeInfoBase;
 import cn.chahuyun.entity.TimingTaskBase;
 import cn.chahuyun.files.GroupData;
 import cn.chahuyun.files.TimingData;
-import cn.chahuyun.utils.QuartzUtil;
-import com.alibaba.fastjson.JSONObject;
 import kotlin.coroutines.EmptyCoroutineContext;
 import net.mamoe.mirai.contact.Contact;
 import net.mamoe.mirai.event.ConcurrencyKind;
@@ -33,7 +31,7 @@ import java.util.regex.Pattern;
 public class TimingManager {
 
     public static final TimingManager INSTANCE = new TimingManager();
-    private MiraiLogger l = HuYanSession.INSTANCE.getLogger();
+    private final MiraiLogger l = HuYanSession.INSTANCE.getLogger();
 
 
     /**
@@ -46,7 +44,7 @@ public class TimingManager {
         //读取所有定时器，然后都加载一遍，开启的就给他开启了
         for (Map.Entry<Integer, TimingTaskBase> taskBaseEntry : timingTaskBaseMap.entrySet()) {
             if (taskBaseEntry.getValue().getState()) {
-                QuartzUtil.addSchdulerJob(taskBaseEntry.getValue());
+                QuartzManager.addSchdulerJob(taskBaseEntry.getValue());
             }
         }
     }
@@ -83,7 +81,7 @@ public class TimingManager {
                 subject.sendMessage("定时器" + taskBase.getName() + "已经是开启状态了，无法开启");
                 return;
             }
-            if (QuartzUtil.updateSchdulerJob(taskBase)) {
+            if (QuartzManager.updateSchdulerJob(taskBase)) {
                 subject.sendMessage("定时器" + taskBase.getName() + "开启成功！");
             } else {
                 subject.sendMessage("定时器" + taskBase.getName() + "开启失败！");
@@ -94,7 +92,7 @@ public class TimingManager {
                 subject.sendMessage("定时器" + taskBase.getName() + "已经是关闭状态了，无法关闭");
                 return;
             }
-            if (QuartzUtil.deleteSchedulerJob(taskBase)) {
+            if (QuartzManager.deleteSchedulerJob(taskBase)) {
                 subject.sendMessage("定时器" + taskBase.getName() + "关闭成功！");
             } else {
                 subject.sendMessage("定时器" + taskBase.getName() + "关闭失败！");

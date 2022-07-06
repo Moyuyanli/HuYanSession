@@ -1,4 +1,4 @@
-package cn.chahuyun.groupManager;
+package cn.chahuyun.manager;
 
 import cn.chahuyun.HuYanSession;
 import cn.chahuyun.files.GroupData;
@@ -18,13 +18,13 @@ import java.util.Objects;
  * 说明
  *
  * @author Moyuyanli
- * @Description :群组管理
+ * @Description :群组指令管理
  * @Date 2022/6/30 19:27
  */
 public class ScopeGroupManager {
 
     public static final ScopeGroupManager INSTANCE = new ScopeGroupManager();
-    private MiraiLogger l = HuYanSession.INSTANCE.getLogger();
+    private final MiraiLogger l = HuYanSession.INSTANCE.getLogger();
 
 
     /**

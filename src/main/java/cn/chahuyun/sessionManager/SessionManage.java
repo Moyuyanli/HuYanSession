@@ -5,7 +5,7 @@ import cn.chahuyun.entity.ScopeInfoBase;
 import cn.chahuyun.entity.SessionDataBase;
 import cn.chahuyun.enumerate.DataEnum;
 import cn.chahuyun.files.PluginData;
-import cn.chahuyun.utils.MessageUtil;
+import cn.chahuyun.manager.MessageManager;
 import cn.chahuyun.utils.SessionPaging;
 import net.mamoe.mirai.contact.Contact;
 import net.mamoe.mirai.event.events.MessageEvent;
@@ -29,7 +29,7 @@ public class SessionManage {
     public static final SessionManage INSTANCE = new SessionManage();
 
     private MiraiLogger l = HuYanSession.INSTANCE.getLogger();
-    private final MessageUtil messageUtil = MessageUtil.INSTANCE;
+    private final MessageManager messageManager = MessageManager.INSTANCE;
 
      /**
      * 查询正则
@@ -51,13 +51,13 @@ public class SessionManage {
         Contact subject = event.getSubject();
         String code = event.getMessage().serializeToMiraiCode();
         //验证格式
-        boolean studyCommand = messageUtil.isStudyCommand(event);
+        boolean studyCommand = messageManager.isStudyCommand(event);
         if (!studyCommand) {
             subject.sendMessage("学习失败!需要帮助请发送帮助!");
             return;
         }
         //取参添加
-        Map<String, Object> param = messageUtil.spotStudyCommandParam(event);
+        Map<String, Object> param = messageManager.spotStudyCommandParam(event);
         if (param == null) {
             return;
         }
@@ -138,12 +138,12 @@ public class SessionManage {
         Contact subject = event.getSubject();
 
         //验证格式
-        boolean deleteCommand = messageUtil.isDeleteCommand(event);
+        boolean deleteCommand = messageManager.isDeleteCommand(event);
         if (!deleteCommand) {
             subject.sendMessage("删除失败!需要帮助请发送帮助!");
             return false;
         }
-        String param = messageUtil.deleteParam();
+        String param = messageManager.deleteParam();
         MessageChain messages = PluginData.INSTANCE.delSessionData(param);
         subject.sendMessage(messages);
         return false;

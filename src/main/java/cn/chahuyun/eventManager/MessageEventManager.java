@@ -7,12 +7,12 @@ import cn.chahuyun.enumerate.MessEnum;
 import cn.chahuyun.files.ConfigData;
 import cn.chahuyun.files.GroupData;
 import cn.chahuyun.files.PluginData;
-import cn.chahuyun.groupManager.GroupManager;
+import cn.chahuyun.manager.GroupManager;
 import cn.chahuyun.power.Permissions;
 import cn.chahuyun.sessionManager.SessionDialogue;
 import cn.chahuyun.sessionManager.SessionManage;
 import cn.chahuyun.sessionManager.SpecialDialogue;
-import cn.chahuyun.utils.MessageUtil;
+import cn.chahuyun.manager.MessageManager;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.utils.MiraiLogger;
 
@@ -36,7 +36,7 @@ public class MessageEventManager {
 
     private MiraiLogger l = HuYanSession.INSTANCE.getLogger();
 
-    private final MessageUtil util = MessageUtil.INSTANCE;
+    private final MessageManager util = MessageManager.INSTANCE;
     /**
      * 指令正则
      */
@@ -44,7 +44,7 @@ public class MessageEventManager {
     /**
      * 群管指令正则
      */
-    public String groupPattern = "([+-]hyc[:：](\\S+)(\\s\\S+){0,2})|hyc[:：]|(\\[mirai:at:\\d+\\] \\d+[s|d|h|m])|(踢人\\[mirai:at:\\d+\\])";
+    public String groupPattern = "([+-]hyc[:：](\\S+)(\\s\\S+){0,2})|hyc[:：]|(\\[mirai:at:\\d+\\] \\d+[s|d|h|m])|(踢人\\[mirai:at:\\d+\\])|[+-]jy";
     /**
      * 回复消息正则
      */
