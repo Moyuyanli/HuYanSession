@@ -14,6 +14,9 @@ import net.mamoe.mirai.utils.MiraiLogger;
 
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * PuDialogue
@@ -49,6 +52,20 @@ public class SpecialDialogue {
             }
             //时间单位毫秒 1s = 1000
         },10000);
+
+
+        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(5);
+        // 循环任务，按照上一次任务的发起时间计算下一次任务的开始时间
+        scheduler.schedule(((
+                        new Runnable() {
+                            @Override
+                            public void run() {
+                                //执行任务
+                            }
+                        })),
+                5,
+                TimeUnit.SECONDS);
+
 
     }
 
