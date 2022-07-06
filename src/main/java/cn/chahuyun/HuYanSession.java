@@ -49,20 +49,22 @@ public final class HuYanSession extends JavaPlugin {
 
     @Override
     public void onEnable() {
+
         //加载插件，打印日志
+        getLogger().info("================HuYan================");
         getLogger().info("HuYanSession 加载!");
 
         //加载配置
         this.reloadPluginConfig(ConfigData.INSTANCE);
-        getLogger().info("SessionConfig 已加载！");
-        Long owner = ConfigData.INSTANCE.getOwner();
-        if (owner == null || owner == 0) {
+        getLogger().info("HuYanConfig 已加载！");
+        long owner = ConfigData.INSTANCE.getOwner();
+        if (owner == 0) {
             getLogger().error("还没有添加主人,请添加主人!");
         } else {
             getLogger().info("主人已设置->"+owner);
         }
-        Long bot = ConfigData.INSTANCE.getBot();
-        if (bot == null || bot == 0) {
+        long bot = ConfigData.INSTANCE.getBot();
+        if (bot == 0) {
             getLogger().error("还没有添加机器人,请添加机器人后再使用!");
         } else {
             getLogger().info("机器人已设置->"+bot);
@@ -99,7 +101,7 @@ public final class HuYanSession extends JavaPlugin {
                     }
                     return false;
                 });
-
+        getLogger().info("=====================================");
         //监听 群加人事件
         memberJoinEventEventChannel.subscribeAlways(MemberJoinEvent.class, GroupEventManager.INSTANCE::onMemberJoinEvent);
 
@@ -123,5 +125,6 @@ public final class HuYanSession extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        getLogger().info("HuYanSession已卸载!");
     }
 }
