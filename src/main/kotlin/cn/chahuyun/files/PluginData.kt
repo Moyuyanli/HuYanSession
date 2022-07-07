@@ -44,8 +44,8 @@ object PluginData : AutoSavePluginData("SessionData") {
     val groupProhibitMessage: MutableMap<String, String> by value()
 
     /**
+     * 获取是 [SessionDataBase] 的map
      * @return java.util.Map<java.lang.String></java.lang.String>, cn.chahuyun.entity.SessionDataBase>
-     * @description 获取是sessionDataBase的map
      * @author zhangjiaxing
      * @date 2022/6/17 16:37
      */
@@ -65,8 +65,8 @@ object PluginData : AutoSavePluginData("SessionData") {
     }
 
     /**
+     * 用于修改本地数据的操作方法
      * @return net.mamoe.mirai.message.data.MessageChain
-     * @description 用于修改本地数据的操作方法
      * @author zhangjiaxing
      * @date 2022/6/20 8:35
      */
@@ -118,9 +118,9 @@ object PluginData : AutoSavePluginData("SessionData") {
     }
 
     /**
+     * 删除词
      * @param param
      * @return net.mamoe.mirai.message.data.MessageChain
-     * 删除词
      * @author zhangjiaxing
      * @date 2022/6/23 22:36
      */

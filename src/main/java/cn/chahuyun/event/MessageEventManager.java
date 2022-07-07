@@ -1,7 +1,9 @@
-package cn.chahuyun.eventManager;
+package cn.chahuyun.event;
 
 import cn.chahuyun.HuYanSession;
+import cn.chahuyun.entity.GroupProhibitBase;
 import cn.chahuyun.entity.PowerConfigBase;
+import cn.chahuyun.entity.ScopeInfoBase;
 import cn.chahuyun.entity.SessionDataBase;
 import cn.chahuyun.enumerate.MessEnum;
 import cn.chahuyun.files.ConfigData;
@@ -44,7 +46,7 @@ public class MessageEventManager {
     /**
      * 群管指令正则
      */
-    public String groupPattern = "([+-]hyc[:：](\\S+)(\\s\\S+){0,2})|hyc[:：]|(\\[mirai:at:\\d+\\] \\d+[s|d|h|m])|(踢人\\[mirai:at:\\d+\\])|[+-]jy";
+    public String groupPattern = "([+-]hyc[:：](\\S+)(\\s\\S+){0,2})|hyc[:：]|(\\[mirai:at:\\d+\\] \\d+[s|d|h|m])|(踢人\\[mirai:at:\\d+\\])|[+-]?wjc\\\\?[:：](\\S+)?( +\\S+){0,3}";
     /**
      * 回复消息正则
      */
@@ -83,7 +85,6 @@ public class MessageEventManager {
             } catch (Exception e) {
                 judge = true;
             }
-
             //判断是全局还是当前群
             if (base.getScopeInfo().getType()) {
                 //当前
@@ -160,7 +161,31 @@ public class MessageEventManager {
             }
         }
 
-
+        /*
+         * 判断是否是违禁词
+         */
+        Map<String, GroupProhibitBase> prohibitBaseMap = PluginData.INSTANCE.loadGroupProhibitMessage();
+        for (Map.Entry<String, GroupProhibitBase> prohibitBaseEntry : prohibitBaseMap.entrySet()) {
+            GroupProhibitBase prohibitBase = prohibitBaseEntry.getValue();
+            if (prohibitBaseEntry.getValue().getValue().equals(messageToString)) {
+                ScopeInfoBase prohibitBaseScope = prohibitBase.getScope();
+                if (prohibitBaseScope.getType() && prohibitBaseScope.getScopeCode() == event.getSubject().getId()) {
+                    GroupManager.INSTANCE.muteGroupContact(event,prohibitBase);
+                    return;
+                } else if (prohibitBaseScope.getGroupType()) {
+                    List<Long> longs = GroupData.INSTANCE.getGroupList().get(prohibitBaseScope.getScopeNum());
+                    for (Long aLong : longs) {
+                        if (aLong == event.getSubject().getId()) {
+                            GroupManager.INSTANCE.muteGroupContact(event, prohibitBase);
+                            return;
+                        }
+                    }
+                } else {
+                    GroupManager.INSTANCE.muteGroupContact(event,prohibitBase);
+                    return;
+                }
+            }
+        }
 
 
         /*
@@ -257,11 +282,10 @@ public class MessageEventManager {
                 break;
             //GROUP("群管消息", 4)
             case GROUP:
-                String groupMessage = groupMatcher.group();
-                if (Pattern.matches("hyc[:：]", messageToString)) {
+                if (Pattern.matches("hyc\\\\?[:：]", messageToString)) {
                     l.info("查询迎新词指令");
                     GroupManager.INSTANCE.checkGroupWelcomeMessage(event);
-                } else if (Pattern.matches("([+-]hyc[:：](\\S+)(\\s\\S+){0,2})", messageToString)) {
+                } else if (Pattern.matches("([+-]hyc\\\\?[:：](\\S+)(\\s\\S+){0,2})", messageToString)) {
                     l.info("添加迎新词指令");
                     GroupManager.INSTANCE.setGroupWelcomeMessage(event);
                 } else if (Pattern.matches("(\\[mirai:at:\\d+\\] \\d+[s|d|h|m])", messageToString)) {
@@ -270,6 +294,15 @@ public class MessageEventManager {
                 } else if (Pattern.matches("(踢人\\[mirai:at:\\d+\\])", messageToString)) {
                     l.info("踢人指令");
                     GroupManager.INSTANCE.kick(event);
+                } else if (Pattern.matches("\\+wjc\\\\?[:：]\\S+( +\\S+){0,3}", messageToString)) {
+                    l.info("添加违禁词指令");
+                    GroupManager.INSTANCE.addGroupProhibit(event);
+                } else if (Pattern.matches("-wjc\\\\?[:：]\\S+", messageToString)) {
+                    l.info("删除违禁词指令");
+                    GroupManager.INSTANCE.deleteGroupProhibit(event);
+                } else if (Pattern.matches("wjc\\\\?[:：]", messageToString)) {
+                    l.info("查询违禁词指令");
+                    GroupManager.INSTANCE.checkGroupProhibit(event);
                 }
                 break;
             default:

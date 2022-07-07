@@ -5,6 +5,7 @@ import cn.chahuyun.HuYanSession;
 import cn.chahuyun.entity.SessionDataBase;
 import cn.chahuyun.files.PluginData;
 import net.mamoe.mirai.Bot;
+import net.mamoe.mirai.contact.MessageTooLargeException;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.code.MiraiCode;
 import net.mamoe.mirai.message.data.ForwardMessageBuilder;
@@ -27,11 +28,11 @@ public class SessionPaging {
 
 
     /**
+     * @param event 消息事件
+     * @return boolean
      * @description 查询所有消息，并且分类
      * @author zhangjiaxing
-     * @param event 消息事件
      * @date 2022/6/20 13:25
-     * @return boolean
      */
     public boolean checkSessionList(MessageEvent event) {
         //创建转发消息构造
@@ -58,7 +59,7 @@ public class SessionPaging {
         poll.append("所有的多词条轮询触发消息:\n");
         random.append("所有的多词条随机触发消息:\n");
         //获取全部消息
-        ArrayList<SessionDataBase> values = new ArrayList<>(PluginData.INSTANCE.loadSessionMap().values()) ;
+        ArrayList<SessionDataBase> values = new ArrayList<>(PluginData.INSTANCE.loadSessionMap().values());
         for (SessionDataBase base : values) {
             //判断触发类别
             String trigger = "全局触发";
@@ -142,7 +143,15 @@ public class SessionPaging {
         forwardMessageBuilder.add(bot, other.build());
         forwardMessageBuilder.add(bot, poll.build());
         forwardMessageBuilder.add(bot, random.build());
-        event.getSubject().sendMessage(forwardMessageBuilder.build());
+        try {
+            event.getSubject().sendMessage(forwardMessageBuilder.build());
+        } catch (Exception e) {
+            if (e instanceof MessageTooLargeException) {
+                l.warning("查询消息发送失败!内容过长!");
+            } else {
+                e.printStackTrace();
+            }
+        }
         return true;
     }
 

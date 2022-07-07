@@ -1,18 +1,22 @@
 package cn.chahuyun.manager;
 
 import cn.chahuyun.HuYanSession;
+import cn.chahuyun.entity.GroupProhibitBase;
 import cn.chahuyun.entity.GroupWelcomeBase;
 import cn.chahuyun.entity.ScopeInfoBase;
 import cn.chahuyun.files.GroupData;
 import cn.chahuyun.files.PluginData;
+import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.Contact;
 import net.mamoe.mirai.contact.NormalMember;
+import net.mamoe.mirai.contact.User;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.code.MiraiCode;
 import net.mamoe.mirai.message.data.*;
 import net.mamoe.mirai.utils.MiraiLogger;
 
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -187,7 +191,12 @@ public class GroupManager {
         subject.sendMessage(messages.build());
     }
 
-
+    /**
+     * 踢人
+     * @author zhangjiaxing
+     * @param event 消息事件
+     * @date 2022/7/7 9:32
+     */
     public void kick(MessageEvent event) {
         Contact subject = event.getSubject();
         MessageChain message = event.getMessage();
@@ -242,16 +251,130 @@ public class GroupManager {
                             break;
                         default:
                             int num = Integer.parseInt(s.substring(2));
-                            scope = new ScopeInfoBase("群组", false, false, subject.getId(), num);
+                            scope = new ScopeInfoBase("群组", false, true, subject.getId(), num);
                             break;
                     }
                 }
             }
         }
+        int times;
+        String substring = prohibit.substring(prohibit.length() - 1);
+        int timeParam = Integer.parseInt(prohibit.substring(0, prohibit.length() - 1));
 
+        switch (substring) {
+            case "s":
+                times = timeParam;
+                prohibit = "禁言:"+timeParam+"秒";
+                break;
+            case "m":
+                times = timeParam*60;
+                prohibit="禁言:"+timeParam+"分钟";
+                break;
+            case "h":
+                times = timeParam*60*60;
+                prohibit="禁言:"+timeParam+"小时";
+                break;
+            case "d":
+                times = timeParam*60*60*24;
+                prohibit="禁言:"+timeParam+"天";
+                break;
+            default:
+                times = 60;
+                prohibit = "禁言1分钟";
+                break;
+        }
+
+
+        GroupProhibitBase base = new GroupProhibitBase(key, value, "违反天条!被", prohibit, times, scope);
+
+        PluginData.INSTANCE.operateGroupProhibitMessage(true, key, base);
+        subject.sendMessage("违禁词添加成功!");
+    }
+
+    /**
+     * 删除违禁词
+     * @author zhangjiaxing
+     * @param event 消息事件
+     * @date 2022/7/7 9:06
+     */
+    public void deleteGroupProhibit(MessageEvent event) {
+        Contact subject = event.getSubject();
+        String code = event.getMessage().serializeToMiraiCode();
+
+
+        String[] strings = code.split("[:：]");
+        String key = strings[1];
+
+
+        GroupProhibitBase base = new GroupProhibitBase();
+        PluginData.INSTANCE.operateGroupProhibitMessage(false, key, base);
+        subject.sendMessage("违禁词删除成功!");
 
     }
 
+    /**
+     * 查询违禁词
+     * @author zhangjiaxing
+     * @param event 消息事件
+     * @date 2022/7/7 9:25
+     */
+    public void checkGroupProhibit(MessageEvent event) {
+        Contact subject = event.getSubject();
+        String code = event.getMessage().serializeToMiraiCode();
+        Bot bot = event.getBot();
+
+
+        ForwardMessageBuilder builder = new ForwardMessageBuilder(subject);
+        builder.add(bot,(chain)->{
+            chain.add("以下为所有违禁词↓");
+            return null;
+        });
+
+        Map<String, GroupProhibitBase> baseMap = PluginData.INSTANCE.loadGroupProhibitMessage();
+
+        for (Map.Entry<String, GroupProhibitBase> entry : baseMap.entrySet()) {
+            GroupProhibitBase base = entry.getValue();
+            builder.add(bot, chain -> {
+                chain.add(entry.getKey());
+                chain.add(":");
+                chain.add(base.getValue());
+                chain.add("\n");
+                chain.add(base.getProhibit());
+                if (base.getScope().getType()) {
+                    if (subject.getId() == base.getScope().getScopeCode()) {
+                        chain.add("当前群触发");
+                    } else {
+                        chain.add("其他群触发");
+                    }
+                } else if (base.getScope().getGroupType()) {
+                    chain.add("群组-" + base.getScope().getScopeNum() + "触发");
+                } else {
+                    chain.add("全局触发");
+                }
+                return null;
+            });
+        }
+
+        subject.sendMessage(builder.build());
+    }
+
+    /**
+     * 违禁词禁言
+     * @author zhangjiaxing
+     * @param event 消息事件
+     * @param base 违禁词基础类
+     * @date 2022/7/7 9:44
+     */
+    public void muteGroupContact(MessageEvent event, GroupProhibitBase base) {
+        long id = event.getSender().getId();
+        NormalMember member = event.getBot().getGroup(event.getSubject().getId()).get(id);
+        assert member != null;
+        member.mute(base.getProhibitNum());
+
+        event.getSubject().sendMessage(new At(event.getSender().getId())
+                .plus(new PlainText(base.getReply()+base.getProhibit()))
+        );
+    }
 
 
 }

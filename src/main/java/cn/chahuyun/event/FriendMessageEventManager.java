@@ -1,4 +1,4 @@
-package cn.chahuyun.eventManager;
+package cn.chahuyun.event;
 
 import cn.chahuyun.HuYanSession;
 import cn.chahuyun.files.ConfigData;

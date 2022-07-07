@@ -30,19 +30,28 @@ public class GroupProhibitBase {
     private String prohibit;
 
     /**
+     * 禁言时间
+     */
+    private int prohibitNum;
+
+    /**
      * 作用域
      */
     private ScopeInfoBase scope;
 
 
-    public GroupProhibitBase(String key, String value, String reply, String prohibit, ScopeInfoBase scope) {
+    public GroupProhibitBase(String key, String value, String reply, String prohibit, int prohibitNum, ScopeInfoBase scope) {
         this.key = key;
         this.value = value;
         this.reply = reply;
         this.prohibit = prohibit;
+        this.prohibitNum = prohibitNum;
         this.scope = scope;
     }
 
+    public GroupProhibitBase() {
+
+    }
 
     public String getKey() {
         return key;
@@ -82,5 +91,13 @@ public class GroupProhibitBase {
 
     public void setScope(ScopeInfoBase scope) {
         this.scope = scope;
+    }
+
+    public int getProhibitNum() {
+        return prohibitNum;
+    }
+
+    public void setProhibitNum(int prohibitNum) {
+        this.prohibitNum = prohibitNum;
     }
 }

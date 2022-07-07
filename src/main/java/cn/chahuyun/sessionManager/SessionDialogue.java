@@ -3,6 +3,7 @@ package cn.chahuyun.sessionManager;
 import cn.chahuyun.HuYanSession;
 import cn.chahuyun.entity.SessionDataBase;
 import cn.chahuyun.files.PluginData;
+import net.mamoe.mirai.contact.BotIsBeingMutedException;
 import net.mamoe.mirai.contact.Contact;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.code.MiraiCode;
@@ -47,7 +48,11 @@ public class SessionDialogue {
                 try {
                     subject.sendMessage(MiraiCode.deserializeMiraiCode(values.get(i)));
                 } catch (Exception e) {
-                    l.warning("你的机器被禁言了哦!");
+                    if (e instanceof BotIsBeingMutedException) {
+                        l.warning("消息发送失败!你的机器人被禁言了哦!");
+                    } else {
+                        l.warning("消息发送失败,检查一下你的机器人是不是被举报!");
+                    }
                 }
                 break;
             case 3:
@@ -61,14 +66,22 @@ public class SessionDialogue {
                 try {
                     subject.sendMessage(MiraiCode.deserializeMiraiCode(valueList.get(nextInt)));
                 } catch (Exception e) {
-                    l.warning("你的机器被禁言了哦!");
+                    if (e instanceof BotIsBeingMutedException) {
+                        l.warning("消息发送失败!你的机器人被禁言了哦!");
+                    } else {
+                        l.warning("消息发送失败,检查一下你的机器人是不是被举报!");
+                    }
                 }
                 break;
             default:
                 try {
                     subject.sendMessage(MiraiCode.deserializeMiraiCode(sessionDataBase.getValue()));
                 } catch (Exception e) {
-                    l.warning("你的机器被禁言了哦!");
+                    if (e instanceof BotIsBeingMutedException) {
+                        l.warning("消息发送失败!你的机器人被禁言了哦!");
+                    } else {
+                        l.warning("消息发送失败,检查一下你的机器人是不是被举报!");
+                    }
                 }
                 break;
         }

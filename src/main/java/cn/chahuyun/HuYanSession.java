@@ -3,9 +3,9 @@ package cn.chahuyun;
 import cn.chahuyun.commandManager.CommandManage;
 import cn.chahuyun.entity.ScopeInfoBase;
 import cn.chahuyun.enumerate.DataEnum;
-import cn.chahuyun.eventManager.FriendMessageEventManager;
-import cn.chahuyun.eventManager.GroupEventManager;
-import cn.chahuyun.eventManager.MessageEventManager;
+import cn.chahuyun.event.FriendMessageEventManager;
+import cn.chahuyun.event.GroupEventManager;
+import cn.chahuyun.event.MessageEventManager;
 import cn.chahuyun.files.ConfigData;
 import cn.chahuyun.files.GroupData;
 import cn.chahuyun.files.PluginData;
@@ -38,7 +38,7 @@ public final class HuYanSession extends JavaPlugin {
     public static final HuYanSession INSTANCE = new HuYanSession();
 
     private HuYanSession() {
-        super(new JvmPluginDescriptionBuilder("cn.chahuyun.HuYanSession", "1.9")
+        super(new JvmPluginDescriptionBuilder("cn.chahuyun.HuYanSession", "1.11")
                 .name("HuYanSession")
                 .info("壶言会话-服务于你的群聊!")
                 .author("Moyuyanli")
