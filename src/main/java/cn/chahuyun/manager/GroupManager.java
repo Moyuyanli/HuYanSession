@@ -9,7 +9,7 @@ import cn.chahuyun.files.PluginData;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.Contact;
 import net.mamoe.mirai.contact.NormalMember;
-import net.mamoe.mirai.contact.User;
+import net.mamoe.mirai.contact.PermissionDeniedException;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.code.MiraiCode;
 import net.mamoe.mirai.message.data.*;
@@ -186,7 +186,11 @@ public class GroupManager {
         try {
             member.mute(time);
         } catch (Exception e) {
-            subject.sendMessage("禁言失败,你机器居然不是管理员???");
+            if (e instanceof PermissionDeniedException) {
+                subject.sendMessage("禁言失败,你机器居然不是管理员???");
+            } else {
+                e.printStackTrace();
+            }
         }
         subject.sendMessage(messages.build());
     }
@@ -214,7 +218,15 @@ public class GroupManager {
         NormalMember member = event.getBot().getGroup(event.getSubject().getId()).get(qq);
 
         assert member != null;
-        member.kick("踢出");
+        try {
+            member.kick("踢出");
+        } catch (Exception e) {
+            if (e instanceof PermissionDeniedException) {
+                l.warning("就你这点权限,你还想踢谁?");
+            } else {
+                e.printStackTrace();
+            }
+        }
 
     }
 
@@ -369,8 +381,18 @@ public class GroupManager {
         long id = event.getSender().getId();
         NormalMember member = event.getBot().getGroup(event.getSubject().getId()).get(id);
         assert member != null;
-        member.mute(base.getProhibitNum());
-
+        try {
+            //禁言
+            member.mute(base.getProhibitNum());
+            //撤回
+            MessageSource.recall(event.getSource());
+        } catch (Exception e) {
+            if (e instanceof PermissionDeniedException) {
+                l.warning("你的机器人无权这么做!");
+            } else {
+             e.printStackTrace();
+            }
+        }
         event.getSubject().sendMessage(new At(event.getSender().getId())
                 .plus(new PlainText(base.getReply()+base.getProhibit()))
         );

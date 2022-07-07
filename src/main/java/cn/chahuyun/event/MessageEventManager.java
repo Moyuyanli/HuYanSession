@@ -10,11 +10,11 @@ import cn.chahuyun.files.ConfigData;
 import cn.chahuyun.files.GroupData;
 import cn.chahuyun.files.PluginData;
 import cn.chahuyun.manager.GroupManager;
+import cn.chahuyun.manager.MessageManager;
 import cn.chahuyun.power.Permissions;
 import cn.chahuyun.sessionManager.SessionDialogue;
 import cn.chahuyun.sessionManager.SessionManage;
 import cn.chahuyun.sessionManager.SpecialDialogue;
-import cn.chahuyun.manager.MessageManager;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.utils.MiraiLogger;
 
