@@ -167,7 +167,7 @@ public class MessageEventManager {
         Map<String, GroupProhibitBase> prohibitBaseMap = PluginData.INSTANCE.loadGroupProhibitMessage();
         for (Map.Entry<String, GroupProhibitBase> prohibitBaseEntry : prohibitBaseMap.entrySet()) {
             GroupProhibitBase prohibitBase = prohibitBaseEntry.getValue();
-            if (prohibitBaseEntry.getValue().getValue().equals(messageToString)) {
+            if (prohibitBaseEntry.getValue().getValue().contains(messageToString)) {
                 ScopeInfoBase prohibitBaseScope = prohibitBase.getScope();
                 if (prohibitBaseScope.getType() && prohibitBaseScope.getScopeCode() == event.getSubject().getId()) {
                     GroupManager.INSTANCE.muteGroupContact(event,prohibitBase);

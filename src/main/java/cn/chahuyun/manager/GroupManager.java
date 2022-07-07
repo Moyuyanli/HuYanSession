@@ -7,6 +7,7 @@ import cn.chahuyun.entity.ScopeInfoBase;
 import cn.chahuyun.files.GroupData;
 import cn.chahuyun.files.PluginData;
 import net.mamoe.mirai.Bot;
+import net.mamoe.mirai.console.data.java.JavaAutoSavePluginData;
 import net.mamoe.mirai.contact.Contact;
 import net.mamoe.mirai.contact.NormalMember;
 import net.mamoe.mirai.contact.PermissionDeniedException;
@@ -381,6 +382,7 @@ public class GroupManager {
         long id = event.getSender().getId();
         NormalMember member = event.getBot().getGroup(event.getSubject().getId()).get(id);
         assert member != null;
+
         try {
             //禁言
             member.mute(base.getProhibitNum());
