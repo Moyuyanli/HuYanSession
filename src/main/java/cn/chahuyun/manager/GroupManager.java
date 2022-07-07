@@ -390,7 +390,9 @@ public class GroupManager {
             MessageSource.recall(event.getSource());
         } catch (Exception e) {
             if (e instanceof PermissionDeniedException) {
+                event.getSubject().sendMessage("哎呀~权限不够了-QAQ");
                 l.warning("你的机器人无权这么做!");
+                return;
             } else {
              e.printStackTrace();
             }
