@@ -85,29 +85,32 @@ public class MessageEventManager {
             } catch (Exception e) {
                 judge = true;
             }
-            //判断是全局还是当前群
-            if (base.getScopeInfo().getType()) {
-                //当前
-                if (base.getScopeInfo().getScopeCode() != event.getSubject().getId()) {
-                    continue;
-                }
-            } else if (groupType) {
-                //群组
-                int scopeNum = base.getScopeInfo().getScopeNum();
-                //是 跳过当前这条回复 否 不跳
-                boolean mark = true;
-                //是群组，根据群组编号拿群组信息
-                List<Long> longs = GroupData.INSTANCE.getGroupList().get(scopeNum);
-                //判断，如果有就改为不让跳过
-                for (Long group : longs) {
-                    if (group == event.getSubject().getId()) {
-                        mark = false;
-                        break;
+            try {
+                //判断是全局还是当前群
+                if (base.getScopeInfo().getType()) {
+                    //当前
+                    if (base.getScopeInfo().getScopeCode() != event.getSubject().getId()) {
+                        continue;
+                    }
+                } else if (groupType) {
+                    //群组
+                    int scopeNum = base.getScopeInfo().getScopeNum();
+                    //是 跳过当前这条回复 否 不跳
+                    boolean mark = true;
+                    //是群组，根据群组编号拿群组信息
+                    List<Long> longs = GroupData.INSTANCE.getGroupList().get(scopeNum);
+                    //判断，如果有就改为不让跳过
+                    for (Long group : longs) {
+                        if (group == event.getSubject().getId()) {
+                            mark = false;
+                            break;
+                        }
+                    }
+                    if (mark) {
+                        continue;
                     }
                 }
-                if (mark) {
-                    continue;
-                }
+            } catch (Exception ignored) {
             }
 
             //匹配
