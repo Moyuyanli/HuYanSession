@@ -23,7 +23,6 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.alibaba:fastjson:2.0.7'
     implementation 'com.alibaba:druid:1.2.11'
     implementation 'org.quartz-scheduler:quartz:2.3.2'
     implementation 'org.xerial:sqlite-jdbc:3.36.0.3'

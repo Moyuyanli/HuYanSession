@@ -1,12 +1,16 @@
 package cn.chahuyun;
 
+import cn.chahuyun.files.ConfigData;
+import cn.chahuyun.utils.SqliteUtil;
 import net.mamoe.mirai.console.plugin.jvm.JavaPlugin;
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescriptionBuilder;
+import net.mamoe.mirai.event.EventChannel;
+import net.mamoe.mirai.event.GlobalEventChannel;
 
 
 /**
  * @description 插件主类
- * @author zhangjiaxing
+ * @author Moyuyanli
  * @date 2022/6/16 21:35
  */
 public final class HuYanSession extends JavaPlugin {
@@ -31,9 +35,17 @@ public final class HuYanSession extends JavaPlugin {
 
         //加载插件，打印日志
         getLogger().info("================HuYan================");
+        reloadPluginConfig(ConfigData.INSTANCE);
+        getLogger().info("config已加载！");
 
-        String path = getDataFolderPath().toString();
-        getLogger().info("p-"+path);
+        SqliteUtil.INSTANCE.init();
+        getLogger().info("sqlite数据库已加载！");
+
+        //注册群消息事件
+        GlobalEventChannel.INSTANCE.registerListenerHost(new cn.chahuyun.event.GroupMessageEvent());
+
+
+
 
 
     }
