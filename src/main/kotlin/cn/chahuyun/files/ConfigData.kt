@@ -25,19 +25,19 @@ object ConfigData : AutoSavePluginConfig("config") {
     @ValueDescription("主人qq")
     val owner: Long by value()
 
-    @ValueDescription("\n是否开启斗地主帮助")
+    @ValueDescription("是否开启斗地主帮助")
     val douSwitch: Boolean by value()
-    @ValueDescription("\n是否开启详细帮助链接提示")
+    @ValueDescription("是否开启详细帮助链接提示")
     val linkSwitch: Boolean  by value()
-    @ValueDescription("\n是否开启帮助在群内显示")
+    @ValueDescription("是否开启帮助在群内显示")
     val helpSwitch: Boolean  by value()
-    @ValueDescription("\n是否开启DEBUG级别日志显示")
-    val sqlSwitch:Boolean by value()
+    @ValueDescription("是否开启DEBUG级别日志显示")
+    val debugSwitch:Boolean by value()
 
     /**
      * 群号
      */
-    @ValueDescription("\n群管操作检测群号")
+    @ValueDescription("群管操作检测群号")
     val groupList: MutableList<Long> by value()
 
     /**

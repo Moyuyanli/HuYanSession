@@ -13,6 +13,7 @@ import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.utils.MiraiLogger;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
 import java.util.regex.Pattern;
 
 /**
@@ -38,8 +39,16 @@ public class GroupMessageEvent extends SimpleListenerHost {
         Contact subject = event.getSubject();
         Bot bot = event.getBot();
 
+        /*
+        群组正则
+         */
         String addListPattern = "\\+?gr\\\\?[:：]\\d+( +\\d+)+|添加群组\\\\?[:：]\\d+( +\\d+)+";
         String queryListPattern = "gr\\\\?[:：](\\d+)?|查询群组\\\\?[:：](\\d+)?";
+        String deleteListPattern = "-gr\\\\?[：:]\\d+( +\\d+)?|删除群组\\\\?[:：]\\d+( +\\d+)?";
+
+        /*
+        会话正则
+         */
         String addStudyPattern = "xx +\\S+ +\\S+( +\\S+){0,2}|学习 +\\S+( +\\S+){0,2}";
 
 
@@ -49,6 +58,9 @@ public class GroupMessageEvent extends SimpleListenerHost {
         } else if (Pattern.matches(queryListPattern, code)) {
             l.info("查询群组指令");
             ListUtil.queryList(event);
+        } else if (Pattern.matches(deleteListPattern, code)) {
+            l.info("删除群组指令");
+            ListUtil.deleteList(event);
         }
 
         if (Pattern.matches(addStudyPattern, code)) {

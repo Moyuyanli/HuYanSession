@@ -47,7 +47,7 @@ public final class HuYanSession extends JavaPlugin {
 
 
 
-
+        getLogger().info("================HuYan================");
     }
 
     @Override
