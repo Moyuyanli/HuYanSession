@@ -19,6 +19,15 @@ public class Base {
      */
     private long bot;
 
+    public Base(long bot) {
+        this.bot = bot;
+    }
+
+    public Base(int id, long bot) {
+        this.id = id;
+        this.bot = bot;
+    }
+
     public int getId() {
         return id;
     }

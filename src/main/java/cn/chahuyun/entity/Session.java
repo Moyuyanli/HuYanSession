@@ -37,7 +37,8 @@ public class Session extends Base {
     private Scope scope;
 
 
-    public Session(int type, Mate mate, String key, String value, Scope scope) {
+    public Session(long bot, int type, Mate mate, String key, String value, Scope scope) {
+        super(bot);
         this.type = type;
         this.mate = mate;
         this.key = key;

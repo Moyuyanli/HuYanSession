@@ -16,7 +16,8 @@ public class GroupList extends Base {
     private List<Long> groups;
 
 
-    public GroupList(int listId, List<Long> groups) {
+    public GroupList(long bot, int listId, List<Long> groups) {
+        super(bot);
         this.listId = listId;
         this.groups = groups;
     }

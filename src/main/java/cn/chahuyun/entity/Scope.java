@@ -35,7 +35,8 @@ public class Scope extends Base{
     private int listId;
 
 
-    public Scope(String scopeName, boolean isGlobal, boolean isGroup, long group, int listId) {
+    public Scope(long bot, String scopeName, boolean isGlobal, boolean isGroup, long group, int listId) {
+        super(bot);
         this.scopeName = scopeName;
         this.isGlobal = isGlobal;
         this.isGroup = isGroup;

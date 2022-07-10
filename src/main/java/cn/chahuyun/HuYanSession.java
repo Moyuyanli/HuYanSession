@@ -1,10 +1,10 @@
 package cn.chahuyun;
 
 import cn.chahuyun.files.ConfigData;
-import cn.chahuyun.utils.SqliteUtil;
+import cn.chahuyun.utils.HuToolDBUtil;
+import cn.chahuyun.utils.ListUtil;
 import net.mamoe.mirai.console.plugin.jvm.JavaPlugin;
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescriptionBuilder;
-import net.mamoe.mirai.event.EventChannel;
 import net.mamoe.mirai.event.GlobalEventChannel;
 
 
@@ -34,24 +34,29 @@ public final class HuYanSession extends JavaPlugin {
     public void onEnable() {
 
         //加载插件，打印日志
-        getLogger().info("================HuYan================");
+        getLogger().info("===================HuYanSession===================");
         reloadPluginConfig(ConfigData.INSTANCE);
-        getLogger().info("config已加载！");
+        getLogger().info("配置config已加载！");
+        HuToolDBUtil.init();
+        getLogger().info("数据库sqlite已加载！");
+        ListUtil.init(true);
 
-        SqliteUtil.INSTANCE.init();
-        getLogger().info("sqlite数据库已加载！");
+//        SqliteUtil.INSTANCE.init();
+//        getLogger().info("sqlite数据库已加载！");
 
         //注册群消息事件
         GlobalEventChannel.INSTANCE.registerListenerHost(new cn.chahuyun.event.GroupMessageEvent());
+        getLogger().info("群消息监听已注册！");
 
 
 
 
-        getLogger().info("================HuYan================");
+        getLogger().info("壶言会话插件加载完成!");
+        getLogger().info("===================HuYanSession===================");
     }
 
     @Override
     public void onDisable() {
-        getLogger().info("HuYanSession已卸载!");
+        getLogger().info("HuYanSession已卸载!感谢您的使用!");
     }
 }
