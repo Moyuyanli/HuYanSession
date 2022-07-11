@@ -60,8 +60,8 @@ public class HuToolUtil {
                 "id INTEGER PRIMARY KEY autoincrement NOT NULL," +
                 "bot INT NOT NULL ," +
                 "scope_name TEXT NOT NULL," +
-                "is_Group BLOB DEFAULT FALSE," +
-                "is_Global BLOB DEFAULT FALSE," +
+                "is_group BLOB DEFAULT FALSE," +
+                "is_global BLOB DEFAULT FALSE," +
                 "`group` INT DEFAULT 0," +
                 "list_id INT DEFAULT 0" +
                 "); ";
@@ -71,6 +71,7 @@ public class HuToolUtil {
                 "type INT DEFAULT 0 ," +
                 "key TEXT NOT NULL," +
                 "value TEXT NOT NULL," +
+                "mate_id INT NOT NULL," +
                 "list_id INT DEFAULT 0 ," +
                 "scope_id TEXT NOT NULL" +
                 ");";

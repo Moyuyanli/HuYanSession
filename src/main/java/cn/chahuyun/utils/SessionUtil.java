@@ -44,7 +44,7 @@ public class SessionUtil {
         }
 
         Mate mate = Mate.ACCURATE;
-        Scope scope = new Scope(bot.getId(),"当前", false, false, subject.getId(), 0);
+        Scope scope = new Scope(bot.getId(),"当前", false, false, subject.getId(), -1);
 
         //最小分割大小
         int minIndex = 3;
@@ -93,13 +93,13 @@ public class SessionUtil {
                         "AND `group` = ? " +
                         "AND list_id = ?;";
         String insertScopeSql =
-                "INSERT INTO scope(bot,scope_name,is_group,is_global,group,list_id)"+
-                "SELECT ? ? ? ? ? ? ;";
+                "INSERT INTO scope(bot,scope_name,is_group,is_global,`group`,list_id)"+
+                "VALUES(?,?,?,?,?,?);";
 
         List<Scope> list = null;
         try {
             l.info("前");
-            list = HuToolUtil.db.query(queryScopeSql,Scope.class,bot.getId(),scope.getScopeName(),scope.isGroup(), scope.isGlobal(), scope.getGroup(), scope.getListId());
+            list = HuToolUtil.db.query(queryScopeSql,Scope.class,bot.getId(),scope.isGroup(), scope.isGlobal(), scope.getGroup(), scope.getListId());
             l.info("后");
         } catch (SQLException e) {
             l.error("搜索作用域时失败:" + e.getMessage());
@@ -123,7 +123,7 @@ public class SessionUtil {
 
         String insertSessionSql =
         "INSERT INTO session(bot,type,key,value,mate_id,scope_id)"+
-        "SELECT ? ? ? ? ? ? ;";
+        "VALUES( ?, ?, ? ,? ,?, ?) ;";
 
         int i = 0;
         try {
@@ -132,6 +132,7 @@ public class SessionUtil {
             l.error("添加对话失败:" + e.getMessage());
             subject.sendMessage("学不废!");
             e.printStackTrace();
+            return;
         }
         if (i == 0) {
             subject.sendMessage("学不废!");
