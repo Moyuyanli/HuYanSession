@@ -1,6 +1,7 @@
 package cn.chahuyun.event;
 
 import cn.chahuyun.HuYanSession;
+import cn.chahuyun.files.ConfigData;
 import cn.chahuyun.utils.ListUtil;
 import cn.chahuyun.utils.SessionUtil;
 import kotlin.coroutines.CoroutineContext;
@@ -41,7 +42,10 @@ public class GroupMessageEvent extends SimpleListenerHost {
         Bot bot = event.getBot();
 
 
-        l.info(code);
+        if (ConfigData.INSTANCE.getDebugSwitch()) {
+            l.info("MiraiCode-> "+code);
+        }
+
         /*
         群组正则
          */

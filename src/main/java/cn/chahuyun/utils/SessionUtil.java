@@ -27,6 +27,14 @@ public class SessionUtil {
     private final static MiraiLogger l = HuYanSession.INSTANCE.getLogger();
 
 
+    public void init(boolean type) {
+
+
+
+
+    }
+
+
     public static void studySession(MessageEvent event) {
         //xx a b [p1] [p2]
         String code = event.getMessage().serializeToMiraiCode();
@@ -53,20 +61,24 @@ public class SessionUtil {
             for (int i = minIndex; i < split.length; i++) {
                 String s = split[i];
                 switch (s) {
+                    case "2":
                     case "模糊":
                         mate = Mate.VAGUE;
                         break;
+                    case "3":
                     case "头部":
                         mate = Mate.START;
                         break;
+                    case "4":
                     case "结尾":
                         mate = Mate.END;
                         break;
+                    case "0":
                     case "全局":
                         scope = new Scope(bot.getId(),"全局", true, false, subject.getId(), -1);
                         break;
                     default:
-                        String listPattern = "gr\\d+";
+                        String listPattern = "gr\\d+|群组\\d+";
                         if (Pattern.matches(listPattern, s)) {
                             int listId = Integer.parseInt(s.substring(2));
                             if (!ListUtil.isContainsList(bot.getId(), listId)) {
@@ -98,9 +110,7 @@ public class SessionUtil {
 
         List<Scope> list = null;
         try {
-            l.info("前");
             list = HuToolUtil.db.query(queryScopeSql,Scope.class,bot.getId(),scope.isGroup(), scope.isGlobal(), scope.getGroup(), scope.getListId());
-            l.info("后");
         } catch (SQLException e) {
             l.error("搜索作用域时失败:" + e.getMessage());
             subject.sendMessage("学不废,布吉岛该往哪里发!");
