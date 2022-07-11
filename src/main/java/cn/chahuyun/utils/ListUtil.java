@@ -11,7 +11,6 @@ import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.data.ForwardMessageBuilder;
 import net.mamoe.mirai.utils.MiraiLogger;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 
@@ -42,7 +41,7 @@ public class ListUtil {
                 "FROM " +
                 "list ;";
         try {
-            List<Entity> entityList = HuToolDBUtil.db.query(queryGroupListSql, Entity.parse(GroupList.class));
+            List<Entity> entityList = HuToolUtil.db.query(queryGroupListSql, Entity.parse(GroupList.class));
             Map<Long, Map<Integer, GroupList>> parseList = parseList(entityList);
             StaticData.setGroupListMap(parseList);
         } catch (Exception e) {
@@ -94,7 +93,7 @@ public class ListUtil {
 
         int i = 0;
         try {
-            i = HuToolDBUtil.db.execute(listPrefixSql.toString());
+            i = HuToolUtil.db.execute(listPrefixSql.toString());
         } catch (SQLException e) {
             l.error("数据库添加群组失败:" + e.getMessage());
             subject.sendMessage("群组" + key + "添加失败！");
@@ -121,12 +120,25 @@ public class ListUtil {
         String code = event.getMessage().serializeToMiraiCode();
         Contact subject = event.getSubject();
         Bot bot = event.getBot();
+
         String[] split = code.split("\\\\?[:：]");
+
         int key = 0;
         if (split.length == 2) {
             key = Integer.parseInt(split[1]);
         }
-        Map<Integer, GroupList> groupListMap = StaticData.getGroupListMap(bot.getId());
+        Map<Integer, GroupList> groupListMap = null;
+        try {
+            groupListMap = StaticData.getGroupListMap(bot.getId());
+            if (groupListMap == null || groupListMap.isEmpty()) {
+                subject.sendMessage("没有群组信息!");
+                return;
+            }
+        } catch (NullPointerException e) {
+            subject.sendMessage("没有群组信息!");
+            e.printStackTrace();
+            return;
+        }
         ForwardMessageBuilder forwardMessageBuilder = new ForwardMessageBuilder(subject);
         forwardMessageBuilder.add(bot, singleMessages -> {
             singleMessages.add("以下为所有查询到的群组↓");
@@ -193,9 +205,9 @@ public class ListUtil {
         int i = 0;
         try {
             if (value != null) {
-                i = HuToolDBUtil.db.execute(stringBuffer.toString(), bot.getId(), key,value);
+                i = HuToolUtil.db.execute(stringBuffer.toString(), bot.getId(), key,value);
             }else {
-                i = HuToolDBUtil.db.execute(stringBuffer.toString(), bot.getId(), key);
+                i = HuToolUtil.db.execute(stringBuffer.toString(), bot.getId(), key);
             }
         } catch (SQLException e) {
             l.error("数据库删除群组失败:" + e.getMessage());
@@ -210,8 +222,26 @@ public class ListUtil {
     }
 
 
+    /**
+     * 判断这个群组是否存在
+     * @author Moyuyanli
+     * @param bot 所属机器人
+     * @param list_id 群组编号
+     * @date 2022/7/11 12:13
+     * @return boolean 存在 true
+     */
     public static boolean isContainsList(long bot, int list_id) {
-        return true;
+        Map<Integer, GroupList> groupListMap;
+        try {
+            groupListMap = StaticData.getGroupListMap(bot);
+            if (groupListMap == null || groupListMap.isEmpty()) {
+                return false;
+            }
+        } catch (NullPointerException e) {
+            e.printStackTrace();
+            return false;
+        }
+        return groupListMap.containsKey(list_id);
     }
 
     /**

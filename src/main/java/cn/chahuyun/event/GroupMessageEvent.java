@@ -30,6 +30,7 @@ public class GroupMessageEvent extends SimpleListenerHost {
     @Override
     public void handleException(@NotNull CoroutineContext context, @NotNull Throwable exception){
         // 处理事件处理时抛出的异常
+        exception.printStackTrace();
     }
 
 
@@ -39,6 +40,8 @@ public class GroupMessageEvent extends SimpleListenerHost {
         Contact subject = event.getSubject();
         Bot bot = event.getBot();
 
+
+        l.info(code);
         /*
         群组正则
          */

@@ -1,8 +1,10 @@
 package cn.chahuyun;
 
+import cn.chahuyun.command.Command;
 import cn.chahuyun.files.ConfigData;
-import cn.chahuyun.utils.HuToolDBUtil;
+import cn.chahuyun.utils.HuToolUtil;
 import cn.chahuyun.utils.ListUtil;
+import net.mamoe.mirai.console.command.CommandManager;
 import net.mamoe.mirai.console.plugin.jvm.JavaPlugin;
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescriptionBuilder;
 import net.mamoe.mirai.event.GlobalEventChannel;
@@ -37,12 +39,15 @@ public final class HuYanSession extends JavaPlugin {
         getLogger().info("===================HuYanSession===================");
         reloadPluginConfig(ConfigData.INSTANCE);
         getLogger().info("配置config已加载！");
-        HuToolDBUtil.init();
+
+        CommandManager.INSTANCE.registerCommand(Command.INSTANCE,true);
+        getLogger().info("指令command已加载！");
+
+
+        HuToolUtil.init();
         getLogger().info("数据库sqlite已加载！");
         ListUtil.init(true);
 
-//        SqliteUtil.INSTANCE.init();
-//        getLogger().info("sqlite数据库已加载！");
 
         //注册群消息事件
         GlobalEventChannel.INSTANCE.registerListenerHost(new cn.chahuyun.event.GroupMessageEvent());

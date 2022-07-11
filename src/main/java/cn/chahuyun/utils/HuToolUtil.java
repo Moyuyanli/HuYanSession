@@ -6,15 +6,13 @@ import cn.chahuyun.files.ConfigData;
 import cn.hutool.db.Db;
 import cn.hutool.db.DbUtil;
 import cn.hutool.db.Entity;
+import cn.hutool.log.LogFactory;
 import cn.hutool.log.level.Level;
 import net.mamoe.mirai.utils.MiraiLogger;
 import org.sqlite.SQLiteDataSource;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Map.Entry;
 
 /**
  * 说明
@@ -23,7 +21,7 @@ import java.util.Map.Entry;
  * @Description :糊涂数据库工具
  * @Date 2022/7/10 19:56
  */
-public class HuToolDBUtil {
+public class HuToolUtil {
 
     private final static MiraiLogger l = HuYanSession.INSTANCE.getLogger();
 
@@ -41,11 +39,11 @@ public class HuToolDBUtil {
 
     public static void init() {
         String path = SQL_PATH_PREFIX + HuYanSession.INSTANCE.getDataFolderPath() + "/HuYan.db";
+
         SQLiteDataSource dataSource = new SQLiteDataSource();
         dataSource.setUrl(path);
         db = Db.use(dataSource, CLASS_NAME);
         DbUtil.setShowSqlGlobal(ConfigData.INSTANCE.getDebugSwitch(),false,true, Level.DEBUG);
-        Entity parse = Entity.parse(Mate.class);
 
         String createTableMateSql = "CREATE TABLE IF NOT EXISTS mate(" +
                 "id INTEGER PRIMARY KEY autoincrement NOT NULL," +

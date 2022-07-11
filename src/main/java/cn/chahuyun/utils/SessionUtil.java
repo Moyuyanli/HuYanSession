@@ -3,6 +3,7 @@ package cn.chahuyun.utils;
 import cn.chahuyun.HuYanSession;
 import cn.chahuyun.entity.Scope;
 import cn.chahuyun.enums.Mate;
+import cn.hutool.db.Entity;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.Contact;
 import net.mamoe.mirai.contact.User;
@@ -11,6 +12,7 @@ import net.mamoe.mirai.utils.MiraiLogger;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.regex.Pattern;
 
 /**
@@ -36,7 +38,7 @@ public class SessionUtil {
         String key = split[1];
         String value = split[2];
 
-        String typePattern = "\\[mirai\\\\:image\\S+]";
+        String typePattern = "\\[mirai:image\\S+]";
         if (Pattern.matches(typePattern, key) || Pattern.matches(typePattern, value)) {
             type = 1;
         }
@@ -61,12 +63,16 @@ public class SessionUtil {
                         mate = Mate.END;
                         break;
                     case "全局":
-                        scope = new Scope(bot.getId(),"全局", true, false, subject.getId(), 0);
+                        scope = new Scope(bot.getId(),"全局", true, false, subject.getId(), -1);
                         break;
                     default:
                         String listPattern = "gr\\d+";
-                        int listId = Integer.parseInt(s.substring(2));
                         if (Pattern.matches(listPattern, s)) {
+                            int listId = Integer.parseInt(s.substring(2));
+                            if (!ListUtil.isContainsList(bot.getId(), listId)) {
+                                subject.sendMessage("该群组不存在!");
+                                return;
+                            }
                             scope = new Scope(bot.getId(),"群组", false, true, subject.getId(), listId);
                         }
                         break;
@@ -78,66 +84,55 @@ public class SessionUtil {
             return;
         }
 
+        String queryScopeSql =
+                "SELECT id " +
+                "FROM scope " +
+                "WHERE bot = ? " +
+                        "AND is_group = ? " +
+                        "AND is_global = ? " +
+                        "AND `group` = ? " +
+                        "AND list_id = ?;";
+        String insertScopeSql =
+                "INSERT INTO scope(bot,scope_name,is_group,is_global,group,list_id)"+
+                "SELECT ? ? ? ? ? ? ;";
 
-        StringBuffer queryScopeSql = new StringBuffer();
-        queryScopeSql.append("SELECT " )
-                .append("id ,")
-                .append("FROM " )
-                .append("scope " )
-                .append("WHERE " )
-                .append("bot = ")
-                .append(bot.getId())
-                .append(" AND isgroup = ")
-                .append(scope.isGroup())
-                .append(" AND isglobal = ")
-                .append(scope.isGlobal())
-                .append(" AND group = ")
-                .append(scope.getGroup())
-                .append(" AND list_id = ")
-                .append(scope.getListId())
-                .append(";");
-        StringBuffer insertScopeSql = new StringBuffer();
-        insertScopeSql.append("INSERT INTO scope(scope_name,isgroup,isglobal,group,list_id)")
-                .append("SELECT ")
-                .append(scope.getScopeName()).append(",")
-                .append(scope.isGroup()).append(",")
-                .append(scope.isGlobal()).append(",")
-                .append(scope.getGroup()).append(",")
-                .append(scope.getListId()).append(";");
-
-        ResultSet set = SqliteUtil.INSTANCE.queryData(queryScopeSql);
-        int scope_id = 0;
+        List<Scope> list = null;
         try {
-            if (set.next()) {
-                scope_id = set.getInt("id");
-                SqliteUtil.INSTANCE.closeConnectionAndStatement();
-            }else {
-                int data = SqliteUtil.INSTANCE.updateData(insertScopeSql);
-                if (data == 0) {
-                    subject.sendMessage("添加失败，作用域操作失败!");
-                    return;
-                }
-                set = SqliteUtil.INSTANCE.queryData(queryScopeSql);
-                while (set.next()) {
-                    scope_id = set.getInt("id");
-                }
-                SqliteUtil.INSTANCE.closeConnectionAndStatement();
-            }
+            l.info("前");
+            list = HuToolUtil.db.query(queryScopeSql,Scope.class,bot.getId(),scope.getScopeName(),scope.isGroup(), scope.isGlobal(), scope.getGroup(), scope.getListId());
+            l.info("后");
         } catch (SQLException e) {
-            l.error("数据库查询scope出错:"+e.getMessage());
+            l.error("搜索作用域时失败:" + e.getMessage());
+            subject.sendMessage("学不废,布吉岛该往哪里发!");
             e.printStackTrace();
+            return;
+        }
+        long scope_id = 0;
+        if (list.size() == 0) {
+            try {
+                scope_id = HuToolUtil.db.executeForGeneratedKey(insertScopeSql, bot.getId(), scope.getScopeName(), scope.isGroup(), scope.isGlobal(), scope.getGroup(), scope.getListId());
+            } catch (SQLException e) {
+                l.error("添加作用域时失败:" + e.getMessage());
+                subject.sendMessage("学不废,忘记料该往哪里发!");
+                e.printStackTrace();
+                return;
+            }
+        } else {
+            scope_id = list.get(0).getId();
         }
 
-        StringBuffer insertSessionSql = new StringBuffer();
-        insertSessionSql.append("INSERT INTO session(bot,type,key,value,mate_id,scope_id)")
-                .append("SELECT ")
-                .append(bot.getId()).append(",")
-                .append(type).append(",")
-                .append(key).append(",")
-                .append(value).append(",")
-                .append(mate.getMateType()).append(",")
-                .append(scope_id).append(";");
-        int i = SqliteUtil.INSTANCE.updateData(insertSessionSql);
+        String insertSessionSql =
+        "INSERT INTO session(bot,type,key,value,mate_id,scope_id)"+
+        "SELECT ? ? ? ? ? ? ;";
+
+        int i = 0;
+        try {
+            i = HuToolUtil.db.execute(insertSessionSql, bot.getId(), type, key, value, mate.getMateType(), scope_id);
+        } catch (SQLException e) {
+            l.error("添加对话失败:" + e.getMessage());
+            subject.sendMessage("学不废!");
+            e.printStackTrace();
+        }
         if (i == 0) {
             subject.sendMessage("学不废!");
             return;
