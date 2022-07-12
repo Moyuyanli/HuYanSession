@@ -4,6 +4,7 @@ import cn.chahuyun.command.Command;
 import cn.chahuyun.files.ConfigData;
 import cn.chahuyun.utils.HuToolUtil;
 import cn.chahuyun.utils.ListUtil;
+import cn.chahuyun.utils.SessionUtil;
 import net.mamoe.mirai.console.command.CommandManager;
 import net.mamoe.mirai.console.plugin.jvm.JavaPlugin;
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescriptionBuilder;
@@ -46,7 +47,9 @@ public final class HuYanSession extends JavaPlugin {
 
         HuToolUtil.init();
         getLogger().info("数据库sqlite已加载！");
+
         ListUtil.init(true);
+        SessionUtil.init(true);
 
 
         //注册群消息事件

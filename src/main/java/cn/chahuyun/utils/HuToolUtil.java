@@ -72,7 +72,6 @@ public class HuToolUtil {
                 "key TEXT NOT NULL," +
                 "value TEXT NOT NULL," +
                 "mate_id INT NOT NULL," +
-                "list_id INT DEFAULT 0 ," +
                 "scope_id TEXT NOT NULL" +
                 ");";
 //        String createTableSessionSql =

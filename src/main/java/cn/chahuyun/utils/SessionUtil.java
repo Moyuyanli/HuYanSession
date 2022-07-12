@@ -1,8 +1,11 @@
 package cn.chahuyun.utils;
 
 import cn.chahuyun.HuYanSession;
+import cn.chahuyun.data.StaticData;
 import cn.chahuyun.entity.Scope;
+import cn.chahuyun.entity.Session;
 import cn.chahuyun.enums.Mate;
+import cn.chahuyun.files.ConfigData;
 import cn.hutool.db.Entity;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.Contact;
@@ -10,9 +13,12 @@ import net.mamoe.mirai.contact.User;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.utils.MiraiLogger;
 
+import java.lang.reflect.InvocationTargetException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 /**
@@ -27,10 +33,86 @@ public class SessionUtil {
     private final static MiraiLogger l = HuYanSession.INSTANCE.getLogger();
 
 
-    public void init(boolean type) {
+    public static void init(boolean type) {
 
+        String querySessionSql =
+                "SELECT " +
+                        "s.bot," +
+                        "s.type," +
+                        "s.key," +
+                        "s.value," +
+                        "s.mate_id 'mateId'," +
+                        "se.scope_name 'scopeName'," +
+                        "se.is_group 'isGroup'," +
+                        "se.is_global 'isGlobal'," +
+                        "se.`group` 'group'," +
+                        "se.list_id 'listId'" +
+                "FROM " +
+                        "session 's'" +
+                "LEFT JOIN " +
+                        "scope se ON s.scope_id = se.id " +
+                "WHERE " +
+                        "s.bot = se.bot;";
+        List<Entity> entities = null;
+        try {
+            entities = HuToolUtil.db.query(querySessionSql);
+        } catch (SQLException e) {
+            l.error("会话数据加载失败:"+e.getMessage());
+            e.printStackTrace();
+            return;
+        }
 
+        Map<Long, Map<String, Session>> sessionAll = new HashMap<>();
 
+        if (entities != null && entities.size() != 0) {
+            for (Entity entity : entities) {
+                Integer mateId = entity.getInt("mate_id");
+                Mate mate = Mate.ACCURATE;
+                switch (mateId) {
+                    case 2:
+                        mate = Mate.VAGUE;
+                        break;
+                    case 3:
+                        mate = Mate.START;
+                        break;
+                    case 4:
+                        mate = Mate.END;
+                        break;
+                    default:
+                        break;
+                }
+                Session session = null;
+                Scope scope = null;
+                try {
+                    scope = BeanUtil.parseEntity(entity, Scope.class);
+                    session = BeanUtil.parseEntity(entity, Session.class);
+                } catch (Exception e) {
+                    l.error("会话数据初始化失败:"+e.getMessage());
+                    e.printStackTrace();
+                    return;
+                }
+                session.setMate(mate);
+                session.setScope(scope);
+                if (!sessionAll.containsKey(session.getBot())) {
+                    Session finalSession = session;
+                    sessionAll.put(session.getBot(), new HashMap<String, Session>() {{
+                        put(finalSession.getKey(), finalSession);
+                    }});
+                    continue;
+                }
+                Map<String, Session> sessionMap = sessionAll.get(session.getBot());
+                if (!sessionMap.containsKey(session.getKey())) {
+                    sessionAll.get(session.getBot()).put(session.getKey(), session);
+                }
+            }
+            StaticData.setSessionMap(sessionAll);
+        }
+        if (type) {
+            l.info("数据库会话数据初始化成功!");
+        }
+        if (ConfigData.INSTANCE.getDebugSwitch()) {
+            l.info("会话数据更新成功!");
+        }
 
     }
 
@@ -96,39 +178,11 @@ public class SessionUtil {
             return;
         }
 
-        String queryScopeSql =
-                "SELECT id " +
-                "FROM scope " +
-                "WHERE bot = ? " +
-                        "AND is_group = ? " +
-                        "AND is_global = ? " +
-                        "AND `group` = ? " +
-                        "AND list_id = ?;";
-        String insertScopeSql =
-                "INSERT INTO scope(bot,scope_name,is_group,is_global,`group`,list_id)"+
-                "VALUES(?,?,?,?,?,?);";
-
-        List<Scope> list = null;
-        try {
-            list = HuToolUtil.db.query(queryScopeSql,Scope.class,bot.getId(),scope.isGroup(), scope.isGlobal(), scope.getGroup(), scope.getListId());
-        } catch (SQLException e) {
-            l.error("搜索作用域时失败:" + e.getMessage());
-            subject.sendMessage("学不废,布吉岛该往哪里发!");
-            e.printStackTrace();
+        int scope_id = ScopeUtil.getScopeId(bot, scope);
+        if (scope_id == -1) {
+            subject.sendMessage("学不废!");
+            l.warning("学习添加失败,无作用域!");
             return;
-        }
-        long scope_id = 0;
-        if (list.size() == 0) {
-            try {
-                scope_id = HuToolUtil.db.executeForGeneratedKey(insertScopeSql, bot.getId(), scope.getScopeName(), scope.isGroup(), scope.isGlobal(), scope.getGroup(), scope.getListId());
-            } catch (SQLException e) {
-                l.error("添加作用域时失败:" + e.getMessage());
-                subject.sendMessage("学不废,忘记料该往哪里发!");
-                e.printStackTrace();
-                return;
-            }
-        } else {
-            scope_id = list.get(0).getId();
         }
 
         String insertSessionSql =
@@ -149,6 +203,7 @@ public class SessionUtil {
             return;
         }
         subject.sendMessage("学废了!");
+        init(false);
     }
 
 
