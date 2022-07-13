@@ -16,10 +16,6 @@ public class Session extends Base {
      */
     private int type;
 
-    /**
-     * 匹配方式
-     */
-    private Mate mate;
 
     /**
      * 触发词
@@ -32,17 +28,22 @@ public class Session extends Base {
     private String value;
 
     /**
+     * 匹配方式
+     */
+    private Mate mate;
+
+    /**
      * 作用域
      */
     private Scope scope;
 
 
-    public Session(long bot, int type, Mate mate, String key, String value, Scope scope) {
+    public Session(long bot, int type, String key, String value, Mate mate, Scope scope) {
         super(bot);
         this.type = type;
-        this.mate = mate;
         this.key = key;
         this.value = value;
+        this.mate = mate;
         this.scope = scope;
     }
 
@@ -52,14 +53,6 @@ public class Session extends Base {
 
     public void setType(int type) {
         this.type = type;
-    }
-
-    public Mate getMate() {
-        return mate;
-    }
-
-    public void setMate(Mate mate) {
-        this.mate = mate;
     }
 
     public String getKey() {
@@ -76,6 +69,14 @@ public class Session extends Base {
 
     public void setValue(String value) {
         this.value = value;
+    }
+
+    public Mate getMate() {
+        return mate;
+    }
+
+    public void setMate(Mate mate) {
+        this.mate = mate;
     }
 
     public Scope getScope() {

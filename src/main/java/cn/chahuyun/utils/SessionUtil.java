@@ -66,7 +66,7 @@ public class SessionUtil {
 
         if (entities != null && entities.size() != 0) {
             for (Entity entity : entities) {
-                Integer mateId = entity.getInt("mate_id");
+                Integer mateId = entity.getInt("mateId");
                 Mate mate = Mate.ACCURATE;
                 switch (mateId) {
                     case 2:
@@ -109,6 +109,7 @@ public class SessionUtil {
         }
         if (type) {
             l.info("数据库会话数据初始化成功!");
+            return;
         }
         if (ConfigData.INSTANCE.getDebugSwitch()) {
             l.info("会话数据更新成功!");
