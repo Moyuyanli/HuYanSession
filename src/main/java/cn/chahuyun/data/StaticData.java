@@ -49,4 +49,21 @@ public class StaticData {
     public static void setSessionMap(Map<Long, Map<String, Session>> sessionMap) {
         StaticData.sessionMap = sessionMap;
     }
+
+
+    /**
+     * 是否存在该 key
+     * @author Moyuyanli
+     * @param bot 所属机器人
+     * @param key 键
+     * @date 2022/7/13 11:03
+     * @return boolean
+     */
+    public static boolean isSessionKey(long bot, String key) {
+        if (sessionMap.containsKey(bot)) {
+            return sessionMap.get(bot).containsKey(key);
+        }
+        return false;
+    }
+
 }

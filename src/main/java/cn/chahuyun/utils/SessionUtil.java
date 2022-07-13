@@ -11,11 +11,16 @@ import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.Contact;
 import net.mamoe.mirai.contact.User;
 import net.mamoe.mirai.event.events.MessageEvent;
+import net.mamoe.mirai.message.code.MiraiCode;
+import net.mamoe.mirai.message.data.ForwardMessage;
+import net.mamoe.mirai.message.data.ForwardMessageBuilder;
+import net.mamoe.mirai.message.data.MessageChainBuilder;
 import net.mamoe.mirai.utils.MiraiLogger;
 
 import java.lang.reflect.InvocationTargetException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -129,6 +134,11 @@ public class SessionUtil {
         String key = split[1];
         String value = split[2];
 
+        if (StaticData.isSessionKey(bot.getId(), key)) {
+            subject.sendMessage("我已经学废了"+key+"!不能再学了!");
+            return;
+        }
+
         String typePattern = "\\[mirai:image\\S+]";
         if (Pattern.matches(typePattern, key) || Pattern.matches(typePattern, value)) {
             type = 1;
@@ -208,6 +218,168 @@ public class SessionUtil {
     }
 
 
+    public static void querySession(MessageEvent event) {
+        //xx:key?
+        String code = event.getMessage().serializeToMiraiCode();
+        Contact subject = event.getSubject();
+        Bot bot = event.getBot();
 
+        String querySessionPattern = "xx\\\\?[:：](\\S+)|查询 +\\S+";
+
+        boolean type = Pattern.matches(querySessionPattern, code);
+        l.info("type-" + type);
+        String key = null;
+        if (type) {
+            String[] split = code.split("[:：]| +");
+            key = split[1];
+            Map<String, Session> sessionMap;
+            try {
+                l.info("1");
+                sessionMap = StaticData.getSessionMap(bot.getId());
+            } catch (Exception e) {
+                subject.sendMessage("查询会话消息为空!");
+                e.printStackTrace();
+                return;
+            }
+            if (sessionMap == null) {
+                l.info("3");
+                subject.sendMessage("我不太会讲发~!");
+                return;
+            }
+            l.info(sessionMap.containsKey(key)+"");
+            if (sessionMap.containsKey(key)) {
+                l.info("4");
+                Session session = sessionMap.get(key);
+                //判断触发类别
+
+                String trigger = judgeScope(event, subject, session);
+                subject.sendMessage("查询到对应会话:\n" +
+                        session.getKey() + "==>" + session.getValue() + "\n" +
+                        "匹配方式:" + session.getMate().getMateName() + "\n" +
+                        "触发范围:" + trigger);
+                return;
+            }
+            subject.sendMessage("我不是很会讲发~");
+            return;
+        }
+
+        ForwardMessage forwardMessage = parseMessage(event);
+        if (forwardMessage != null) {
+            subject.sendMessage(forwardMessage);
+        }
+
+
+
+
+    }
+
+    /**
+     * 判断作用域
+     * @author Moyuyanli
+     * @param event 消息事件
+     * @param subject 发送者
+     * @param session 消息
+     * @date 2022/7/13 12:25
+     * @return java.lang.String
+     */
+    private static String judgeScope(MessageEvent event, Contact subject, Session session) {
+        String trigger = "其他群触发";
+        long groupId = event.getSubject().getId();
+        if (session.getScope().isGlobal()) {
+            trigger = "全局触发";
+        } else if (session.getScope().isGroup()) {
+            trigger = "群组:" + session.getScope().getListId() + "触发";
+        } else if (groupId == subject.getId()) {
+            trigger = "当前群触发";
+        }
+        return trigger;
+    }
+
+    /**
+     * 会话消息分页构造
+     * @author Moyuyanli
+     * @param event 消息事件
+     * @date 2022/7/13 12:16
+     * @return net.mamoe.mirai.message.data.ForwardMessage
+     */
+    private static ForwardMessage parseMessage(MessageEvent event) {
+        Contact group = event.getSubject();
+        Bot bot = event.getBot();
+        ForwardMessageBuilder nodes = new ForwardMessageBuilder(group);
+        Map<String, Session> sessionMap = null;
+        try {
+            sessionMap = StaticData.getSessionMap(bot.getId());
+        } catch (Exception e) {
+            group.sendMessage("查询会话消息为空!");
+            e.printStackTrace();
+            return null;
+        }
+        if (sessionMap == null) {
+            group.sendMessage("会话消息为空!");
+            return null;
+        }
+
+        MessageChainBuilder table = new MessageChainBuilder();
+        MessageChainBuilder accurate = new MessageChainBuilder();
+        MessageChainBuilder vague = new MessageChainBuilder();
+        MessageChainBuilder start = new MessageChainBuilder();
+        MessageChainBuilder end = new MessageChainBuilder();
+        MessageChainBuilder other = new MessageChainBuilder();
+        table.append("以下为所有查询到的触发关键词结果↓");
+        nodes.add(bot, table.build());
+
+        accurate.append("所有的精准匹配触发消息:\n");
+        vague.append("所有的模糊匹配触发消息:\n");
+        start.append("所有的头部匹配触发消息:\n");
+        end.append("所有的结尾匹配触发消息:\n");
+        other.append("所有的其他匹配触发消息:\n");
+        //获取全部消息
+        ArrayList<Session> values = new ArrayList<Session>(sessionMap.values());
+        for (Session base : values) {
+            //判断触发类别
+            String trigger = judgeScope(event, group, base);
+            //判断消息类别
+            switch (base.getType()) {
+                case 0:
+                    //判断匹配机制
+                    switch (base.getMate()) {
+                        case ACCURATE:
+                            accurate.append(base.getKey() + " ==> " + base.getValue() + " -> " + trigger + "\n");
+                            break;
+                        case VAGUE:
+                            vague.append(base.getKey() + " ==> " + base.getValue() + " -> " + trigger + "\n");
+                            break;
+                        case START:
+                            start.append(base.getKey() + " ==> " + base.getValue() + " -> " + trigger + "\n");
+                            break;
+                        case END:
+                            end.append(base.getKey() + " ==> " + base.getValue() + " -> " + trigger + "\n");
+                            break;
+                        default:
+                            break;
+                    }
+                    break;
+                case 1:
+                    other.append(MiraiCode.deserializeMiraiCode(base.getKey()))
+                            .append(" ==> ")
+                            .append(MiraiCode.deserializeMiraiCode(base.getValue()))
+                            .append(" -> ")
+                            .append(trigger)
+                            .append(":")
+                            .append(base.getMate().getMateName())
+                            .append("\n");
+                    break;
+                default:
+                    break;
+            }
+        }
+        nodes.add(bot, accurate.build());
+        nodes.add(bot, vague.build());
+        nodes.add(bot, start.build());
+        nodes.add(bot, end.build());
+        nodes.add(bot, other.build());
+
+        return nodes.build();
+    }
 
 }

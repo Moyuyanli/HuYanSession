@@ -57,6 +57,7 @@ public class GroupMessageEvent extends SimpleListenerHost {
         会话正则
          */
         String addStudyPattern = "xx +\\S+ +\\S+( +\\S+){0,2}|学习 +\\S+( +\\S+){0,2}";
+        String queryStudyPattern = "xx\\\\?[:：](\\S+)?|查询( +\\S+)?";
 
 
         if (Pattern.matches(addListPattern, code)) {
@@ -71,7 +72,11 @@ public class GroupMessageEvent extends SimpleListenerHost {
         }
 
         if (Pattern.matches(addStudyPattern, code)) {
+            l.info("学习会话指令");
             SessionUtil.studySession(event);
+        } else if (Pattern.matches(queryStudyPattern, code)) {
+            l.info("查询会话指令");
+            SessionUtil.querySession(event);
         }
 
 
