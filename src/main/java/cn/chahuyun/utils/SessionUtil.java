@@ -217,7 +217,12 @@ public class SessionUtil {
         init(false);
     }
 
-
+    /**
+     * 查询所有会话消息
+     * @author Moyuyanli
+     * @param event 消息事件
+     * @date 2022/7/13 21:21
+     */
     public static void querySession(MessageEvent event) {
         //xx:key?
         String code = event.getMessage().serializeToMiraiCode();
@@ -267,9 +272,6 @@ public class SessionUtil {
         if (forwardMessage != null) {
             subject.sendMessage(forwardMessage);
         }
-
-
-
 
     }
 

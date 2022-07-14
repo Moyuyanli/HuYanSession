@@ -1,6 +1,12 @@
 package cn.chahuyun.event;
 
 import cn.chahuyun.HuYanSession;
+import cn.chahuyun.data.StaticData;
+import cn.chahuyun.dialogue.Dialogue;
+import cn.chahuyun.entity.GroupList;
+import cn.chahuyun.entity.Scope;
+import cn.chahuyun.entity.Session;
+import cn.chahuyun.enums.Mate;
 import cn.chahuyun.files.ConfigData;
 import cn.chahuyun.utils.ListUtil;
 import cn.chahuyun.utils.SessionUtil;
@@ -14,8 +20,12 @@ import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.utils.MiraiLogger;
 import org.jetbrains.annotations.NotNull;
 
+import java.sql.Statement;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
+
+import static cn.chahuyun.enums.Mate.*;
 
 /**
  * 说明
@@ -49,15 +59,17 @@ public class GroupMessageEvent extends SimpleListenerHost {
         /*
         群组正则
          */
-        String addListPattern = "\\+?gr\\\\?[:：]\\d+( +\\d+)+|添加群组\\\\?[:：]\\d+( +\\d+)+";
-        String queryListPattern = "gr\\\\?[:：](\\d+)?|查询群组\\\\?[:：](\\d+)?";
-        String deleteListPattern = "-gr\\\\?[：:]\\d+( +\\d+)?|删除群组\\\\?[:：]\\d+( +\\d+)?";
+        String addListPattern = "^\\+?gr\\\\?[:：]\\d+( +\\d+)+|^添加群组\\\\?[:：]\\d+( +\\d+)+";
+        String queryListPattern = "^gr\\\\?[:：](\\d+)?|^查询群组\\\\?[:：](\\d+)?";
+        String deleteListPattern = "^-gr\\\\?[：:]\\d+( +\\d+)?|^删除群组\\\\?[:：]\\d+( +\\d+)?";
 
         /*
         会话正则
          */
-        String addStudyPattern = "xx +\\S+ +\\S+( +\\S+){0,2}|学习 +\\S+( +\\S+){0,2}";
-        String queryStudyPattern = "xx\\\\?[:：](\\S+)?|查询( +\\S+)?";
+        String addStudyPattern = "^xx +\\S+ +\\S+( +\\S+){0,2}|^学习 +\\S+( +\\S+){0,2}";
+        String queryStudyPattern = "^xx\\\\?[:：](\\S+)?|^查询( +\\S+)?";
+        String addsStudyPattern = "^%xx";
+        String deleteStudyPattern = "^-xx\\\\?[:：](\\S+)|删除( +\\S+)";
 
 
         if (Pattern.matches(addListPattern, code)) {
@@ -82,8 +94,99 @@ public class GroupMessageEvent extends SimpleListenerHost {
 
 
 
+        isSessionMessage(event);
+
+    }
+
+    /**
+     * 匹配会话消息
+     * @author Moyuyanli
+     * @param event 消息事件
+     * @date 2022/7/13 21:30
+     */
+    private void isSessionMessage(MessageEvent event) {
+        String code = event.getMessage().serializeToMiraiCode();
+        long bot = event.getBot().getId();
+
+        Map<String, Session> sessionMap = StaticData.getSessionMap(bot);
+
+        if (sessionMap.containsKey(code)) {
+            Session session = sessionMap.get(code);
+            if (mateScope(event, session.getScope())) {
+                if (mateMate(code, session.getMate(), session.getKey())) {
+                    Dialogue.INSTANCE.dialogueSession(event,session);
+                }
+            }
+        }
 
 
+    }
+
+    /**
+     * 匹配作用域
+     * @author Moyuyanli
+     * @param event 消息事件
+     * @param scope 作用域
+     * @date 2022/7/13 21:34
+     * @return boolean true 匹配成功! false 匹配失败！
+     */
+    private boolean mateScope(MessageEvent event, Scope scope) {
+        long bot = event.getBot().getId();
+        long group = event.getSubject().getId();
+
+        Map<Integer, GroupList> groupListMap = StaticData.getGroupListMap(bot);
+
+        if (scope.isGroup()) {
+            GroupList groupList = groupListMap.get(scope.getListId());
+            List<Long> groups = groupList.getGroups();
+            for (Long aLong : groups) {
+                if (group == aLong) {
+                    return true;
+                }
+            }
+        } else if (scope.isGlobal()) {
+            return true;
+        } else {
+            long l = scope.getGroup();
+            return l == group;
+        }
+        return false;
+    }
+
+    /**
+     * 匹配匹配方式
+     * @author Moyuyanli
+     * @param code 消息
+     * @param mate 匹配方式
+     * @param key 匹配内容
+     * @date 2022/7/13 21:40
+     * @return boolean true 匹配成功! false 匹配失败！
+     */
+    private boolean mateMate(String code, Mate mate,String key) {
+        switch (mate) {
+            case ACCURATE:
+                if (code.equals(key)) {
+                    return true;
+                }
+                break;
+            case VAGUE:
+                if (code.contains(key)) {
+                    return true;
+                }
+                break;
+            case START:
+                if (code.startsWith(key)) {
+                    return true;
+                }
+                break;
+            case END:
+                if (code.endsWith(key)) {
+                    return true;
+                }
+                break;
+            default:break;
+        }
+        return false;
     }
 
 
