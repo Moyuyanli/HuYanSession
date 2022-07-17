@@ -241,7 +241,7 @@ public class GroupManager {
         Contact subject = event.getSubject();
         String code = event.getMessage().serializeToMiraiCode();
 
-        if (!Pattern.matches("\\+wjc\\\\[:：]\\S+( +\\S+){1,3}", code)) {
+        if (!Pattern.matches("\\+wjc\\\\?[:：]\\S+( +\\S+){1,3}", code)) {
             subject.sendMessage("添加违禁词格式错误!");
             return;
         }
@@ -353,7 +353,7 @@ public class GroupManager {
             builder.add(bot, chain -> {
                 chain.add(entry.getKey());
                 chain.add(":");
-                chain.add(base.getValue());
+                chain.add(MiraiCode.deserializeMiraiCode(base.getValue()));
                 chain.add("\n");
                 chain.add(base.getProhibit());
                 if (base.getScope().getType()) {
