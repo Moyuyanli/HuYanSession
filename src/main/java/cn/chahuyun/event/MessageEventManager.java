@@ -216,8 +216,8 @@ public class MessageEventManager {
             messEnum = MessEnum.REPLY;
         }
 
-        /**
-         * 群管消息判断
+        /*
+          群管消息判断
          */
         Pattern pattern = Pattern.compile(groupPattern);
         Matcher groupMatcher = pattern.matcher(messageToString);

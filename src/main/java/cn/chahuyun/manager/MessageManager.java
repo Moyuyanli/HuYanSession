@@ -134,7 +134,7 @@ public class MessageManager {
                         }
                         break;
                     default:
-                        if (Pattern.matches("gr\\d+", s)) {
+                        if (Pattern.matches("gr\\d+|群组\\d+", s)) {
                             int groupNum = Integer.parseInt(s.substring(2));
                             boolean containsKey = GroupData.INSTANCE.getGroupList().containsKey(groupNum);
                             if (!containsKey) {
