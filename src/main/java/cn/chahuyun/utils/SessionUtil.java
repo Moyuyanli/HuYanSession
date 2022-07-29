@@ -27,6 +27,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 
@@ -41,7 +43,13 @@ public class SessionUtil {
 
     private final static MiraiLogger l = HuYanSession.INSTANCE.getLogger();
 
-
+    /**
+     * 刷新静态内存数据
+     *
+     * @author Moyuyanli
+     * @param type true 初始化加载 false 刷新
+     * @date 2022/7/29 22:25
+     */
     public static void init(boolean type) {
 
         String querySessionSql =
@@ -125,7 +133,12 @@ public class SessionUtil {
 
     }
 
-
+    /**
+     * 学习会话
+     * @author Moyuyanli
+     * @param event 消息事件
+     * @date 2022/7/29 22:27
+     */
     public static void studySession(MessageEvent event) {
         //xx a b [p1] [p2]
         String code = event.getMessage().serializeToMiraiCode();
@@ -225,6 +238,7 @@ public class SessionUtil {
             Map<String, Session> sessionMap;
             try {
                 l.info("1");
+                init(false);
                 sessionMap = StaticData.getSessionMap(bot.getId());
             } catch (Exception e) {
                 subject.sendMessage("查询会话消息为空!");
@@ -266,7 +280,7 @@ public class SessionUtil {
      * @param event 消息事件
      * @date 2022/7/29 15:05
      */
-    public static void studyDialogue(MessageEvent event,int number) {
+    public static void studyDialogue(MessageEvent event) throws ExecutionException, InterruptedException {
         //%xx|学习对话
         Contact subject = event.getSubject();
         User user = event.getSender();
@@ -276,21 +290,20 @@ public class SessionUtil {
         event.intercept();
         MessageEvent nextMessageEventFromUser = getNextMessageEventFromUser(user);
         if (ShareUtils.isQuit(nextMessageEventFromUser)) {
-            nextMessageEventFromUser.intercept();
             return;
         }
         String key = nextMessageEventFromUser.getMessage().serializeToMiraiCode();
+        nextMessageEventFromUser.intercept();
         subject.sendMessage("请发送回复消息:");
         nextMessageEventFromUser = getNextMessageEventFromUser(user);
         if (ShareUtils.isQuit(nextMessageEventFromUser)) {
-            nextMessageEventFromUser.intercept();
             return;
         }
         String value = nextMessageEventFromUser.getMessage().serializeToMiraiCode();
+        nextMessageEventFromUser.intercept();
         subject.sendMessage("请发送参数(一次发送，多参数中间隔开):");
         nextMessageEventFromUser = getNextMessageEventFromUser(user);
         if (ShareUtils.isQuit(nextMessageEventFromUser)) {
-            nextMessageEventFromUser.intercept();
             return;
         }
         String param = nextMessageEventFromUser.getMessage().serializeToMiraiCode();
@@ -373,7 +386,7 @@ public class SessionUtil {
         String deleteSessionSql = "DELETE FROM session WHERE key = ?";
 
         try {
-            HuToolUtil.db.del("session", key, key);
+            HuToolUtil.db.del("session", "key", key);
         } catch (SQLException e) {
             subject.sendMessage("出错啦~~");
             e.printStackTrace();
@@ -432,14 +445,18 @@ public class SessionUtil {
      * @date 2022/7/29 12:36
      * @return net.mamoe.mirai.event.events.MessageEvent
      */
-    private static void getNextMessageEventFromUser(User user,int number) {
-        EventChannel<MessageEvent> filter = GlobalEventChannel.INSTANCE.filterIsInstance(MessageEvent.class)
-                .filter(event -> event.getSender().getId() == user.getId());
-        filter.subscribeOnce(MessageEvent.class, EmptyCoroutineContext.INSTANCE,
-                ConcurrencyKind.LOCKED, EventPriority.HIGH,event);
-    }
+    private static MessageEvent getNextMessageEventFromUser(User user) throws ExecutionException, InterruptedException {
 
-    private static String returnString(User user,MessageEvent event,)
+        EventChannel<MessageEvent> channel = GlobalEventChannel.INSTANCE.parentScope(HuYanSession.INSTANCE)
+                .filterIsInstance(MessageEvent.class)
+                .filter(event -> event.getSender().getId() == user.getId());
+
+        CompletableFuture<MessageEvent> future = new CompletableFuture<>();
+
+        channel.subscribeOnce(MessageEvent.class,EmptyCoroutineContext.INSTANCE,
+                ConcurrencyKind.LOCKED,EventPriority.HIGH, future::complete);
+        return future.get();
+    }
 
 
     /**

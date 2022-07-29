@@ -35,7 +35,7 @@ public final class HuYanSession extends JavaPlugin {
 
     @Override
     public void onEnable() {
-
+        GlobalEventChannel.INSTANCE.parentScope(HuYanSession.INSTANCE);
         //加载插件，打印日志
         getLogger().info("===================HuYanSession===================");
         reloadPluginConfig(ConfigData.INSTANCE);
@@ -67,4 +67,6 @@ public final class HuYanSession extends JavaPlugin {
     public void onDisable() {
         getLogger().info("HuYanSession已卸载!感谢您的使用!");
     }
+
+
 }

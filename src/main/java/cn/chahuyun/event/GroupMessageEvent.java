@@ -40,6 +40,7 @@ public class GroupMessageEvent extends SimpleListenerHost {
 
     @Override
     public void handleException(@NotNull CoroutineContext context, @NotNull Throwable exception){
+        l.error("插件异常:"+exception.getMessage());
         // 处理事件处理时抛出的异常
         exception.printStackTrace();
     }
@@ -92,6 +93,9 @@ public class GroupMessageEvent extends SimpleListenerHost {
         } else if (Pattern.matches(addsStudyPattern, code)) {
             l.info("添加会话指令");
             SessionUtil.studyDialogue(event);
+        } else if (Pattern.matches(deleteStudyPattern, code)) {
+            l.info("删除会话指令");
+            SessionUtil.deleteSession(event);
         }
 
 
@@ -112,17 +116,31 @@ public class GroupMessageEvent extends SimpleListenerHost {
         long bot = event.getBot().getId();
 
         Map<String, Session> sessionMap = StaticData.getSessionMap(bot);
-
-        if (sessionMap.containsKey(code)) {
-            Session session = sessionMap.get(code);
-            if (mateScope(event, session.getScope())) {
-                if (mateMate(code, session.getMate(), session.getKey())) {
-                    Dialogue.INSTANCE.dialogueSession(event,session);
+        for (Map.Entry<String, Session> entry : sessionMap.entrySet()) {
+            if (ConfigData.INSTANCE.getDebugSwitch()) {
+                l.info("Session-> "+entry.getKey());
+            }
+            //先做模糊查询判断存在不存在
+            if (code.contains(entry.getKey())) {
+                if (ConfigData.INSTANCE.getDebugSwitch()) {
+                    l.info("匹配->存在");
+                }
+                //存在则尝试匹配作用域
+                Session session = entry.getValue();
+                if (mateScope(event, session.getScope())) {
+                    if (ConfigData.INSTANCE.getDebugSwitch()) {
+                        l.info("匹配作用域->存在");
+                    }
+                    //尝试匹配匹配方式
+                    if (mateMate(code, session.getMate(), session.getKey())) {
+                        if (ConfigData.INSTANCE.getDebugSwitch()) {
+                            l.info("匹配匹配方式->成功");
+                        }
+                        Dialogue.INSTANCE.dialogueSession(event, session);
+                    }
                 }
             }
         }
-
-
     }
 
     /**
