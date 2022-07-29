@@ -68,8 +68,8 @@ public class GroupMessageEvent extends SimpleListenerHost {
          */
         String addStudyPattern = "^xx +\\S+ +\\S+( +\\S+){0,2}|^学习 +\\S+( +\\S+){0,2}";
         String queryStudyPattern = "^xx\\\\?[:：](\\S+)?|^查询( +\\S+)?";
-        String addsStudyPattern = "^%xx";
-        String deleteStudyPattern = "^-xx\\\\?[:：](\\S+)|删除( +\\S+)";
+        String addsStudyPattern = "^%xx|^学习对话";
+        String deleteStudyPattern = "^-xx\\\\?[:：](\\S+)|^删除( +\\S+)";
 
 
         if (Pattern.matches(addListPattern, code)) {
@@ -89,6 +89,9 @@ public class GroupMessageEvent extends SimpleListenerHost {
         } else if (Pattern.matches(queryStudyPattern, code)) {
             l.info("查询会话指令");
             SessionUtil.querySession(event);
+        } else if (Pattern.matches(addsStudyPattern, code)) {
+            l.info("添加会话指令");
+            SessionUtil.studyDialogue(event);
         }
 
 
