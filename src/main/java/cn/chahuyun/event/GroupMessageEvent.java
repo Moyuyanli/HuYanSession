@@ -17,6 +17,7 @@ import net.mamoe.mirai.event.EventHandler;
 import net.mamoe.mirai.event.ListeningStatus;
 import net.mamoe.mirai.event.SimpleListenerHost;
 import net.mamoe.mirai.event.events.MessageEvent;
+import net.mamoe.mirai.message.data.MessageChain;
 import net.mamoe.mirai.utils.MiraiLogger;
 import org.jetbrains.annotations.NotNull;
 
@@ -40,9 +41,8 @@ public class GroupMessageEvent extends SimpleListenerHost {
 
     @Override
     public void handleException(@NotNull CoroutineContext context, @NotNull Throwable exception){
-        l.error("插件异常:"+exception.getMessage());
         // 处理事件处理时抛出的异常
-        exception.printStackTrace();
+        l.error("插件异常:",exception);
     }
 
 
@@ -55,6 +55,7 @@ public class GroupMessageEvent extends SimpleListenerHost {
 
         if (ConfigData.INSTANCE.getDebugSwitch()) {
             l.info("MiraiCode-> "+code);
+//            l.info("MiraiJson-> "+ MessageChain.serializeToJsonString(event.getMessage()));
         }
 
         /*

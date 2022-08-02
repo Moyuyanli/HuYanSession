@@ -19,6 +19,7 @@ import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.code.MiraiCode;
 import net.mamoe.mirai.message.data.ForwardMessage;
 import net.mamoe.mirai.message.data.ForwardMessageBuilder;
+import net.mamoe.mirai.message.data.MessageChain;
 import net.mamoe.mirai.message.data.MessageChainBuilder;
 import net.mamoe.mirai.utils.MiraiLogger;
 
@@ -230,29 +231,23 @@ public class SessionUtil {
         String querySessionPattern = "xx\\\\?[:：](\\S+)|查询 +\\S+";
 
         boolean type = Pattern.matches(querySessionPattern, code);
-        l.info("type-" + type);
         String key;
         if (type) {
             String[] split = code.split("[:：]| +");
             key = split[1];
             Map<String, Session> sessionMap;
             try {
-                l.info("1");
                 init(false);
                 sessionMap = StaticData.getSessionMap(bot.getId());
             } catch (Exception e) {
                 subject.sendMessage("查询会话消息为空!");
-                e.printStackTrace();
                 return;
             }
             if (sessionMap == null) {
-                l.info("3");
                 subject.sendMessage("我不太会讲发~!");
                 return;
             }
-            l.info(sessionMap.containsKey(key)+"");
             if (sessionMap.containsKey(key)) {
-                l.info("4");
                 Session session = sessionMap.get(key);
                 //判断触发类别
 
@@ -299,7 +294,7 @@ public class SessionUtil {
         if (ShareUtils.isQuit(nextMessageEventFromUser)) {
             return;
         }
-        String value = nextMessageEventFromUser.getMessage().serializeToMiraiCode();
+        String value = MessageChain.serializeToJsonString(nextMessageEventFromUser.getMessage());
         nextMessageEventFromUser.intercept();
         subject.sendMessage("请发送参数(一次发送，多参数中间隔开):");
         nextMessageEventFromUser = getNextMessageEventFromUser(user);
@@ -355,12 +350,7 @@ public class SessionUtil {
             l.warning("学习添加失败,无作用域!");
             return;
         }
-        int type = 0;
-        String typePattern = "\\[mirai:image\\S+]";
-        if (Pattern.matches(typePattern, key) || Pattern.matches(typePattern, value)) {
-            type = 1;
-        }
-
+        int type = 5;
         saveSession(subject, bot, key, value, mate, scope_id, type);
 
     }
@@ -511,6 +501,7 @@ public class SessionUtil {
         MessageChainBuilder start = new MessageChainBuilder();
         MessageChainBuilder end = new MessageChainBuilder();
         MessageChainBuilder other = new MessageChainBuilder();
+        MessageChainBuilder special = new MessageChainBuilder();
         table.append("以下为所有查询到的触发关键词结果↓");
         nodes.add(bot, table.build());
 
@@ -519,6 +510,7 @@ public class SessionUtil {
         start.append("所有的头部匹配触发消息:\n");
         end.append("所有的结尾匹配触发消息:\n");
         other.append("所有的其他匹配触发消息:\n");
+        special.append("所有的特殊匹配触发消息:\n");
         //获取全部消息
         ArrayList<Session> values = new ArrayList<>(sessionMap.values());
         for (Session base : values) {
@@ -555,6 +547,15 @@ public class SessionUtil {
                             .append(base.getMate().getMateName())
                             .append("\n");
                     break;
+                case 5:
+                    special.append(MiraiCode.deserializeMiraiCode(base.getKey()))
+                            .append(" ==> ")
+                            .append(MessageChain.deserializeFromJsonString(base.getValue()).contentToString())
+                            .append(" -> ")
+                            .append(trigger)
+                            .append(":")
+                            .append(base.getMate().getMateName())
+                            .append("\n");
                 default:
                     break;
             }
@@ -564,6 +565,7 @@ public class SessionUtil {
         nodes.add(bot, start.build());
         nodes.add(bot, end.build());
         nodes.add(bot, other.build());
+        nodes.add(bot, special.build());
 
         return nodes.build();
     }

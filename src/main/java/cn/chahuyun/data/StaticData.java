@@ -43,7 +43,13 @@ public class StaticData {
     }
 
     public static Map<String, Session> getSessionMap(Long bot) {
-        return sessionMap.get(bot);
+        if (sessionMap.isEmpty()) {
+            return null;
+        }
+        if (sessionMap.containsKey(bot)) {
+            return sessionMap.get(bot);
+        }
+        return null;
     }
 
     public static void setSessionMap(Map<Long, Map<String, Session>> sessionMap) {
