@@ -9,6 +9,7 @@ import net.mamoe.mirai.event.events.EventCancelledException;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.code.MiraiCode;
 import net.mamoe.mirai.message.data.Image;
+import net.mamoe.mirai.message.data.MessageChain;
 import net.mamoe.mirai.utils.MiraiLogger;
 
 import java.io.IOException;
@@ -51,7 +52,11 @@ public class Dialogue {
     public void dialogueSession(MessageEvent event, Session session) {
         Contact subject = event.getSubject();
         try {
-            subject.sendMessage(MiraiCode.deserializeMiraiCode(session.getValue()));
+            if (session.getType() == 5) {
+                subject.sendMessage(MessageChain.deserializeFromJsonString(session.getValue()));
+            } else {
+                subject.sendMessage(MiraiCode.deserializeMiraiCode(session.getValue()));
+            }
         } catch (EventCancelledException e) {
             l.error("发送消息被取消:" + e.getMessage());
             e.printStackTrace();
