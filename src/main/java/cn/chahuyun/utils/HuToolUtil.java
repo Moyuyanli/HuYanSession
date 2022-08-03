@@ -74,7 +74,7 @@ public class HuToolUtil {
                 "mate_id INT NOT NULL," +
                 "scope_id TEXT NOT NULL" +
                 ");";
-//        String createTableSessionSql =
+        String createTablePowerSql = "";
 //        String createTableSessionSql =
 //        String createTableSessionSql =
 

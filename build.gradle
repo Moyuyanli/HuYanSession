@@ -10,7 +10,7 @@ tasks.withType(JavaCompile) {
 }
 group = 'cn.chahuyun'
 
-version = '2.0'
+version = '2.0-alpha'
 
 
 repositories {
@@ -23,10 +23,19 @@ repositories {
 }
 
 dependencies {
+    implementation 'org.junit.jupiter:junit-jupiter:5.7.0'
+    compileOnly("xyz.cssxsh.mirai:mirai-hibernate-plugin:2.4.2")
+
     implementation 'com.alibaba:druid:1.2.11'
     implementation 'org.quartz-scheduler:quartz:2.3.2'
     implementation 'org.xerial:sqlite-jdbc:3.36.0.3'
     implementation 'cn.hutool:hutool-all:5.8.4'
 
     testImplementation('junit:junit:4.13.2')
+    testImplementation("xyz.cssxsh.mirai:mirai-hibernate-plugin:2.4.2")
+}
+
+
+mirai {
+    jvmTarget = JavaVersion.VERSION_11
 }

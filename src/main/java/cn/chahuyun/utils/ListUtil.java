@@ -2,6 +2,7 @@ package cn.chahuyun.utils;
 
 import cn.chahuyun.HuYanSession;
 import cn.chahuyun.data.StaticData;
+import cn.chahuyun.entity.Group;
 import cn.chahuyun.entity.GroupList;
 import cn.chahuyun.files.ConfigData;
 import cn.hutool.db.Entity;
@@ -10,6 +11,9 @@ import net.mamoe.mirai.contact.Contact;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.data.ForwardMessageBuilder;
 import net.mamoe.mirai.utils.MiraiLogger;
+import org.hibernate.query.criteria.HibernateCriteriaBuilder;
+import org.hibernate.query.criteria.JpaCriteriaQuery;
+import org.hibernate.query.criteria.JpaRoot;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -35,15 +39,15 @@ public class ListUtil {
     public static void init(boolean type) {
         String queryGroupListSql =
                 "SELECT " +
-                "bot," +
-                "list_id 'listId'," +
-                "group_id 'group' " +
-                "FROM " +
-                "list ;";
+                        "bot," +
+                        "list_id 'listId'," +
+                        "group_id 'group' " +
+                        "FROM " +
+                        "list ;";
         try {
             List<Entity> entityList = HuToolUtil.db.query(queryGroupListSql, Entity.parse(GroupList.class));
-            Map<Long, Map<Integer, GroupList>> parseList = parseList(entityList);
-            StaticData.setGroupListMap(parseList);
+//            Map<Long, Map<Integer, GroupList>> parseList = parseList(entityList);
+//            StaticData.setGroupListMap(parseList);
         } catch (Exception e) {
             if (type) {
                 l.error("群组信息初始化失败:" + e.getMessage());
@@ -52,6 +56,44 @@ public class ListUtil {
             }
             e.printStackTrace();
         }
+
+        if (type) {
+            l.info("数据库群组信息初始化成功!");
+            return;
+        }
+        if (ConfigData.INSTANCE.getDebugSwitch()) {
+            l.info("群组信息更新成功!");
+        }
+
+    }
+
+    /**
+     * 加载或者更新群组数据
+     *
+     * @param type t 加载 f 更新
+     * @author Moyuyanli
+     * @date 2022/7/10 16:18
+     */
+    public static void init(boolean type, int number) {
+
+        Map<Long, Map<Integer, GroupList>> parseList = HibernateUtil.factory.fromTransaction(session -> {
+            //创建构造器
+            HibernateCriteriaBuilder builder = session.getCriteriaBuilder();
+            //创建实体对应查询器
+            JpaCriteriaQuery<GroupList> query = builder.createQuery(GroupList.class);
+
+            JpaRoot<GroupList> from = query.from(GroupList.class);
+
+            query.select(from);
+            query.where(builder.equal(from.get("groups").get("bot"), from.get("bot")));
+            query.where(builder.equal(from.get("groups").get("list_id"), from.get("list_id")));
+
+            return parseList(session.createQuery(query).list());
+        });
+
+
+
+        StaticData.setGroupListMap(parseList);
 
         if (type) {
             l.info("数据库群组信息初始化成功!");
@@ -76,35 +118,28 @@ public class ListUtil {
         Contact subject = event.getSubject();
         Bot bot = event.getBot();
 
-        l.info("code-" + code);
+        if (ConfigData.INSTANCE.getDebugSwitch()) {
+            l.info("code-" + code);
+        }
 
         String[] split = code.split("\\s+");
         int key = Integer.parseInt(split[0].split("\\\\?[:：]")[1]);
-
-        StringBuffer listPrefixSql = new StringBuffer("INSERT INTO list(bot,list_id,group_id)");
-        for (int i = 1; i < split.length; i++) {
-            String s = split[i];
-            if (i + 1 == split.length) {
-                listPrefixSql.append("SELECT ").append(bot.getId()).append(",").append(key).append(",").append(s).append(";");
-                break;
-            }
-            listPrefixSql.append("SELECT ").append(bot.getId()).append(",").append(key).append(",").append(s).append(" UNION\n");
-        }
-
-        int i = 0;
         try {
-            i = HuToolUtil.db.execute(listPrefixSql.toString());
-        } catch (SQLException e) {
-            l.error("数据库添加群组失败:" + e.getMessage());
+            HibernateUtil.factory.fromTransaction(session -> {
+                GroupList groupList = new GroupList(bot.getId(), key, new ArrayList<Group>());
+                for (int i = 1; i < split.length; i++) {
+                    String s = split[i];
+                    groupList.getGroups().add(new Group(key, Long.parseLong(s)));
+                }
+                session.persist(groupList);
+                return 0;
+            });
+        } catch (Exception e) {
+            l.error("数据库添加群组失败:",e);
             subject.sendMessage("群组" + key + "添加失败！");
-            e.printStackTrace();
             return;
         }
-        if (i == 0) {
-            subject.sendMessage("群组" + key + "添加失败！");
-            return;
-        }
-        subject.sendMessage("群组" + key + "添加" + i + "个群成功！");
+        subject.sendMessage("群组" + key + "添加群成功！");
         init(false);
     }
 
@@ -135,8 +170,8 @@ public class ListUtil {
                 return;
             }
         } catch (NullPointerException e) {
+            l.warning("没有群组信息!",e);
             subject.sendMessage("没有群组信息!");
-            e.printStackTrace();
             return;
         }
         ForwardMessageBuilder forwardMessageBuilder = new ForwardMessageBuilder(subject);
@@ -151,15 +186,15 @@ public class ListUtil {
             }
             forwardMessageBuilder.add(bot, chain -> {
                 chain.add("群组编号：" + entity.getListId() + "\n");
-                Iterator<Long> iterator = entity.getGroups().iterator();
+                Iterator<Group> iterator = entity.getGroups().iterator();
                 while (iterator.hasNext()) {
-                    Long next = iterator.next();
+                    Group next = iterator.next();
                     chain.add(next + "->");
                     String groupName = null;
-                    if (bot.getGroup(next) == null) {
+                    if (bot.getGroup(next.getGroup()) == null) {
                         groupName = "未知群";
                     } else {
-                        groupName = Objects.requireNonNull(bot.getGroup(next)).getName();
+                        groupName = Objects.requireNonNull(bot.getGroup(next.getGroup())).getName();
                     }
                     chain.add(groupName);
                     if (iterator.hasNext()) {
@@ -188,35 +223,36 @@ public class ListUtil {
         String[] split = code.split("\\\\?[:：]");
         String[] strings = split[1].split("\\s+");
 
-        String key = strings[0];
-
-        StringBuilder stringBuffer = new StringBuilder();
-        stringBuffer.append("DELETE FROM list WHERE ").append("bot = ? ").append("AND list_id = ? ");
+        int key = Integer.parseInt(strings[0]);
 
         int minSplit = 2;
         String value = null;
+        boolean type = true;
         if (strings.length == minSplit) {
             value = strings[1];
-            stringBuffer.append("AND ").append("group_id = ? ;");
+            type = false;
         }
 
-        stringBuffer.append(";");
-
-        int i = 0;
-        try {
-            if (value != null) {
-                i = HuToolUtil.db.execute(stringBuffer.toString(), bot.getId(), key,value);
-            }else {
-                i = HuToolUtil.db.execute(stringBuffer.toString(), bot.getId(), key);
-            }
-        } catch (SQLException e) {
-            l.error("数据库删除群组失败:" + e.getMessage());
-            e.printStackTrace();
-        }
-        if (i == 0) {
-            subject.sendMessage("群组删除失败!");
-            return;
-        }
+//        try {
+//            HibernateUtil.factory.fromTransaction(session -> {
+//                GroupList groupList = new GroupList(bot.getId(), key);
+//                new Group(key,)
+//
+//
+//            })
+//            if (value != null) {
+//                i = HuToolUtil.db.execute(stringBuffer.toString(), bot.getId(), key, value);
+//            } else {
+//                i = HuToolUtil.db.execute(stringBuffer.toString(), bot.getId(), key);
+//            }
+//        } catch (SQLException e) {
+//            l.error("数据库删除群组失败:" + e.getMessage());
+//            e.printStackTrace();
+//        }
+//        if (i == 0) {
+//            subject.sendMessage("群组删除失败!");
+//            return;
+//        }
         subject.sendMessage("群组" + key + "删除" + ((value == null) ? "成功!" : value + "群成功!"));
         init(false);
     }
@@ -224,11 +260,12 @@ public class ListUtil {
 
     /**
      * 判断这个群组是否存在
-     * @author Moyuyanli
-     * @param bot 所属机器人
+     *
+     * @param bot     所属机器人
      * @param list_id 群组编号
-     * @date 2022/7/11 12:13
      * @return boolean 存在 true
+     * @author Moyuyanli
+     * @date 2022/7/11 12:13
      */
     public static boolean isContainsList(long bot, int list_id) {
         Map<Integer, GroupList> groupListMap;
@@ -247,37 +284,28 @@ public class ListUtil {
     /**
      * 解析查询参数
      *
-     * @param entityList 查询参数
+     * @param groupLists 查询参数
      * @return java.util.Map<java.lang.Integer, cn.chahuyun.entity.GroupList>
      * @author Moyuyanli
      * @date 2022/7/10 0:26
      */
-    private static Map<Long, Map<Integer, GroupList>> parseList(List<Entity> entityList) {
+    private static Map<Long, Map<Integer, GroupList>> parseList(List<GroupList> groupLists) {
         Map<Long, Map<Integer, GroupList>> listMap = new HashMap<>();
 
-
-        for (Entity entity : entityList) {
-            long bot = entity.getLong("bot");
-            int listId = entity.getInt("listId");
-            long group = entity.getInt("group");
+        for (GroupList entity : groupLists) {
+            long bot = entity.getBot();
+            int listId = entity.getListId();
 
             if (!listMap.containsKey(bot)) {
                 listMap.put(bot, new HashMap<Integer, GroupList>() {{
-                    put(listId, new GroupList(bot, listId, new ArrayList<Long>() {{
-                        add(group);
-                    }}));
+                    put(listId, entity);
                 }});
                 continue;
             }
             if (!listMap.get(bot).containsKey(listId)) {
-                listMap.get(bot).put(listId, new GroupList(bot, listId, new ArrayList<Long>() {{
-                    add(group);
-                }}));
-                continue;
+                listMap.get(bot).put(listId, entity);
             }
-            listMap.get(bot).get(listId).getGroups().add(group);
         }
-
         return listMap;
     }
 
