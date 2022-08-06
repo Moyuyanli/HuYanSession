@@ -38,7 +38,7 @@ public final class HuYanSession extends JavaPlugin {
     @Override
     public void onEnable() {
         getLogger().info("===================HuYanSession===================");
-        MiraiHibernateConfiguration configuration = new MiraiHibernateConfiguration(HuYanSession.INSTANCE);
+        MiraiHibernateConfiguration configuration = new MiraiHibernateConfiguration(this);
         HibernateUtil.init(configuration);
 
         GlobalEventChannel.INSTANCE.parentScope(HuYanSession.INSTANCE);
@@ -53,8 +53,8 @@ public final class HuYanSession extends JavaPlugin {
 //        HuToolUtil.init();
 //        getLogger().info("数据库sqlite已加载！");
 
-        ListUtil.init(true);
-        SessionUtil.init(true);
+        ListUtil.initHibernate(true);
+//        SessionUtil.init(true);
 
 
         //注册群消息事件

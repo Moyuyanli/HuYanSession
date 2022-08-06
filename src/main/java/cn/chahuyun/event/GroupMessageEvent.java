@@ -86,24 +86,24 @@ public class GroupMessageEvent extends SimpleListenerHost {
             ListUtil.deleteList(event);
         }
 
-        if (Pattern.matches(addStudyPattern, code)) {
-            l.info("学习会话指令");
-            SessionUtil.studySession(event);
-        } else if (Pattern.matches(queryStudyPattern, code)) {
-            l.info("查询会话指令");
-            SessionUtil.querySession(event);
-        } else if (Pattern.matches(addsStudyPattern, code)) {
-            l.info("添加会话指令");
-            SessionUtil.studyDialogue(event);
-        } else if (Pattern.matches(deleteStudyPattern, code)) {
-            l.info("删除会话指令");
-            SessionUtil.deleteSession(event);
-        }
+//        if (Pattern.matches(addStudyPattern, code)) {
+//            l.info("学习会话指令");
+//            SessionUtil.studySession(event);
+//        } else if (Pattern.matches(queryStudyPattern, code)) {
+//            l.info("查询会话指令");
+//            SessionUtil.querySession(event);
+//        } else if (Pattern.matches(addsStudyPattern, code)) {
+//            l.info("添加会话指令");
+//            SessionUtil.studyDialogue(event);
+//        } else if (Pattern.matches(deleteStudyPattern, code)) {
+//            l.info("删除会话指令");
+//            SessionUtil.deleteSession(event);
+//        }
 
 
 
 
-        isSessionMessage(event);
+//        isSessionMessage(event);
 
     }
 

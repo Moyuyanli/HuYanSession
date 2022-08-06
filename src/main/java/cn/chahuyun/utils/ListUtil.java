@@ -15,14 +15,13 @@ import org.hibernate.query.criteria.HibernateCriteriaBuilder;
 import org.hibernate.query.criteria.JpaCriteriaQuery;
 import org.hibernate.query.criteria.JpaRoot;
 
-import java.sql.SQLException;
 import java.util.*;
 
 /**
  * 说明
+ * 群组操作
  *
  * @author Moyuyanli
- * @Description :群组操作
  * @Date 2022/7/9 18:55
  */
 public class ListUtil {
@@ -30,13 +29,13 @@ public class ListUtil {
     private final static MiraiLogger l = HuYanSession.INSTANCE.getLogger();
 
     /**
-     * 加载或者更新群组数据
+     * 加载或者更新群组数据-HuTool
      *
      * @param type t 加载 f 更新
      * @author Moyuyanli
      * @date 2022/7/10 16:18
      */
-    public static void init(boolean type) {
+    public static void initHuTool(boolean type) {
         String queryGroupListSql =
                 "SELECT " +
                         "bot," +
@@ -68,13 +67,13 @@ public class ListUtil {
     }
 
     /**
-     * 加载或者更新群组数据
+     * 加载或者更新群组数据-Hibernate
      *
      * @param type t 加载 f 更新
      * @author Moyuyanli
      * @date 2022/7/10 16:18
      */
-    public static void init(boolean type, int number) {
+    public static void initHibernate(boolean type) {
 
         Map<Long, Map<Integer, GroupList>> parseList = HibernateUtil.factory.fromTransaction(session -> {
             //创建构造器
@@ -84,13 +83,16 @@ public class ListUtil {
 
             JpaRoot<GroupList> from = query.from(GroupList.class);
 
-            query.select(from);
-            query.where(builder.equal(from.get("groups").get("bot"), from.get("bot")));
-            query.where(builder.equal(from.get("groups").get("list_id"), from.get("list_id")));
+            try {
+//                query.select(from);
+//                query.where(builder.equal(from.get("groups").get("bot"), from.get("bot")));
+//                query.where(builder.equal(from.get("groups").get("list_id"), from.get("list_id")));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
 
             return parseList(session.createQuery(query).list());
         });
-
 
 
         StaticData.setGroupListMap(parseList);
@@ -135,12 +137,12 @@ public class ListUtil {
                 return 0;
             });
         } catch (Exception e) {
-            l.error("数据库添加群组失败:",e);
+            l.error("数据库添加群组失败:", e);
             subject.sendMessage("群组" + key + "添加失败！");
             return;
         }
         subject.sendMessage("群组" + key + "添加群成功！");
-        init(false);
+        initHibernate(false);
     }
 
     /**
@@ -170,7 +172,7 @@ public class ListUtil {
                 return;
             }
         } catch (NullPointerException e) {
-            l.warning("没有群组信息!",e);
+            l.warning("没有群组信息!", e);
             subject.sendMessage("没有群组信息!");
             return;
         }
@@ -254,7 +256,7 @@ public class ListUtil {
 //            return;
 //        }
         subject.sendMessage("群组" + key + "删除" + ((value == null) ? "成功!" : value + "群成功!"));
-        init(false);
+        initHibernate(false);
     }
 
 

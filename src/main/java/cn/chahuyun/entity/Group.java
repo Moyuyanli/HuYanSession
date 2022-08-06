@@ -1,8 +1,6 @@
 package cn.chahuyun.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 /**
  * 说明
@@ -20,7 +18,9 @@ public class Group {
 
     private long bot;
 
-    private int list_id;
+    private int mark;
+
+    private int listId;
 
     private long group;
 
@@ -28,7 +28,7 @@ public class Group {
     }
 
     public Group(int list_id, long group) {
-        this.list_id = list_id;
+        this.listId = list_id;
         this.group = group;
     }
 
@@ -41,11 +41,11 @@ public class Group {
     }
 
     public int getList_id() {
-        return list_id;
+        return listId;
     }
 
     public void setList_id(int list_id) {
-        this.list_id = list_id;
+        this.listId = list_id;
     }
 
     public long getGroup() {
@@ -54,5 +54,29 @@ public class Group {
 
     public void setGroup(long group) {
         this.group = group;
+    }
+
+    public long getBot() {
+        return bot;
+    }
+
+    public void setBot(long bot) {
+        this.bot = bot;
+    }
+
+    public int getMark() {
+        return mark;
+    }
+
+    public void setMark(int mark) {
+        this.mark = mark;
+    }
+
+    public int getListId() {
+        return listId;
+    }
+
+    public void setListId(int listId) {
+        this.listId = listId;
     }
 }

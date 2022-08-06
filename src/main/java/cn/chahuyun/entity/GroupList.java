@@ -30,11 +30,13 @@ public class GroupList {
      */
     private int listId;
 
+    private int mark;
+
     /**
      * 所有群号
      */
-    @OneToMany(fetch = FetchType.EAGER )
-    @JoinColumn
+    @OneToMany(fetch = FetchType.EAGER ,targetEntity = Group.class)
+    @JoinColumn(name="mark", referencedColumnName = "mark")
     private List<Group> groups;
 
     public GroupList() {
@@ -74,5 +76,21 @@ public class GroupList {
 
     public List<Group> getGroups() {
         return groups;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public int getMark() {
+        return mark;
+    }
+
+    public void setMark(int mark) {
+        this.mark = mark;
     }
 }
