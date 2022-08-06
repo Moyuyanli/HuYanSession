@@ -35,9 +35,8 @@ public class GroupList {
     /**
      * 所有群号
      */
-    @OneToMany(fetch = FetchType.EAGER ,targetEntity = Group.class)
-    @JoinColumn(name="mark", referencedColumnName = "mark")
-    private List<Group> groups;
+//    @OneToMany(fetch = FetchType.EAGER ,targetEntity = Group.class,mappedBy = "mark")
+//    private List<Group> groups;
 
     public GroupList() {
 
@@ -51,7 +50,7 @@ public class GroupList {
     public GroupList(long bot, int listId, List<Group> groups) {
         this.bot = bot;
         this.listId = listId;
-        this.groups = groups;
+//        this.groups = groups;
     }
 
     public long getBot() {
@@ -63,7 +62,7 @@ public class GroupList {
     }
 
     public void setGroups(List<Group> groups) {
-        this.groups = groups;
+//        this.groups = groups;
     }
 
     public int getListId() {
@@ -75,22 +74,7 @@ public class GroupList {
     }
 
     public List<Group> getGroups() {
-        return groups;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public int getMark() {
-        return mark;
-    }
-
-    public void setMark(int mark) {
-        this.mark = mark;
+//        return groups;
+        return null;
     }
 }
