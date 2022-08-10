@@ -1,48 +1,47 @@
-// 插入
-var user = new User();
-user.setId(1L);
-user.setName("name");
-session.persist(user);
-// 修改
-user.setName("new name");
-session.merge(user);
+```java
+public class Demo {
+    // 插入
+    var user = new User();
+    user.setId(1L);
+    user.setName("name");
+    session.persist(user);
+    // 修改
+    user.setName("new name");
+    session.merge(user);
+    
+    // 删除
+    session.remove(user);
+    
+    // 原生sql 查询
+    session.createNativeQuery("select * from user",User.class).list();
 
-// 删除
-session.remove(user);
+    // hql 查询（格式像是 sql 混杂 java）
+    String hql = "from User s where s.name = :name";
+    session.createQuery(hql,User .class).setParameter("name","...").list();
 
-// 原生sql 查询
-session.createNativeQuery("select * from user", User.class)
-        .list();
+    String hql2 = "from Work w where w.user.name = :name";
+    session.createQuery(hql2,Work .class).setParameter("name","...").list();
 
-// hql 查询（格式像是 sql 混杂 java）
-String hql = "from User s where s.name = :name";
-session.createQuery(hql, User.class)
-        .setParameter("name", "...")
-        .list();
+    // criteria 查询（纯 java 代码的方式构造 sql）我推荐这种，不过用起来比较复杂
+    var builder = session.getCriteriaBuilder();
 
-String hql2 = "from Work w where w.user.name = :name";
-session.createQuery(hql2, Work.class)
-        .setParameter("name", "...")
-        .list();
+    var query = builder.createQuery(User.class);
+    var root = query.from(User.class);
+    query.select(root);
+    query.where(builder.between(root.get("id"),0L,1000L));
 
-// criteria 查询（纯 java 代码的方式构造 sql）我推荐这种，不过用起来比较复杂
-var builder = session.getCriteriaBuilder();
+    var list = session.createQuery(query).list();
 
-var query = builder.createQuery(User.class);
-var root = query.from(User.class);
-query.select(root);
-query.where(builder.between(root.get("id"), 0L, 1000L));
+    var query2 = builder.createQuery(Work.class);
+    var root2 = query.from(Work.class);
+    query2.select(root2);
+    query2.where(builder.between(root2.get("user").
 
-var list = session.createQuery(query).list();
+    get("id"), 0L,1000L));
 
-var query2 = builder.createQuery(Work.class);
-var root2 = query.from(Work.class);
-query2.select(root2);
-query2.where(builder.between(root2.get("user").get("id"), 0L, 1000L));
-
-var list2 = session.createQuery(query).list();
-
-
+    var list2 = session.createQuery(query).list();
+}
+```
 
 * 完成群组管理 - 1.8.12
 * 完成定时任务管理 - 1.9.12
