@@ -1,8 +1,6 @@
 package cn.chahuyun.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 /**
  * 说明
@@ -12,7 +10,7 @@ import jakarta.persistence.Table;
  * @Date 2022/7/8 21:24
  */
 @Entity
-@Table(name = "scope")
+@Table(name = "Scope")
 public class Scope {
     /**
      * id
@@ -29,41 +27,44 @@ public class Scope {
     /**
      * 是否全局
      */
-    private int isGlobal;
+    private boolean isGlobal;
     /**
      * 是否群组
      */
-    private int isGroup;
+    private boolean isGroupInfo;
     /**
      * 群号-`当前`使用
      */
-    private long group;
+    private long groupNumber;
     /**
      * 群组编号-`群组`使用
      */
     private int listId;
+
     public Scope() {
     }
 
-    public Scope(long bot, String scopeName, boolean isGlobal, boolean isGroup, long group, int listId) {
+    public Scope(long bot, String scopeName, boolean isGlobal, boolean isGroupInfo, long groupNumber, int listId) {
         this.bot = bot;
         this.scopeName = scopeName;
-        this.isGlobal = isGlobal?1:0;
-        this.isGroup = isGroup?1:0;
-        this.group = group;
+        this.isGlobal = isGlobal;
+        this.isGroupInfo = isGroupInfo;
+        this.groupNumber = groupNumber;
         this.listId = listId;
     }
 
-    public Scope(int id, long bot, String scopeName, boolean isGlobal, boolean isGroup, long group, int listId) {
+    public Scope(int id, long bot, String scopeName, boolean isGlobal, boolean isGroupInfo, long groupNumber, int listId) {
         this.id = id;
         this.bot = bot;
         this.scopeName = scopeName;
-        this.isGlobal = isGlobal?1:0;
-        this.isGroup = isGroup?1:0;
-        this.group = group;
+        this.isGlobal = isGlobal;
+        this.isGroupInfo = isGroupInfo;
+        this.groupNumber = groupNumber;
         this.listId = listId;
     }
+
     @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     public int getId() {
         return id;
     }
@@ -88,28 +89,28 @@ public class Scope {
         this.scopeName = scopeName;
     }
 
-    public boolean isGlobal() {
-        return isGlobal == 1;
+    public boolean getGlobal() {
+        return isGlobal;
     }
 
     public void setGlobal(boolean global) {
-        isGlobal = global?1:0;
+        isGlobal = global;
     }
 
-    public boolean isGroup() {
-        return isGroup==1;
+    public boolean getGroupInfo() {
+        return isGroupInfo;
     }
 
-    public void setGroup(boolean group) {
-        isGroup = group?1:0;
+    public void setGroupInfo(boolean isGroupInfo) {
+        this.isGroupInfo = isGroupInfo;
     }
 
-    public long getGroup() {
-        return group;
+    public long getGroupNumber() {
+        return groupNumber;
     }
 
-    public void setGroup(long group) {
-        this.group = group;
+    public void setGroupNumber(long groupNumber) {
+        this.groupNumber = groupNumber;
     }
 
     public int getListId() {
@@ -118,5 +119,18 @@ public class Scope {
 
     public void setListId(int listId) {
         this.listId = listId;
+    }
+
+    @Override
+    public String toString() {
+        return "Scope{" +
+                "id=" + id +
+                ", bot=" + bot +
+                ", scopeName='" + scopeName + '\'' +
+                ", isGlobal=" + isGlobal +
+                ", isGroupInfo=" + isGroupInfo +
+                ", groupNumber=" + groupNumber +
+                ", listId=" + listId +
+                '}';
     }
 }

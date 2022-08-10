@@ -35,7 +35,11 @@ public class StaticData {
     }
 
     public static Map<Integer, GroupList> getGroupListMap(Long bot) {
-        return groupListMap.get(bot);
+        try {
+            return groupListMap.get(bot);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     public static void setGroupListMap(Map<Long, Map<Integer, GroupList>> groupListMap) {

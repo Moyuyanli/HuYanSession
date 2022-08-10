@@ -1,9 +1,7 @@
 package cn.chahuyun.entity;
 
 import cn.chahuyun.enums.Mate;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 /**
  * 说明
@@ -13,44 +11,37 @@ import jakarta.persistence.Table;
  * @Date 2022/7/8 21:20
  */
 @Entity
-@Table(name = "session")
+@Table(name = "Session")
 public class Session {
 
     /**
      * id
      */
-
     private int id;
-
     /**
      * 所属机器人
      */
     private long bot;
-
     /**
      * 内容类型
      */
     private int type;
-
-
     /**
      * 触发词
      */
     private String key;
-
     /**
      * 回复内容
      */
     private String value;
-
     /**
      * 匹配方式
      */
     private Mate mate;
-
     /**
      * 作用域
      */
+
     private Scope scope;
 
     public Session() {
@@ -74,7 +65,9 @@ public class Session {
         this.mate = mate;
         this.scope = scope;
     }
+
     @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     public int getId() {
         return id;
     }
@@ -115,6 +108,7 @@ public class Session {
         this.value = value;
     }
 
+    @Transient
     public Mate getMate() {
         return mate;
     }
@@ -123,11 +117,25 @@ public class Session {
         this.mate = mate;
     }
 
+    @Transient
     public Scope getScope() {
         return scope;
     }
 
     public void setScope(Scope scope) {
         this.scope = scope;
+    }
+
+    @Override
+    public String toString() {
+        return "Session{" +
+                "id=" + id +
+                ", bot=" + bot +
+                ", type=" + type +
+                ", key='" + key + '\'' +
+                ", value='" + value + '\'' +
+                ", mate=" + mate +
+                ", scope=" + scope +
+                '}';
     }
 }

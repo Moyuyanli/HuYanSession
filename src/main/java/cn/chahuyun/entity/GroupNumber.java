@@ -1,6 +1,8 @@
 package cn.chahuyun.entity;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
 /**
  * 说明
@@ -10,51 +12,43 @@ import jakarta.persistence.*;
  * @Date 2022/7/30 23:53
  */
 @Entity
-@Table(name = "group_number")
+@Table(name = "GroupNumber")
 public class GroupNumber {
 
 
-    private int id;
+    private String id;
 
     private long bot;
 
-    private String mark;
-
     private int listId;
 
-    private long groupNum;
+    private long groupId;
 
     public GroupNumber() {
     }
 
-    public GroupNumber(int list_id, long groupNum) {
-        this.listId = list_id;
-        this.groupNum = groupNum;
-        this.mark = groupNum + "." + list_id;
+    public GroupNumber(long bot, int listId, long groupId) {
+        this.id = bot + "." + listId;
+        this.bot = bot;
+        this.listId = listId;
+        this.groupId = groupId;
     }
+
     @Id
-    public int getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(String id) {
         this.id = id;
     }
 
-    public int getList_id() {
-        return listId;
+    public long getGroupId() {
+        return groupId;
     }
 
-    public void setList_id(int list_id) {
-        this.listId = list_id;
-    }
-
-    public long getGroupNum() {
-        return groupNum;
-    }
-
-    public void setGroupNum(long groupNum) {
-        this.groupNum = groupNum;
+    public void setGroupId(long groupId) {
+        this.groupId = groupId;
     }
 
     public long getBot() {
@@ -65,19 +59,21 @@ public class GroupNumber {
         this.bot = bot;
     }
 
-    public String getMark() {
-        return mark;
-    }
-
-    public void setMark(String mark) {
-        this.mark = mark;
-    }
-
     public int getListId() {
         return listId;
     }
 
     public void setListId(int listId) {
         this.listId = listId;
+    }
+
+    @Override
+    public String toString() {
+        return "GroupNumber{" +
+                "id='" + id + '\'' +
+                ", bot=" + bot +
+                ", listId=" + listId +
+                ", groupId=" + groupId +
+                '}';
     }
 }

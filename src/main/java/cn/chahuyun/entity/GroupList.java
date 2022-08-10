@@ -12,7 +12,7 @@ import java.util.List;
  * @Date 2022/7/9 20:14
  */
 @Entity
-@Table(name = "group_list")
+@Table(name = "GroupList")
 public class GroupList {
 
     /**
@@ -34,7 +34,7 @@ public class GroupList {
     /**
      * 所有群号
      */
-    @OneToMany(fetch = FetchType.EAGER, targetEntity = GroupNumber.class, mappedBy = "mark")
+
     private List<GroupNumber> groups;
 
     public GroupList() {
@@ -59,7 +59,9 @@ public class GroupList {
         this.mark = bot + "." + listId;
         this.groups = groups;
     }
+
     @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     public int getId() {
         return id;
     }
@@ -92,11 +94,23 @@ public class GroupList {
         this.mark = mark;
     }
 
+    @Transient
     public List<GroupNumber> getGroups() {
         return groups;
     }
 
     public void setGroups(List<GroupNumber> groups) {
         this.groups = groups;
+    }
+
+    @Override
+    public String toString() {
+        return "GroupList{" +
+                "id=" + id +
+                ", bot=" + bot +
+                ", listId=" + listId +
+                ", mark='" + mark + '\'' +
+                ", groups=" + groups +
+                '}';
     }
 }

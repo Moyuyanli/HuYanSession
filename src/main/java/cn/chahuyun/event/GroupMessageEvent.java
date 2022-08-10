@@ -153,18 +153,18 @@ public class GroupMessageEvent extends SimpleListenerHost {
 
         Map<Integer, GroupList> groupListMap = StaticData.getGroupListMap(bot);
 
-        if (scope.isGroup()) {
+        if (scope.getGroupInfo()) {
             GroupList groupList = groupListMap.get(scope.getListId());
             List<GroupNumber> groupNumbers = groupList.getGroups();
             for (GroupNumber aLong : groupNumbers) {
-                if (group == aLong.getGroupNum()) {
+                if (group == aLong.getGroupId()) {
                     return true;
                 }
             }
-        } else if (scope.isGlobal()) {
+        } else if (scope.getGlobal()) {
             return true;
         } else {
-            long l = scope.getGroup();
+            long l = scope.getGroupNumber();
             return l == group;
         }
         return false;

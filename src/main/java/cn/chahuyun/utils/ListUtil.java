@@ -2,8 +2,8 @@ package cn.chahuyun.utils;
 
 import cn.chahuyun.HuYanSession;
 import cn.chahuyun.data.StaticData;
-import cn.chahuyun.entity.GroupNumber;
 import cn.chahuyun.entity.GroupList;
+import cn.chahuyun.entity.GroupNumber;
 import cn.chahuyun.files.ConfigData;
 import cn.hutool.db.Entity;
 import net.mamoe.mirai.Bot;
@@ -16,6 +16,7 @@ import org.hibernate.query.criteria.JpaCriteriaQuery;
 import org.hibernate.query.criteria.JpaRoot;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 说明
@@ -84,14 +85,36 @@ public class ListUtil {
             JpaRoot<GroupList> from = query.from(GroupList.class);
 
             try {
-//                query.select(from);
-//                query.where(builder.equal(from.get("groups").get("bot"), from.get("bot")));
-//                query.where(builder.equal(from.get("groups").get("list_id"), from.get("list_id")));
+                query.select(from);
             } catch (Exception e) {
                 e.printStackTrace();
             }
+            List<GroupList> groupLists = session.createQuery(query).list();
 
-            return parseList(session.createQuery(query).list());
+            for (GroupList groupList : groupLists) {
+                l.info("groupLists-"+groupList);
+            }
+
+            JpaCriteriaQuery<GroupNumber> groupQuery = builder.createQuery(GroupNumber.class);
+            JpaRoot<GroupNumber> groupFrom = query.from(GroupNumber.class);
+
+            groupQuery.select(groupFrom);
+
+            List<GroupNumber> groupNumbers = null;
+            try {
+                groupNumbers = session.createQuery(groupQuery).list();
+            } catch (Exception e) {
+                if (e instanceof NullPointerException) {
+                    groupNumbers = new ArrayList<>();
+                }
+                if (ConfigData.INSTANCE.getDebugSwitch()) {
+                    l.warning("群组信息为空:", e);
+                }
+            }
+            for (GroupNumber groupNumber : groupNumbers) {
+                l.info("groupNumbers-"+groupNumber);
+            }
+            return parseList(groupLists, groupNumbers);
         });
 
 
@@ -128,11 +151,14 @@ public class ListUtil {
         int key = Integer.parseInt(split[0].split("\\\\?[:：]")[1]);
         try {
             HibernateUtil.factory.fromTransaction(session -> {
-                GroupList groupList = new GroupList(bot.getId(), key, new ArrayList<GroupNumber>());
                 for (int i = 1; i < split.length; i++) {
                     String s = split[i];
-                    groupList.getGroups().add(new GroupNumber(key, Long.parseLong(s)));
+                    l.info("s-"+s);
+                    GroupNumber groupNumber = new GroupNumber(bot.getId(), key, Long.parseLong(s));
+                    l.info("groupNumber-"+groupNumber);
+                    session.persist(groupNumber);
                 }
+                GroupList groupList = new GroupList(bot.getId(), key);
                 session.persist(groupList);
                 return 0;
             });
@@ -157,6 +183,7 @@ public class ListUtil {
         String code = event.getMessage().serializeToMiraiCode();
         Contact subject = event.getSubject();
         Bot bot = event.getBot();
+        initHibernate(false);
 
         String[] split = code.split("\\\\?[:：]");
 
@@ -193,10 +220,10 @@ public class ListUtil {
                     GroupNumber next = iterator.next();
                     chain.add(next + "->");
                     String groupName = null;
-                    if (bot.getGroup(next.getGroupNum()) == null) {
+                    if (bot.getGroup(next.getGroupId()) == null) {
                         groupName = "未知群";
                     } else {
-                        groupName = Objects.requireNonNull(bot.getGroup(next.getGroupNum())).getName();
+                        groupName = Objects.requireNonNull(bot.getGroup(next.getGroupId())).getName();
                     }
                     chain.add(groupName);
                     if (iterator.hasNext()) {
@@ -291,7 +318,14 @@ public class ListUtil {
      * @author Moyuyanli
      * @date 2022/7/10 0:26
      */
-    private static Map<Long, Map<Integer, GroupList>> parseList(List<GroupList> groupLists) {
+    private static Map<Long, Map<Integer, GroupList>> parseList(List<GroupList> groupLists, List<GroupNumber> numbers) {
+        if (groupLists == null || groupLists.isEmpty()) {
+            return null;
+        }
+        if (numbers == null || numbers.isEmpty()) {
+            return null;
+        }
+
         Map<Long, Map<Integer, GroupList>> listMap = new HashMap<>();
 
         for (GroupList entity : groupLists) {
@@ -299,12 +333,19 @@ public class ListUtil {
             int listId = entity.getListId();
 
             if (!listMap.containsKey(bot)) {
-                listMap.put(bot, new HashMap<Integer, GroupList>() {{
-                    put(listId, entity);
-                }});
+                HashMap<Integer, GroupList> map = new HashMap<>();
+                String mark = entity.getMark();
+                List<GroupNumber> groupNumberList = numbers.stream().filter(item -> item.getId().equals(mark)).collect(Collectors.toList());
+                entity.setGroups(groupNumberList);
+                map.put(listId, entity);
+                listMap.put(bot, map);
+
                 continue;
             }
             if (!listMap.get(bot).containsKey(listId)) {
+                String mark = entity.getMark();
+                List<GroupNumber> groupNumberList = numbers.stream().filter(item -> item.getId().equals(mark)).collect(Collectors.toList());
+                entity.setGroups(groupNumberList);
                 listMap.get(bot).put(listId, entity);
             }
         }

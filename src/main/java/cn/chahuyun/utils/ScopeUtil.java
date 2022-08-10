@@ -35,7 +35,7 @@ public class ScopeUtil {
                         "VALUES(?,?,?,?,?,?);";
         List<Scope> list = null;
         try {
-            list = HuToolUtil.db.query(queryScopeSql,Scope.class,bot.getId(),scope.isGroup(), scope.isGlobal(), scope.getGroup(), scope.getListId());
+            list = HuToolUtil.db.query(queryScopeSql,Scope.class,bot.getId(),scope.getGroupInfo(), scope.getGlobal(), scope.getGroupNumber(), scope.getListId());
         } catch (SQLException e) {
             l.error("搜索作用域时失败:" + e.getMessage());
             e.printStackTrace();
@@ -45,7 +45,7 @@ public class ScopeUtil {
 
         if (list.size() == 0) {
             try {
-                scope_id = HuToolUtil.db.executeForGeneratedKey(insertScopeSql, bot.getId(), scope.getScopeName(), scope.isGroup(), scope.isGlobal(), scope.getGroup(), scope.getListId());
+                scope_id = HuToolUtil.db.executeForGeneratedKey(insertScopeSql, bot.getId(), scope.getScopeName(), scope.getGroupInfo(), scope.getGlobal(), scope.getGroupNumber(), scope.getListId());
             } catch (SQLException e) {
                 l.error("添加作用域时失败:" + e.getMessage());
                 e.printStackTrace();

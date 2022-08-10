@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 
 /**
@@ -43,12 +42,13 @@ import java.util.regex.Pattern;
 public class SessionUtil {
 
     private final static MiraiLogger l = HuYanSession.INSTANCE.getLogger();
+    private static MessageEvent event;
 
     /**
      * 刷新静态内存数据
      *
-     * @author Moyuyanli
      * @param type true 初始化加载 false 刷新
+     * @author Moyuyanli
      * @date 2022/7/29 22:25
      */
     public static void init(boolean type) {
@@ -65,17 +65,17 @@ public class SessionUtil {
                         "se.is_global 'isGlobal'," +
                         "se.`group` 'group'," +
                         "se.list_id 'listId'" +
-                "FROM " +
+                        "FROM " +
                         "session 's'" +
-                "LEFT JOIN " +
+                        "LEFT JOIN " +
                         "scope se ON s.scope_id = se.id " +
-                "WHERE " +
+                        "WHERE " +
                         "s.bot = se.bot;";
         List<Entity> entities;
         try {
             entities = HuToolUtil.db.query(querySessionSql);
         } catch (SQLException e) {
-            l.error("会话数据加载失败:"+e.getMessage());
+            l.error("会话数据加载失败:" + e.getMessage());
             e.printStackTrace();
             return;
         }
@@ -105,7 +105,7 @@ public class SessionUtil {
                     scope = BeanUtil.parseEntity(entity, Scope.class);
                     session = BeanUtil.parseEntity(entity, Session.class);
                 } catch (Exception e) {
-                    l.error("会话数据初始化失败:"+e.getMessage());
+                    l.error("会话数据初始化失败:" + e.getMessage());
                     e.printStackTrace();
                     return;
                 }
@@ -136,8 +136,9 @@ public class SessionUtil {
 
     /**
      * 学习会话
-     * @author Moyuyanli
+     *
      * @param event 消息事件
+     * @author Moyuyanli
      * @date 2022/7/29 22:27
      */
     public static void studySession(MessageEvent event) {
@@ -152,7 +153,7 @@ public class SessionUtil {
         String value = split[2];
 
         if (StaticData.isSessionKey(bot.getId(), key)) {
-            subject.sendMessage("我已经学废了"+key+"!不能再学了!");
+            subject.sendMessage("我已经学废了" + key + "!不能再学了!");
             return;
         }
 
@@ -162,7 +163,7 @@ public class SessionUtil {
         }
 
         Mate mate = Mate.ACCURATE;
-        Scope scope = new Scope(bot.getId(),"当前", false, false, subject.getId(), -1);
+        Scope scope = new Scope(bot.getId(), "当前", false, false, subject.getId(), -1);
 
         //最小分割大小
         int minIndex = 3;
@@ -185,7 +186,7 @@ public class SessionUtil {
                         break;
                     case "0":
                     case "全局":
-                        scope = new Scope(bot.getId(),"全局", true, false, subject.getId(), -1);
+                        scope = new Scope(bot.getId(), "全局", true, false, subject.getId(), -1);
                         break;
                     default:
                         String listPattern = "gr\\d+|群组\\d+";
@@ -195,13 +196,13 @@ public class SessionUtil {
                                 subject.sendMessage("该群组不存在!");
                                 return;
                             }
-                            scope = new Scope(bot.getId(),"群组", false, true, subject.getId(), listId);
+                            scope = new Scope(bot.getId(), "群组", false, true, subject.getId(), listId);
                         }
                         break;
                 }
             }
         }
-        if (subject instanceof User && !scope.isGlobal() && scope.isGroup() ) {
+        if (subject instanceof User && !scope.getGlobal() && scope.getGroupInfo()) {
             subject.sendMessage("私发学习请输入作用域！");
             return;
         }
@@ -218,8 +219,9 @@ public class SessionUtil {
 
     /**
      * 查询所有会话消息
-     * @author Moyuyanli
+     *
      * @param event 消息事件
+     * @author Moyuyanli
      * @date 2022/7/13 21:21
      */
     public static void querySession(MessageEvent event) {
@@ -271,8 +273,9 @@ public class SessionUtil {
 
     /**
      * 通过发送消息的方式进行添加会话
-     * @author Moyuyanli
+     *
      * @param event 消息事件
+     * @author Moyuyanli
      * @date 2022/7/29 15:05
      */
     public static void studyDialogue(MessageEvent event) throws ExecutionException, InterruptedException {
@@ -339,7 +342,7 @@ public class SessionUtil {
             }
         }
 
-        if (subject instanceof User && !scope.isGlobal() && scope.isGroup() ) {
+        if (subject instanceof User && !scope.getGlobal() && scope.getGroupInfo()) {
             subject.sendMessage("私发学习请输入作用域！");
             return;
         }
@@ -355,10 +358,14 @@ public class SessionUtil {
 
     }
 
+
+    //================================================================================
+
     /**
      * 删除会话数据
-     * @author Moyuyanli
+     *
      * @param event 消息事件
+     * @author Moyuyanli
      * @date 2022/7/29 15:08
      */
     public static void deleteSession(MessageEvent event) {
@@ -387,26 +394,22 @@ public class SessionUtil {
         init(false);
     }
 
-
-
-
-    //================================================================================
-
     /**
      * 保存会话
-     * @author Moyuyanli
-     * @param subject 消息发送者
-     * @param bot 所属机器人
-     * @param key 触发词
-     * @param value 回复词
-     * @param mate 匹配方式
+     *
+     * @param subject  消息发送者
+     * @param bot      所属机器人
+     * @param key      触发词
+     * @param value    回复词
+     * @param mate     匹配方式
      * @param scope_id 作用域
-     * @param type 类型
+     * @param type     类型
+     * @author Moyuyanli
      * @date 2022/7/29 15:03
      */
     private static void saveSession(Contact subject, Bot bot, String key, String value, Mate mate, int scope_id, int type) {
         String insertSessionSql =
-                "INSERT INTO session(bot,type,key,value,mate_id,scope_id)"+
+                "INSERT INTO session(bot,type,key,value,mate_id,scope_id)" +
                         "VALUES( ?, ?, ? ,? ,?, ?) ;";
 
         int i;
@@ -426,14 +429,13 @@ public class SessionUtil {
         init(false);
     }
 
-    private static MessageEvent event;
-
     /**
      * 获取该用户的下一次消息事件
-     * @author Moyuyanli
+     *
      * @param user 用户
-     * @date 2022/7/29 12:36
      * @return net.mamoe.mirai.event.events.MessageEvent
+     * @author Moyuyanli
+     * @date 2022/7/29 12:36
      */
     private static MessageEvent getNextMessageEventFromUser(User user) throws ExecutionException, InterruptedException {
 
@@ -443,27 +445,28 @@ public class SessionUtil {
 
         CompletableFuture<MessageEvent> future = new CompletableFuture<>();
 
-        channel.subscribeOnce(MessageEvent.class,EmptyCoroutineContext.INSTANCE,
-                ConcurrencyKind.LOCKED,EventPriority.HIGH, future::complete);
+        channel.subscribeOnce(MessageEvent.class, EmptyCoroutineContext.INSTANCE,
+                ConcurrencyKind.LOCKED, EventPriority.HIGH, future::complete);
         return future.get();
     }
 
 
     /**
      * 判断作用域
-     * @author Moyuyanli
-     * @param event 消息事件
+     *
+     * @param event   消息事件
      * @param subject 发送者
      * @param session 消息
-     * @date 2022/7/13 12:25
      * @return java.lang.String
+     * @author Moyuyanli
+     * @date 2022/7/13 12:25
      */
     private static String judgeScope(MessageEvent event, Contact subject, Session session) {
         String trigger = "其他群触发";
         long groupId = event.getSubject().getId();
-        if (session.getScope().isGlobal()) {
+        if (session.getScope().getGlobal()) {
             trigger = "全局触发";
-        } else if (session.getScope().isGroup()) {
+        } else if (session.getScope().getGroupInfo()) {
             trigger = "群组:" + session.getScope().getListId() + "触发";
         } else if (groupId == subject.getId()) {
             trigger = "当前群触发";
@@ -473,10 +476,11 @@ public class SessionUtil {
 
     /**
      * 会话消息分页构造
-     * @author Moyuyanli
+     *
      * @param event 消息事件
-     * @date 2022/7/13 12:16
      * @return net.mamoe.mirai.message.data.ForwardMessage
+     * @author Moyuyanli
+     * @date 2022/7/13 12:16
      */
     private static ForwardMessage parseMessage(MessageEvent event) {
         Contact group = event.getSubject();
