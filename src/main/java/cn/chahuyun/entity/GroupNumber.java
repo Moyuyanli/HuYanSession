@@ -13,7 +13,7 @@ import jakarta.persistence.*;
 @Table(name = "group_number")
 public class GroupNumber {
 
-    @Id
+
     private int id;
 
     private long bot;
@@ -32,7 +32,7 @@ public class GroupNumber {
         this.groupNum = groupNum;
         this.mark = groupNum + "." + list_id;
     }
-
+    @Id
     public int getId() {
         return id;
     }

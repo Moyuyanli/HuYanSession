@@ -3,6 +3,8 @@ package cn.chahuyun.utils;
 import cn.chahuyun.HuYanSession;
 import cn.chahuyun.entity.GroupList;
 import cn.chahuyun.entity.GroupNumber;
+import cn.chahuyun.entity.Scope;
+import cn.chahuyun.entity.Session;
 import net.mamoe.mirai.utils.MiraiLogger;
 import org.hibernate.SessionFactory;
 import xyz.cssxsh.mirai.hibernate.MiraiHibernateConfiguration;
@@ -46,6 +48,9 @@ public class HibernateUtil {
 //        configuration.scan("cn.chahuyun.entity");
         configuration.addAnnotatedClass(GroupList.class);
         configuration.addAnnotatedClass(GroupNumber.class);
+        configuration.addAnnotatedClass(Scope.class);
+        configuration.addAnnotatedClass(Session.class);
+//        configuration.addAnnotatedClass(GroupNumber.class);
         factory = configuration.buildSessionFactory();
         l.info("H2数据库初始化成功!");
     }

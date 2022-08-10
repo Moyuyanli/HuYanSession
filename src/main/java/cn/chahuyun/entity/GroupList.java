@@ -18,9 +18,7 @@ public class GroupList {
     /**
      * id
      */
-    @Id
     private int id;
-
     /**
      * 所属机器人
      */
@@ -29,28 +27,45 @@ public class GroupList {
      * 群组编号
      */
     private int listId;
-
+    /**
+     * 对应标识
+     */
     private String mark;
-
     /**
      * 所有群号
      */
-    @OneToMany(fetch = FetchType.EAGER ,targetEntity = GroupNumber.class,mappedBy = "mark")
+    @OneToMany(fetch = FetchType.EAGER, targetEntity = GroupNumber.class, mappedBy = "mark")
     private List<GroupNumber> groups;
 
     public GroupList() {
-
     }
 
     public GroupList(long bot, int listId) {
         this.bot = bot;
         this.listId = listId;
+        this.mark = bot + "." + listId;
     }
 
-    public GroupList(long bot, int listId, List<GroupNumber> groupNumbers) {
+    public GroupList(int id, long bot, int listId, String mark) {
+        this.id = id;
         this.bot = bot;
         this.listId = listId;
-        this.groups = groupNumbers;
+        this.mark = mark;
+    }
+
+    public GroupList(long bot, int listId, List<GroupNumber> groups) {
+        this.bot = bot;
+        this.listId = listId;
+        this.mark = bot + "." + listId;
+        this.groups = groups;
+    }
+    @Id
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public long getBot() {
@@ -61,10 +76,6 @@ public class GroupList {
         this.bot = bot;
     }
 
-    public void setGroups(List<GroupNumber> groupNumbers) {
-        this.groups = groupNumbers;
-    }
-
     public int getListId() {
         return listId;
     }
@@ -73,23 +84,19 @@ public class GroupList {
         this.listId = listId;
     }
 
-    public List<GroupNumber> getGroups() {
-        return groups;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
     public String getMark() {
         return mark;
     }
 
     public void setMark(String mark) {
         this.mark = mark;
+    }
+
+    public List<GroupNumber> getGroups() {
+        return groups;
+    }
+
+    public void setGroups(List<GroupNumber> groups) {
+        this.groups = groups;
     }
 }

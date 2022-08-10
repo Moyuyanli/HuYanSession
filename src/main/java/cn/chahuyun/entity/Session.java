@@ -1,6 +1,9 @@
 package cn.chahuyun.entity;
 
 import cn.chahuyun.enums.Mate;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
 /**
  * 说明
@@ -9,7 +12,20 @@ import cn.chahuyun.enums.Mate;
  * @Description :会话消息实体类
  * @Date 2022/7/8 21:20
  */
-public class Session extends Base {
+@Entity
+@Table(name = "session")
+public class Session {
+
+    /**
+     * id
+     */
+
+    private int id;
+
+    /**
+     * 所属机器人
+     */
+    private long bot;
 
     /**
      * 内容类型
@@ -37,14 +53,42 @@ public class Session extends Base {
      */
     private Scope scope;
 
+    public Session() {
+    }
 
     public Session(long bot, int type, String key, String value, Mate mate, Scope scope) {
-        super(bot);
+        this.bot = bot;
         this.type = type;
         this.key = key;
         this.value = value;
         this.mate = mate;
         this.scope = scope;
+    }
+
+    public Session(int id, long bot, int type, String key, String value, Mate mate, Scope scope) {
+        this.id = id;
+        this.bot = bot;
+        this.type = type;
+        this.key = key;
+        this.value = value;
+        this.mate = mate;
+        this.scope = scope;
+    }
+    @Id
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public long getBot() {
+        return bot;
+    }
+
+    public void setBot(long bot) {
+        this.bot = bot;
     }
 
     public int getType() {
