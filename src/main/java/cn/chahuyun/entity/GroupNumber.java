@@ -10,26 +10,27 @@ import jakarta.persistence.*;
  * @Date 2022/7/30 23:53
  */
 @Entity
-@Table(name = "group")
-public class Group {
+@Table(name = "group_number")
+public class GroupNumber {
 
     @Id
     private int id;
 
     private long bot;
 
-    private int mark;
+    private String mark;
 
     private int listId;
 
-    private long group;
+    private long groupNum;
 
-    public Group() {
+    public GroupNumber() {
     }
 
-    public Group(int list_id, long group) {
+    public GroupNumber(int list_id, long groupNum) {
         this.listId = list_id;
-        this.group = group;
+        this.groupNum = groupNum;
+        this.mark = groupNum + "." + list_id;
     }
 
     public int getId() {
@@ -48,12 +49,12 @@ public class Group {
         this.listId = list_id;
     }
 
-    public long getGroup() {
-        return group;
+    public long getGroupNum() {
+        return groupNum;
     }
 
-    public void setGroup(long group) {
-        this.group = group;
+    public void setGroupNum(long groupNum) {
+        this.groupNum = groupNum;
     }
 
     public long getBot() {
@@ -64,11 +65,11 @@ public class Group {
         this.bot = bot;
     }
 
-    public int getMark() {
+    public String getMark() {
         return mark;
     }
 
-    public void setMark(int mark) {
+    public void setMark(String mark) {
         this.mark = mark;
     }
 

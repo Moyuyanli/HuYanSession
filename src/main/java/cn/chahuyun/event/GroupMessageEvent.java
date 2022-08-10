@@ -3,31 +3,25 @@ package cn.chahuyun.event;
 import cn.chahuyun.HuYanSession;
 import cn.chahuyun.data.StaticData;
 import cn.chahuyun.dialogue.Dialogue;
-import cn.chahuyun.entity.Group;
+import cn.chahuyun.entity.GroupNumber;
 import cn.chahuyun.entity.GroupList;
 import cn.chahuyun.entity.Scope;
 import cn.chahuyun.entity.Session;
 import cn.chahuyun.enums.Mate;
 import cn.chahuyun.files.ConfigData;
 import cn.chahuyun.utils.ListUtil;
-import cn.chahuyun.utils.SessionUtil;
 import kotlin.coroutines.CoroutineContext;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.Contact;
 import net.mamoe.mirai.event.EventHandler;
-import net.mamoe.mirai.event.ListeningStatus;
 import net.mamoe.mirai.event.SimpleListenerHost;
 import net.mamoe.mirai.event.events.MessageEvent;
-import net.mamoe.mirai.message.data.MessageChain;
 import net.mamoe.mirai.utils.MiraiLogger;
 import org.jetbrains.annotations.NotNull;
 
-import java.sql.Statement;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
-
-import static cn.chahuyun.enums.Mate.*;
 
 /**
  * 说明
@@ -161,9 +155,9 @@ public class GroupMessageEvent extends SimpleListenerHost {
 
         if (scope.isGroup()) {
             GroupList groupList = groupListMap.get(scope.getListId());
-            List<Group> groups = groupList.getGroups();
-            for (Group aLong : groups) {
-                if (group == aLong.getGroup()) {
+            List<GroupNumber> groupNumbers = groupList.getGroups();
+            for (GroupNumber aLong : groupNumbers) {
+                if (group == aLong.getGroupNum()) {
                     return true;
                 }
             }

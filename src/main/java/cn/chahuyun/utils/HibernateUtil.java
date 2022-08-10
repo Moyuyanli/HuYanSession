@@ -2,6 +2,7 @@ package cn.chahuyun.utils;
 
 import cn.chahuyun.HuYanSession;
 import cn.chahuyun.entity.GroupList;
+import cn.chahuyun.entity.GroupNumber;
 import net.mamoe.mirai.utils.MiraiLogger;
 import org.hibernate.SessionFactory;
 import xyz.cssxsh.mirai.hibernate.MiraiHibernateConfiguration;
@@ -42,8 +43,9 @@ public class HibernateUtil {
     public static void init(MiraiHibernateConfiguration configuration) {
         String path = SQL_PATH_PREFIX + "./data/cn.chahuyun.HuYanSession/HuYan";
         configuration.setProperty("hibernate.connection.url", path);
-        configuration.scan("cn.chahuyun.entity");
+//        configuration.scan("cn.chahuyun.entity");
         configuration.addAnnotatedClass(GroupList.class);
+        configuration.addAnnotatedClass(GroupNumber.class);
         factory = configuration.buildSessionFactory();
         l.info("H2数据库初始化成功!");
     }

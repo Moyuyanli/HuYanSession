@@ -2,7 +2,7 @@ package cn.chahuyun.utils;
 
 import cn.chahuyun.HuYanSession;
 import cn.chahuyun.data.StaticData;
-import cn.chahuyun.entity.Group;
+import cn.chahuyun.entity.GroupNumber;
 import cn.chahuyun.entity.GroupList;
 import cn.chahuyun.files.ConfigData;
 import cn.hutool.db.Entity;
@@ -128,10 +128,10 @@ public class ListUtil {
         int key = Integer.parseInt(split[0].split("\\\\?[:：]")[1]);
         try {
             HibernateUtil.factory.fromTransaction(session -> {
-                GroupList groupList = new GroupList(bot.getId(), key, new ArrayList<Group>());
+                GroupList groupList = new GroupList(bot.getId(), key, new ArrayList<GroupNumber>());
                 for (int i = 1; i < split.length; i++) {
                     String s = split[i];
-                    groupList.getGroups().add(new Group(key, Long.parseLong(s)));
+                    groupList.getGroups().add(new GroupNumber(key, Long.parseLong(s)));
                 }
                 session.persist(groupList);
                 return 0;
@@ -188,15 +188,15 @@ public class ListUtil {
             }
             forwardMessageBuilder.add(bot, chain -> {
                 chain.add("群组编号：" + entity.getListId() + "\n");
-                Iterator<Group> iterator = entity.getGroups().iterator();
+                Iterator<GroupNumber> iterator = entity.getGroups().iterator();
                 while (iterator.hasNext()) {
-                    Group next = iterator.next();
+                    GroupNumber next = iterator.next();
                     chain.add(next + "->");
                     String groupName = null;
-                    if (bot.getGroup(next.getGroup()) == null) {
+                    if (bot.getGroup(next.getGroupNum()) == null) {
                         groupName = "未知群";
                     } else {
-                        groupName = Objects.requireNonNull(bot.getGroup(next.getGroup())).getName();
+                        groupName = Objects.requireNonNull(bot.getGroup(next.getGroupNum())).getName();
                     }
                     chain.add(groupName);
                     if (iterator.hasNext()) {
