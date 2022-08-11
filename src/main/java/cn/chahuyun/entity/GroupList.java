@@ -2,6 +2,7 @@ package cn.chahuyun.entity;
 
 import jakarta.persistence.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -18,6 +19,8 @@ public class GroupList {
     /**
      * id
      */
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private int id;
     /**
      * 所属机器人
@@ -28,14 +31,11 @@ public class GroupList {
      */
     private int listId;
     /**
-     * 对应标识
-     */
-    private String mark;
-    /**
      * 所有群号
      */
-
-    private List<GroupNumber> groups;
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, targetEntity = GroupNumber.class)
+    @JoinColumn(name = "groupnumber_mark")
+    private List<GroupNumber> groups = new ArrayList<>();
 
     public GroupList() {
     }
@@ -43,25 +43,15 @@ public class GroupList {
     public GroupList(long bot, int listId) {
         this.bot = bot;
         this.listId = listId;
-        this.mark = bot + "." + listId;
     }
 
-    public GroupList(int id, long bot, int listId, String mark) {
-        this.id = id;
-        this.bot = bot;
-        this.listId = listId;
-        this.mark = mark;
-    }
 
     public GroupList(long bot, int listId, List<GroupNumber> groups) {
         this.bot = bot;
         this.listId = listId;
-        this.mark = bot + "." + listId;
         this.groups = groups;
     }
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
     public int getId() {
         return id;
     }
@@ -86,15 +76,6 @@ public class GroupList {
         this.listId = listId;
     }
 
-    public String getMark() {
-        return mark;
-    }
-
-    public void setMark(String mark) {
-        this.mark = mark;
-    }
-
-    @Transient
     public List<GroupNumber> getGroups() {
         return groups;
     }
@@ -109,8 +90,25 @@ public class GroupList {
                 "id=" + id +
                 ", bot=" + bot +
                 ", listId=" + listId +
-                ", mark='" + mark + '\'' +
                 ", groups=" + groups +
                 '}';
     }
+
+    /**
+     * 判断这个群在群组信息中是否存在
+     *
+     * @param groupId 群号
+     * @return boolean  true 存在
+     * @author Moyuyanli
+     * @date 2022/8/11 15:35
+     */
+    public boolean containsGroupId(long groupId) {
+        for (GroupNumber group : groups) {
+            if (group.getGroupId() == groupId) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 }

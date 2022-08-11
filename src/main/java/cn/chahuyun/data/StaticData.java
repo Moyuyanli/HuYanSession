@@ -3,9 +3,9 @@ package cn.chahuyun.data;
 import cn.chahuyun.HuYanSession;
 import cn.chahuyun.entity.GroupList;
 import cn.chahuyun.entity.Session;
+import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.utils.MiraiLogger;
 
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -34,9 +34,9 @@ public class StaticData {
     private StaticData() {
     }
 
-    public static Map<Integer, GroupList> getGroupListMap(Long bot) {
+    public static Map<Integer, GroupList> getGroupListMap(Bot bot) {
         try {
-            return groupListMap.get(bot);
+            return groupListMap.get(bot.getId());
         } catch (Exception e) {
             return null;
         }
@@ -46,14 +46,13 @@ public class StaticData {
         StaticData.groupListMap = groupListMap;
     }
 
-    public static Map<String, Session> getSessionMap(Long bot) {
-        if (sessionMap.isEmpty()) {
+    public static Map<String, Session> getSessionMap(Bot bot) {
+        try {
+            return sessionMap.get(bot.getId());
+        } catch (Exception e) {
+            e.printStackTrace();
             return null;
         }
-        if (sessionMap.containsKey(bot)) {
-            return sessionMap.get(bot);
-        }
-        return null;
     }
 
     public static void setSessionMap(Map<Long, Map<String, Session>> sessionMap) {
@@ -62,16 +61,50 @@ public class StaticData {
 
 
     /**
-     * 是否存在该 key
-     * @author Moyuyanli
+     * 是否存在该会话 key
+     *
      * @param bot 所属机器人
      * @param key 键
-     * @date 2022/7/13 11:03
      * @return boolean
+     * @author Moyuyanli
+     * @date 2022/7/13 11:03
      */
-    public static boolean isSessionKey(long bot, String key) {
-        if (sessionMap.containsKey(bot)) {
-            return sessionMap.get(bot).containsKey(key);
+    public static boolean isSessionKey(Bot bot, String key) {
+        if (sessionMap.containsKey(bot.getId())) {
+            return sessionMap.get(bot.getId()).containsKey(key);
+        }
+        return false;
+    }
+
+    /**
+     * 查询是否存在该群组
+     *
+     * @param bot 所属机器人
+     * @param key 群组id
+     * @return boolean true 存在
+     * @author Moyuyanli
+     * @date 2022/8/11 14:15
+     */
+    public static boolean isGrouper(Bot bot, int key) {
+        if (groupListMap.containsKey(bot.getId())) {
+                return groupListMap.get(bot.getId()).containsKey(key);
+        }
+        return false;
+    }
+
+    /**
+     * 判断有没有对应群
+     * @param bot 所属机器人
+     * @param key 群组id
+     * @param groupId 群号
+     * @return boolean true 存在
+     */
+    public static boolean isGrouper(Bot bot, int key,long groupId) {
+        if (groupListMap.containsKey(bot.getId())) {
+            if (groupListMap.get(bot.getId()).containsKey(key)) {
+                return groupListMap.get(bot.getId()).get(key).containsGroupId(groupId);
+            }
+            return false;
         }
         return false;
     }

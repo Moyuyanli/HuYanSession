@@ -152,7 +152,7 @@ public class SessionUtil {
         String key = split[1];
         String value = split[2];
 
-        if (StaticData.isSessionKey(bot.getId(), key)) {
+        if (StaticData.isSessionKey(bot, key)) {
             subject.sendMessage("我已经学废了" + key + "!不能再学了!");
             return;
         }
@@ -192,7 +192,7 @@ public class SessionUtil {
                         String listPattern = "gr\\d+|群组\\d+";
                         if (Pattern.matches(listPattern, s)) {
                             int listId = Integer.parseInt(s.substring(2));
-                            if (!ListUtil.isContainsList(bot.getId(), listId)) {
+                            if (!ListUtil.isContainsList(bot, listId)) {
                                 subject.sendMessage("该群组不存在!");
                                 return;
                             }
@@ -240,7 +240,7 @@ public class SessionUtil {
             Map<String, Session> sessionMap;
             try {
                 init(false);
-                sessionMap = StaticData.getSessionMap(bot.getId());
+                sessionMap = StaticData.getSessionMap(bot);
             } catch (Exception e) {
                 subject.sendMessage("查询会话消息为空!");
                 return;
@@ -332,7 +332,7 @@ public class SessionUtil {
                     String listPattern = "gr\\d+|群组\\d+";
                     if (Pattern.matches(listPattern, s)) {
                         int listId = Integer.parseInt(s.substring(2));
-                        if (!ListUtil.isContainsList(bot.getId(), listId)) {
+                        if (!ListUtil.isContainsList(bot, listId)) {
                             subject.sendMessage("该群组不存在!");
                             return;
                         }
@@ -488,7 +488,7 @@ public class SessionUtil {
         ForwardMessageBuilder nodes = new ForwardMessageBuilder(group);
         Map<String, Session> sessionMap;
         try {
-            sessionMap = StaticData.getSessionMap(bot.getId());
+            sessionMap = StaticData.getSessionMap(bot);
         } catch (Exception e) {
             group.sendMessage("查询会话消息为空!");
             e.printStackTrace();

@@ -17,6 +17,8 @@ public class Session {
     /**
      * id
      */
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private int id;
     /**
      * 所属机器人
@@ -37,11 +39,13 @@ public class Session {
     /**
      * 匹配方式
      */
+    @Transient
     private Mate mate;
     /**
      * 作用域
      */
-
+    @ManyToOne(cascade = CascadeType.ALL,fetch = FetchType.LAZY,targetEntity = Scope.class)
+    @JoinColumn(name = "scope_mark")
     private Scope scope;
 
     public Session() {
@@ -66,8 +70,7 @@ public class Session {
         this.scope = scope;
     }
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+
     public int getId() {
         return id;
     }
@@ -108,7 +111,6 @@ public class Session {
         this.value = value;
     }
 
-    @Transient
     public Mate getMate() {
         return mate;
     }
@@ -117,7 +119,6 @@ public class Session {
         this.mate = mate;
     }
 
-    @Transient
     public Scope getScope() {
         return scope;
     }

@@ -1,8 +1,6 @@
 package cn.chahuyun.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 /**
  * 说明
@@ -15,8 +13,11 @@ import jakarta.persistence.Table;
 @Table(name = "GroupNumber")
 public class GroupNumber {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private int id;
 
-    private String id;
+    private String mark;
 
     private long bot;
 
@@ -24,22 +25,28 @@ public class GroupNumber {
 
     private long groupId;
 
+
+//    @ManyToOne(fetch = FetchType.LAZY,targetEntity = GroupList.class)
+//    @JoinColumn(name = "groupList_mark")
+    @Transient
+    private GroupList groupList;
+
     public GroupNumber() {
     }
 
     public GroupNumber(long bot, int listId, long groupId) {
-        this.id = bot + "." + listId;
+        this.mark = bot + "." + listId;
         this.bot = bot;
         this.listId = listId;
         this.groupId = groupId;
     }
 
-    @Id
-    public String getId() {
+
+    public int getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(int id) {
         this.id = id;
     }
 
@@ -67,10 +74,19 @@ public class GroupNumber {
         this.listId = listId;
     }
 
+    public String getMark() {
+        return mark;
+    }
+
+    public void setMark(String mark) {
+        this.mark = mark;
+    }
+
     @Override
     public String toString() {
         return "GroupNumber{" +
-                "id='" + id + '\'' +
+                "id=" + id +
+//                ", mark='" + mark + '\'' +
                 ", bot=" + bot +
                 ", listId=" + listId +
                 ", groupId=" + groupId +

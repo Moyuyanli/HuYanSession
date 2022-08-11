@@ -71,13 +71,13 @@ public class GroupMessageEvent extends SimpleListenerHost {
 
         if (Pattern.matches(addListPattern, code)) {
             l.info("添加群组指令");
-            ListUtil.addList(event);
+            ListUtil.addGroupListInfo(event);
         } else if (Pattern.matches(queryListPattern, code)) {
             l.info("查询群组指令");
-            ListUtil.queryList(event);
+            ListUtil.queryGroupListInfo(event);
         } else if (Pattern.matches(deleteListPattern, code)) {
             l.info("删除群组指令");
-            ListUtil.deleteList(event);
+            ListUtil.deleteGroupListInfo(event);
         }
 
 //        if (Pattern.matches(addStudyPattern, code)) {
@@ -109,7 +109,7 @@ public class GroupMessageEvent extends SimpleListenerHost {
      */
     private void isSessionMessage(MessageEvent event) {
         String code = event.getMessage().serializeToMiraiCode();
-        long bot = event.getBot().getId();
+        Bot bot = event.getBot();
 
         Map<String, Session> sessionMap = StaticData.getSessionMap(bot);
         for (Map.Entry<String, Session> entry : sessionMap.entrySet()) {
@@ -148,7 +148,7 @@ public class GroupMessageEvent extends SimpleListenerHost {
      * @return boolean true 匹配成功! false 匹配失败！
      */
     private boolean mateScope(MessageEvent event, Scope scope) {
-        long bot = event.getBot().getId();
+        Bot bot = event.getBot();
         long group = event.getSubject().getId();
 
         Map<Integer, GroupList> groupListMap = StaticData.getGroupListMap(bot);
