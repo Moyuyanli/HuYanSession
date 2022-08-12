@@ -16,8 +16,7 @@ public class Scope {
      * id
      */
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private int id;
+    private String id;
     /**
      * 所属机器人
      */
@@ -51,17 +50,7 @@ public class Scope {
     }
 
     public Scope(long bot, String scopeName, boolean isGlobal, boolean isGroupInfo, long groupNumber, int listId) {
-        this.bot = bot;
-        this.scopeName = scopeName;
-        this.isGlobal = isGlobal;
-        this.isGroupInfo = isGroupInfo;
-        this.groupNumber = groupNumber;
-        this.listId = listId;
-        this.mark = bot + "." + isGlobal + "." + isGroupInfo + "." + groupNumber + "." + listId;
-    }
-
-    public Scope(int id, long bot, String scopeName, boolean isGlobal, boolean isGroupInfo, long groupNumber, int listId) {
-        this.id = id;
+        this.id = bot + "." + isGlobal + "." + isGroupInfo + "." + groupNumber + "." + listId;
         this.bot = bot;
         this.scopeName = scopeName;
         this.isGlobal = isGlobal;
@@ -70,11 +59,12 @@ public class Scope {
         this.listId = listId;
     }
 
-    public int getId() {
+
+    public String getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(String id) {
         this.id = id;
     }
 

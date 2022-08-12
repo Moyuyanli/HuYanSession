@@ -53,9 +53,9 @@ public class Dialogue {
         Contact subject = event.getSubject();
         try {
             if (session.getType() == 5) {
-                subject.sendMessage(MessageChain.deserializeFromJsonString(session.getValue()));
+                subject.sendMessage(MessageChain.deserializeFromJsonString(session.getReply()));
             } else {
-                subject.sendMessage(MiraiCode.deserializeMiraiCode(session.getValue()));
+                subject.sendMessage(MiraiCode.deserializeMiraiCode(session.getReply()));
             }
         } catch (EventCancelledException e) {
             l.error("发送消息被取消:" + e.getMessage());

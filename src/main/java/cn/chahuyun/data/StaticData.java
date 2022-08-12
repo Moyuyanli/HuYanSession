@@ -6,6 +6,7 @@ import cn.chahuyun.entity.Session;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.utils.MiraiLogger;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -38,6 +39,11 @@ public class StaticData {
         try {
             return groupListMap.get(bot.getId());
         } catch (Exception e) {
+            if (e instanceof NullPointerException) {
+                return new HashMap<>();
+            } else {
+                e.printStackTrace();
+            }
             return null;
         }
     }
@@ -50,7 +56,11 @@ public class StaticData {
         try {
             return sessionMap.get(bot.getId());
         } catch (Exception e) {
-            e.printStackTrace();
+            if (e instanceof NullPointerException) {
+                return new HashMap<>();
+            } else {
+                e.printStackTrace();
+            }
             return null;
         }
     }
@@ -70,6 +80,9 @@ public class StaticData {
      * @date 2022/7/13 11:03
      */
     public static boolean isSessionKey(Bot bot, String key) {
+        if (sessionMap == null) {
+            sessionMap = new HashMap<>();
+        }
         if (sessionMap.containsKey(bot.getId())) {
             return sessionMap.get(bot.getId()).containsKey(key);
         }

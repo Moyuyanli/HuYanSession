@@ -4,6 +4,9 @@ import cn.chahuyun.HuYanSession;
 import cn.chahuyun.entity.Scope;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.utils.MiraiLogger;
+import org.hibernate.query.criteria.HibernateCriteriaBuilder;
+import org.hibernate.query.criteria.JpaCriteriaQuery;
+import org.hibernate.query.criteria.JpaRoot;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -19,42 +22,51 @@ public class ScopeUtil {
 
     private final static MiraiLogger l = HuYanSession.INSTANCE.getLogger();
 
-    public static int getScopeId(Bot bot, Scope scope) {
-        long scope_id;
-
-        String queryScopeSql =
-                "SELECT id " +
-                        "FROM scope " +
-                        "WHERE bot = ? " +
-                        "AND is_group = ? " +
-                        "AND is_global = ? " +
-                        "AND `group` = ? " +
-                        "AND list_id = ?;";
-        String insertScopeSql =
-                "INSERT INTO scope(bot,scope_name,is_group,is_global,`group`,list_id)"+
-                        "VALUES(?,?,?,?,?,?);";
-        List<Scope> list = null;
-        try {
-            list = HuToolUtil.db.query(queryScopeSql,Scope.class,bot.getId(),scope.getGroupInfo(), scope.getGlobal(), scope.getGroupNumber(), scope.getListId());
-        } catch (SQLException e) {
-            l.error("搜索作用域时失败:" + e.getMessage());
-            e.printStackTrace();
-            return -1;
+    /**
+     * 判断该作用是是否存在
+     *
+     * @param scope 作用域
+     * @return boolean  t 存在
+     * @author Moyuyanli
+     * @date 2022/8/12 15:57
+     */
+    public static boolean isScopeEmpty(Scope scope) {
+        List<Scope> scopeList = HibernateUtil.factory.fromTransaction(session -> {
+            String id = scope.getId();
+            HibernateCriteriaBuilder builder = session.getCriteriaBuilder();
+            JpaCriteriaQuery<Scope> query = builder.createQuery(Scope.class);
+            JpaRoot<Scope> from = query.from(Scope.class);
+            query.select(from);
+            query.where(builder.equal(from.get("id"), id));
+            return session.createQuery(query).list();
+        });
+        if (scopeList == null || scopeList.isEmpty()) {
+            return false;
         }
+        return true;
+    }
 
-
-        if (list.size() == 0) {
-            try {
-                scope_id = HuToolUtil.db.executeForGeneratedKey(insertScopeSql, bot.getId(), scope.getScopeName(), scope.getGroupInfo(), scope.getGlobal(), scope.getGroupNumber(), scope.getListId());
-            } catch (SQLException e) {
-                l.error("添加作用域时失败:" + e.getMessage());
-                e.printStackTrace();
-                return -1;
-            }
-        } else {
-            scope_id = list.get(0).getId();
+    /**
+     * 获取作用域
+     *
+     * @param scopeInfoId 作用域id
+     * @return cn.chahuyun.entity.Scope
+     * @author Moyuyanli
+     * @date 2022/8/12 16:00
+     */
+    public static Scope getScope(String scopeInfoId) {
+        List<Scope> scopeList = HibernateUtil.factory.fromTransaction(session -> {
+            HibernateCriteriaBuilder builder = session.getCriteriaBuilder();
+            JpaCriteriaQuery<Scope> query = builder.createQuery(Scope.class);
+            JpaRoot<Scope> from = query.from(Scope.class);
+            query.select(from);
+            query.where(builder.equal(from.get("id"), scopeInfoId));
+            return session.createQuery(query).list();
+        });
+        if (scopeList == null || scopeList.isEmpty()) {
+            return null;
         }
-        return (int) scope_id;
+        return scopeList.get(0);
     }
 
 

@@ -47,6 +47,7 @@ public class SessionUtil {
     private final static MiraiLogger l = HuYanSession.INSTANCE.getLogger();
     private static MessageEvent event;
 
+
     /**
      * 刷新静态内存数据
      *
@@ -54,91 +55,9 @@ public class SessionUtil {
      * @author Moyuyanli
      * @date 2022/7/29 22:25
      */
-    public static void initHuTool(boolean type) {
-
-        String querySessionSql =
-                "SELECT " +
-                        "s.bot," +
-                        "s.type," +
-                        "s.key," +
-                        "s.value," +
-                        "s.mate_id 'mateId'," +
-                        "se.scope_name 'scopeName'," +
-                        "se.is_group 'isGroup'," +
-                        "se.is_global 'isGlobal'," +
-                        "se.`group` 'group'," +
-                        "se.list_id 'listId'" +
-                        "FROM " +
-                        "session 's'" +
-                        "LEFT JOIN " +
-                        "scope se ON s.scope_id = se.id " +
-                        "WHERE " +
-                        "s.bot = se.bot;";
-        List<Entity> entities;
-        try {
-            entities = HuToolUtil.db.query(querySessionSql);
-        } catch (SQLException e) {
-            l.error("会话数据加载失败:" + e.getMessage());
-            e.printStackTrace();
-            return;
-        }
-
-        Map<Long, Map<String, Session>> sessionAll = new HashMap<>();
-
-        if (entities != null && entities.size() != 0) {
-            for (Entity entity : entities) {
-                Integer mateId = entity.getInt("mateId");
-                Mate mate = Mate.ACCURATE;
-                switch (mateId) {
-                    case 2:
-                        mate = Mate.VAGUE;
-                        break;
-                    case 3:
-                        mate = Mate.START;
-                        break;
-                    case 4:
-                        mate = Mate.END;
-                        break;
-                    default:
-                        break;
-                }
-                Session session;
-                Scope scope;
-                try {
-                    scope = BeanUtil.parseEntity(entity, Scope.class);
-                    session = BeanUtil.parseEntity(entity, Session.class);
-                } catch (Exception e) {
-                    l.error("会话数据初始化失败:" + e.getMessage());
-                    e.printStackTrace();
-                    return;
-                }
-                session.setMate(mate);
-                session.setScopeInfo(scope);
-                if (!sessionAll.containsKey(session.getBot())) {
-                    sessionAll.put(session.getBot(), new HashMap<String, Session>() {{
-                        put(session.getKey(), session);
-                    }});
-                    continue;
-                }
-                Map<String, Session> sessionMap = sessionAll.get(session.getBot());
-                if (!sessionMap.containsKey(session.getKey())) {
-                    sessionAll.get(session.getBot()).put(session.getKey(), session);
-                }
-            }
-            StaticData.setSessionMap(sessionAll);
-        }
-        if (type) {
-            l.info("数据库会话数据初始化成功!");
-            return;
-        }
-        if (ConfigData.INSTANCE.getDebugSwitch()) {
-            l.info("会话数据更新成功!");
-        }
-
-    }
-
     public static void init(boolean type) {
         List<Session> sessions;
+        //获取sessionList
         try {
             sessions = HibernateUtil.factory.fromTransaction(session -> {
                 HibernateCriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
@@ -154,18 +73,22 @@ public class SessionUtil {
         }
 
         Map<Long, Map<String, Session>> sessionAll = new HashMap<>();
-
+        //解析成sessionMap
         if (sessions != null && !sessions.isEmpty()) {
             for (Session entity : sessions) {
+                if (entity.getScopeInfo() == null) {
+                    Scope scope = ScopeUtil.getScope(entity.getScopeInfoId());
+                    entity.setScopeInfo(scope);
+                }
                 if (!sessionAll.containsKey(entity.getBot())) {
                     sessionAll.put(entity.getBot(), new HashMap<String, Session>() {{
-                        put(entity.getKey(), entity);
+                        put(entity.getTerm(), entity);
                     }});
                     continue;
                 }
                 Map<String, Session> sessionMap = sessionAll.get(entity.getBot());
-                if (!sessionMap.containsKey(entity.getKey())) {
-                    sessionAll.get(entity.getBot()).put(entity.getKey(), entity);
+                if (!sessionMap.containsKey(entity.getTerm())) {
+                    sessionAll.get(entity.getBot()).put(entity.getTerm(), entity);
                 }
             }
             StaticData.setSessionMap(sessionAll);
@@ -179,7 +102,7 @@ public class SessionUtil {
         }
 
     }
-    
+
 
     /**
      * 学习会话
@@ -194,16 +117,17 @@ public class SessionUtil {
         Contact subject = event.getSubject();
         Bot bot = event.getBot();
 
+        //解析消息，获取参数
         String[] split = code.split("\\s+");
         int type = 0;
         String key = split[1];
         String value = split[2];
-
+        //验证是否存在
         if (StaticData.isSessionKey(bot, key)) {
             subject.sendMessage("我已经学废了" + key + "!不能再学了!");
             return;
         }
-
+        //判断消息是否含有图片
         String typePattern = "\\[mirai:image\\S+]";
         if (Pattern.matches(typePattern, key) || Pattern.matches(typePattern, value)) {
             type = 1;
@@ -212,6 +136,7 @@ public class SessionUtil {
         Mate mate = Mate.ACCURATE;
         Scope scope = new Scope(bot.getId(), "当前", false, false, subject.getId(), -1);
 
+        //解析参数
         //最小分割大小
         int minIndex = 3;
         //大于这个大小就进行参数判断
@@ -249,19 +174,13 @@ public class SessionUtil {
                 }
             }
         }
+        //如果是私聊，需要发送作用域
         if (subject instanceof User && !scope.getGlobal() && scope.getGroupInfo()) {
             subject.sendMessage("私发学习请输入作用域！");
             return;
         }
-
-        int scope_id = ScopeUtil.getScopeId(bot, scope);
-        if (scope_id == -1) {
-            subject.sendMessage("学不废!");
-            l.warning("学习添加失败,无作用域!");
-            return;
-        }
-
-        saveSession(subject, bot, key, value, mate, scope_id, type);
+        //保存
+        saveSession(subject, bot, key, value, mate, scope, type);
     }
 
     /**
@@ -276,10 +195,10 @@ public class SessionUtil {
         String code = event.getMessage().serializeToMiraiCode();
         Contact subject = event.getSubject();
         Bot bot = event.getBot();
-
+        //匹配是否查询单条
         String querySessionPattern = "xx\\\\?[:：](\\S+)|查询 +\\S+";
-
         boolean type = Pattern.matches(querySessionPattern, code);
+
         String key;
         if (type) {
             String[] split = code.split("[:：]| +");
@@ -302,7 +221,7 @@ public class SessionUtil {
 
                 String trigger = judgeScope(event, subject, session);
                 subject.sendMessage("查询到对应会话:\n" +
-                        session.getKey() + "==>" + session.getValue() + "\n" +
+                        session.getTerm() + "==>" + session.getReply() + "\n" +
                         "匹配方式:" + session.getMate().getMateName() + "\n" +
                         "触发范围:" + trigger);
                 return;
@@ -339,6 +258,7 @@ public class SessionUtil {
         }
         String key = nextMessageEventFromUser.getMessage().serializeToMiraiCode();
         nextMessageEventFromUser.intercept();
+
         subject.sendMessage("请发送回复消息:");
         nextMessageEventFromUser = getNextMessageEventFromUser(user);
         if (ShareUtils.isQuit(nextMessageEventFromUser)) {
@@ -346,6 +266,7 @@ public class SessionUtil {
         }
         String value = MessageChain.serializeToJsonString(nextMessageEventFromUser.getMessage());
         nextMessageEventFromUser.intercept();
+
         subject.sendMessage("请发送参数(一次发送，多参数中间隔开):");
         nextMessageEventFromUser = getNextMessageEventFromUser(user);
         if (ShareUtils.isQuit(nextMessageEventFromUser)) {
@@ -394,19 +315,12 @@ public class SessionUtil {
             return;
         }
 
-        int scope_id = ScopeUtil.getScopeId(bot, scope);
-        if (scope_id == -1) {
-            subject.sendMessage("学不废!");
-            l.warning("学习添加失败,无作用域!");
-            return;
-        }
+
         int type = 5;
-        saveSession(subject, bot, key, value, mate, scope_id, type);
+        saveSession(subject, bot, key, value, mate, scope, type);
 
     }
 
-
-    //================================================================================
 
     /**
      * 删除会话数据
@@ -427,54 +341,67 @@ public class SessionUtil {
         }
         String key = split[1];
 
-        String deleteSessionSql = "DELETE FROM session WHERE key = ?";
+        Map<String, Session> sessionMap = StaticData.getSessionMap(bot);
+        Session sessionInfo;
+        if (sessionMap.containsKey(key)) {
+            sessionInfo = sessionMap.get(key);
+        } else {
+            subject.sendMessage("没有找到忘掉的东西...");
+            return;
+        }
 
         try {
-            HuToolUtil.db.del("session", "key", key);
-        } catch (SQLException e) {
+            HibernateUtil.factory.fromTransaction(session -> {
+                session.remove(sessionInfo);
+                return 0;
+            });
+        } catch (Exception e) {
             subject.sendMessage("出错啦~~");
             e.printStackTrace();
             return;
         }
-        subject.sendMessage("我好像忘记了点啥?");
 
+        subject.sendMessage("我好像忘记了点啥?");
         init(false);
     }
+
+    //================================================================================
 
     /**
      * 保存会话
      *
-     * @param subject  消息发送者
-     * @param bot      所属机器人
-     * @param key      触发词
-     * @param value    回复词
-     * @param mate     匹配方式
-     * @param scope_id 作用域
-     * @param type     类型
+     * @param subject 消息发送者
+     * @param bot     所属机器人
+     * @param key     触发词
+     * @param value   回复词
+     * @param mate    匹配方式
+     * @param scope   作用域
+     * @param type    类型
      * @author Moyuyanli
      * @date 2022/7/29 15:03
      */
-    private static void saveSession(Contact subject, Bot bot, String key, String value, Mate mate, int scope_id, int type) {
-        String insertSessionSql =
-                "INSERT INTO session(bot,type,key,value,mate_id,scope_id)" +
-                        "VALUES( ?, ?, ? ,? ,?, ?) ;";
-
-        int i;
+    private static void saveSession(Contact subject, Bot bot, String key, String value, Mate mate, Scope scope, int type) {
         try {
-            i = HuToolUtil.db.execute(insertSessionSql, bot.getId(), type, key, value, mate.getMateType(), scope_id);
-        } catch (SQLException e) {
+            HibernateUtil.factory.fromTransaction(session -> {
+                Session sessionEntity = new Session(bot.getId(), type, key, value, mate, scope);
+                //判断对应作用域是否存在
+                if (!ScopeUtil.isScopeEmpty(scope)) {
+                    //不存在则先添加作用域
+                    session.persist(scope);
+                }
+                session.persist(sessionEntity);
+                return 0;
+            });
+        } catch (Exception e) {
             l.error("添加对话失败:" + e.getMessage());
             subject.sendMessage("学不废!");
             e.printStackTrace();
             return;
         }
-        if (i == 0) {
-            subject.sendMessage("学不废!");
-            return;
-        }
         subject.sendMessage("学废了!");
         init(false);
     }
+
 
     /**
      * 获取该用户的下一次消息事件
@@ -574,25 +501,25 @@ public class SessionUtil {
                     //判断匹配机制
                     switch (base.getMate()) {
                         case ACCURATE:
-                            accurate.append(base.getKey()).append(" ==> ").append(base.getValue()).append(" -> ").append(trigger).append("\n");
+                            accurate.append(base.getTerm()).append(" ==> ").append(base.getReply()).append(" -> ").append(trigger).append("\n");
                             break;
                         case VAGUE:
-                            vague.append(base.getKey()).append(" ==> ").append(base.getValue()).append(" -> ").append(trigger).append("\n");
+                            vague.append(base.getTerm()).append(" ==> ").append(base.getReply()).append(" -> ").append(trigger).append("\n");
                             break;
                         case START:
-                            start.append(base.getKey()).append(" ==> ").append(base.getValue()).append(" -> ").append(trigger).append("\n");
+                            start.append(base.getTerm()).append(" ==> ").append(base.getReply()).append(" -> ").append(trigger).append("\n");
                             break;
                         case END:
-                            end.append(base.getKey()).append(" ==> ").append(base.getValue()).append(" -> ").append(trigger).append("\n");
+                            end.append(base.getTerm()).append(" ==> ").append(base.getReply()).append(" -> ").append(trigger).append("\n");
                             break;
                         default:
                             break;
                     }
                     break;
                 case 1:
-                    other.append(MiraiCode.deserializeMiraiCode(base.getKey()))
+                    other.append(MiraiCode.deserializeMiraiCode(base.getTerm()))
                             .append(" ==> ")
-                            .append(MiraiCode.deserializeMiraiCode(base.getValue()))
+                            .append(MiraiCode.deserializeMiraiCode(base.getReply()))
                             .append(" -> ")
                             .append(trigger)
                             .append(":")
@@ -600,9 +527,9 @@ public class SessionUtil {
                             .append("\n");
                     break;
                 case 5:
-                    special.append(MiraiCode.deserializeMiraiCode(base.getKey()))
+                    special.append(MiraiCode.deserializeMiraiCode(base.getTerm()))
                             .append(" ==> ")
-                            .append(MessageChain.deserializeFromJsonString(base.getValue()).contentToString())
+                            .append(MessageChain.deserializeFromJsonString(base.getReply()).contentToString())
                             .append(" -> ")
                             .append(trigger)
                             .append(":")

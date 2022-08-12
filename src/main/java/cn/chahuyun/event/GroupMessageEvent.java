@@ -10,6 +10,7 @@ import cn.chahuyun.entity.Session;
 import cn.chahuyun.enums.Mate;
 import cn.chahuyun.files.ConfigData;
 import cn.chahuyun.utils.ListUtil;
+import cn.chahuyun.utils.SessionUtil;
 import kotlin.coroutines.CoroutineContext;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.Contact;
@@ -80,24 +81,24 @@ public class GroupMessageEvent extends SimpleListenerHost {
             ListUtil.deleteGroupListInfo(event);
         }
 
-//        if (Pattern.matches(addStudyPattern, code)) {
-//            l.info("学习会话指令");
-//            SessionUtil.studySession(event);
-//        } else if (Pattern.matches(queryStudyPattern, code)) {
-//            l.info("查询会话指令");
-//            SessionUtil.querySession(event);
-//        } else if (Pattern.matches(addsStudyPattern, code)) {
-//            l.info("添加会话指令");
-//            SessionUtil.studyDialogue(event);
-//        } else if (Pattern.matches(deleteStudyPattern, code)) {
-//            l.info("删除会话指令");
-//            SessionUtil.deleteSession(event);
-//        }
+        if (Pattern.matches(addStudyPattern, code)) {
+            l.info("学习会话指令");
+            SessionUtil.studySession(event);
+        } else if (Pattern.matches(queryStudyPattern, code)) {
+            l.info("查询会话指令");
+            SessionUtil.querySession(event);
+        } else if (Pattern.matches(addsStudyPattern, code)) {
+            l.info("添加会话指令");
+            SessionUtil.studyDialogue(event);
+        } else if (Pattern.matches(deleteStudyPattern, code)) {
+            l.info("删除会话指令");
+            SessionUtil.deleteSession(event);
+        }
 
 
 
 
-//        isSessionMessage(event);
+        isSessionMessage(event);
 
     }
 
@@ -128,7 +129,7 @@ public class GroupMessageEvent extends SimpleListenerHost {
                         l.info("匹配作用域->存在");
                     }
                     //尝试匹配匹配方式
-                    if (mateMate(code, session.getMate(), session.getKey())) {
+                    if (mateMate(code, session.getMate(), session.getTerm())) {
                         if (ConfigData.INSTANCE.getDebugSwitch()) {
                             l.info("匹配匹配方式->成功");
                         }

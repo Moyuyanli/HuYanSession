@@ -2,7 +2,6 @@ package cn.chahuyun.entity;
 
 import cn.chahuyun.enums.Mate;
 import jakarta.persistence.*;
-import org.hibernate.annotations.Cascade;
 
 /**
  * 说明
@@ -32,45 +31,45 @@ public class Session {
     /**
      * 触发词
      */
-    private String key;
+    private String term;
     /**
      * 回复内容
      */
-    private String value;
+    private String reply;
     /**
      * 匹配方式
      */
     private int mateInter;
+    /**
+     * 作用域匹配id
+     */
+    private String scopeInfoId;
     @Transient
     private Mate mate;
-    /**
-     * 作用域
-     */
     @Transient
-//    @ManyToOne(cascade = CascadeType.ALL,fetch = FetchType.EAGER,targetEntity = Scope.class)
-//    @JoinColumn(name = "scope_mark")
     private Scope scopeInfo;
 
     public Session() {
     }
 
-    public Session(long bot, int type, String key, String value, Mate mate, Scope scopeInfo) {
+    public Session(long bot, int type, String term, String reply, Mate mate, Scope scopeInfo) {
         this.bot = bot;
         this.type = type;
-        this.key = key;
-        this.value = value;
+        this.term = term;
+        this.reply = reply;
         this.mateInter = mate.getMateType();
         this.mate = mate;
         this.scopeInfo = scopeInfo;
+        this.scopeInfoId = bot + "." + scopeInfo.isGlobal() + "." + scopeInfo.isGroupInfo() + "." + scopeInfo.getGroupNumber() + "." + scopeInfo.getListId();
     }
 
-    public Session(int id, long bot, int type, String key, String value, Mate mate, Scope scopeInfo) {
+    public Session(int id, long bot, int type, String term, String reply, Mate mate, Scope scopeInfo) {
         this.id = id;
         this.bot = bot;
         this.type = type;
-        this.key = key;
+        this.term = term;
         this.mateInter = mate.getMateType();
-        this.value = value;
+        this.reply = reply;
         this.mate = mate;
         this.scopeInfo = scopeInfo;
     }
@@ -100,20 +99,28 @@ public class Session {
         this.type = type;
     }
 
-    public String getKey() {
-        return key;
+    public String getTerm() {
+        return term;
     }
 
-    public void setKey(String key) {
-        this.key = key;
+    public void setTerm(String term) {
+        this.term = term;
     }
 
-    public String getValue() {
-        return value;
+    public String getReply() {
+        return reply;
     }
 
-    public void setValue(String value) {
-        this.value = value;
+    public void setReply(String reply) {
+        this.reply = reply;
+    }
+
+    public String getScopeInfoId() {
+        return scopeInfoId;
+    }
+
+    public void setScopeInfoId(String scopeInfoId) {
+        this.scopeInfoId = scopeInfoId;
     }
 
     public Mate getMate() {
@@ -158,8 +165,8 @@ public class Session {
                 "id=" + id +
                 ", bot=" + bot +
                 ", type=" + type +
-                ", key='" + key + '\'' +
-                ", value='" + value + '\'' +
+                ", key='" + term + '\'' +
+                ", reply='" + reply + '\'' +
                 ", mate=" + mate +
                 ", scope=" + scopeInfo +
                 '}';
