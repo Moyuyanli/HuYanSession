@@ -5,7 +5,6 @@ import cn.chahuyun.data.StaticData;
 import cn.chahuyun.entity.GroupList;
 import cn.chahuyun.entity.GroupNumber;
 import cn.chahuyun.files.ConfigData;
-import cn.hutool.db.Entity;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.Contact;
 import net.mamoe.mirai.event.events.MessageEvent;
@@ -43,22 +42,11 @@ public class ListUtil {
             HibernateCriteriaBuilder builder = session.getCriteriaBuilder();
             //创建实体对应查询器
             JpaCriteriaQuery<GroupList> query = builder.createQuery(GroupList.class);
-
             JpaRoot<GroupList> from = query.from(GroupList.class);
-
-            try {
-                query.select(from);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            query.select(from);
             List<GroupList> groupLists = session.createQuery(query).list();
-
-            for (GroupList groupList : groupLists) {
-                l.info("groupLists-" + groupList);
-            }
             return parseList(groupLists);
         });
-
 
         StaticData.setGroupListMap(parseList);
 
@@ -93,20 +81,20 @@ public class ListUtil {
         int key = Integer.parseInt(split[0].split("\\\\?[:：]")[1]);
 
         String reply = "";
-
+        //判断新加的群号在这个群组中是否存在，存在则拼接回复消息
         Map<Integer, GroupList> groupListMap = StaticData.getGroupListMap(bot);
         if (groupListMap != null && groupListMap.containsKey(key)) {
             GroupList groupList = groupListMap.get(key);
             for (int i = 1; i < split.length; i++) {
-                Long groupId = Long.parseLong(split[i]) ;
+                Long groupId = Long.parseLong(split[i]);
                 if (groupList.containsGroupId(groupId)) {
                     reply += "群" + groupId + "已存在\n";
                 }
             }
         }
 
-
         try {
+            //开始添加群组
             HibernateUtil.factory.fromTransaction(session -> {
                 GroupList groupList = null;
                 if (groupListMap != null && groupListMap.containsKey(key)) {
@@ -115,18 +103,14 @@ public class ListUtil {
                     groupList = new GroupList(bot.getId(), key);
                 }
                 for (int i = 1; i < split.length; i++) {
-                    Long groupId = Long.parseLong(split[i]) ;
+                    Long groupId = Long.parseLong(split[i]);
                     if (groupList.containsGroupId(groupId)) {
                         continue;
                     }
-                    GroupNumber groupNumber = new GroupNumber(bot.getId(), key,groupId);
+                    GroupNumber groupNumber = new GroupNumber(bot.getId(), key, groupId);
                     groupList.getGroups().add(groupNumber);
                 }
-                try {
-                    session.saveOrUpdate(groupList);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+                session.persist(groupList);
                 return 0;
             });
         } catch (Exception e) {
@@ -135,6 +119,7 @@ public class ListUtil {
             return;
         }
         //我又开始码屎山了，这TM才开始写啊!T_T
+        //如果只加了1个群号，并且群号还存在的话返回这条消息
         if (split.length == 2 && !reply.equals("")) {
             subject.sendMessage("群组" + key + "中" + reply);
             return;
@@ -167,15 +152,10 @@ public class ListUtil {
         if (split.length == 2) {
             key = Integer.parseInt(split[1]);
         }
+        //拿静态资源
         Map<Integer, GroupList> groupListMap = null;
-        try {
-            groupListMap = StaticData.getGroupListMap(bot);
-            if (groupListMap == null || groupListMap.isEmpty()) {
-                subject.sendMessage("没有群组信息!");
-                return;
-            }
-        } catch (NullPointerException e) {
-            l.warning("没有群组信息!", e);
+        groupListMap = StaticData.getGroupListMap(bot);
+        if (groupListMap == null || groupListMap.isEmpty()) {
             subject.sendMessage("没有群组信息!");
             return;
         }
@@ -249,7 +229,7 @@ public class ListUtil {
                 subject.sendMessage("没有找到要忘掉的群组~");
                 return;
             }
-        }else {
+        } else {
             if (!StaticData.isGrouper(bot, key, value)) {
                 subject.sendMessage("没有找到要忘掉的群~");
                 return;
@@ -257,31 +237,33 @@ public class ListUtil {
         }
 
         Boolean aBoolean = false;
-            try {
-                boolean finalType = type;
-                Long finalValue = value;
-                aBoolean = HibernateUtil.factory.fromTransaction(session -> {
-                    Map<Integer, GroupList> groupListMap = StaticData.getGroupListMap(bot);
-                    GroupList groupList = null;
-                    if (groupListMap != null && groupListMap.containsKey(key)) {
-                        groupList = groupListMap.get(key);
-                    }
-                    if (finalType) {
-                        session.remove(groupList);
-                        return true;
-                    } else {
-                        assert groupList != null;
-                        GroupNumber groupNumber = groupList.getGroups().stream().filter(item -> item.getGroupId() == finalValue)
-                                .collect(Collectors.toList()).get(0);
-                        groupList.getGroups().remove(groupNumber);
-                        session.update(groupList);
-                        return true;
-                    }
-                });
-            } catch (Exception e) {
-                l.error("数据库删除群组失败:" + e.getMessage());
-                e.printStackTrace();
-            }
+        try {
+            boolean finalType = type;
+            Long finalValue = value;
+            aBoolean = HibernateUtil.factory.fromTransaction(session -> {
+                Map<Integer, GroupList> groupListMap = StaticData.getGroupListMap(bot);
+                GroupList groupList = null;
+                //如果有群组，则先从内存拿到群组
+                if (groupListMap != null && groupListMap.containsKey(key)) {
+                    groupList = groupListMap.get(key);
+                }
+                //如果是删除群组
+                if (finalType) {
+                    session.remove(groupList);
+                    return true;
+                } else {
+                    assert groupList != null;
+                    GroupNumber groupNumber = groupList.getGroups().stream().filter(item -> item.getGroupId() == finalValue)
+                            .collect(Collectors.toList()).get(0);
+                    groupList.getGroups().remove(groupNumber);
+                    session.persist(groupList);
+                    return true;
+                }
+            });
+        } catch (Exception e) {
+            l.error("数据库删除群组失败:" + e.getMessage());
+            e.printStackTrace();
+        }
         if (Boolean.FALSE.equals(aBoolean)) {
             subject.sendMessage("群组删除失败!");
             return;
@@ -294,7 +276,7 @@ public class ListUtil {
     /**
      * 判断这个群组是否存在
      *
-     * @param bot     所属机器人
+     * @param bot    所属机器人
      * @param listId 群组编号
      * @return boolean 存在 true
      * @author Moyuyanli
@@ -344,49 +326,5 @@ public class ListUtil {
         }
         return listMap;
     }
-
-
-    /**
-     * 解析查询多参数
-     *
-     * @param groupLists 查询参数
-     * @return java.util.Map<java.lang.Integer, cn.chahuyun.entity.GroupList>
-     * @author Moyuyanli
-     * @date 2022/7/10 0:26
-     */
-    private static Map<Long, Map<Integer, GroupList>> parseList(List<GroupList> groupLists, List<GroupNumber> numbers) {
-        if (groupLists == null || groupLists.isEmpty()) {
-            return null;
-        }
-        if (numbers == null || numbers.isEmpty()) {
-            return null;
-        }
-
-        Map<Long, Map<Integer, GroupList>> listMap = new HashMap<>();
-
-        for (GroupList entity : groupLists) {
-            long bot = entity.getBot();
-            int listId = entity.getListId();
-
-            if (!listMap.containsKey(bot)) {
-                HashMap<Integer, GroupList> map = new HashMap<>();
-//                String mark = entity.getMark();
-//                List<GroupNumber> groupNumberList = numbers.stream().filter(item -> item.getMark().equals(mark)).collect(Collectors.toList());
-//                entity.setGroups(groupNumberList);
-                map.put(listId, entity);
-                listMap.put(bot, map);
-
-                continue;
-            }
-            if (!listMap.get(bot).containsKey(listId)) {
-//                String mark = entity.getMark();
-//                List<GroupNumber> groupNumberList = numbers.stream().filter(item -> item.getMark().equals(mark)).collect(Collectors.toList());
-//                entity.setGroups(groupNumberList);
-                listMap.get(bot).put(listId, entity);
-            }
-        }
-        return listMap;
-    }
-
 
 }

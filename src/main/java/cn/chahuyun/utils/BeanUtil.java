@@ -28,6 +28,7 @@ public class BeanUtil {
      * @date 2022/7/12 10:37
      * @return T
      */
+    @Deprecated(since="以弃用，留着当案例")
     public static <T> T  parseEntity(Entity entity, Class<T> tClass) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
         Field[] fields = tClass.getDeclaredFields();
         Class<?>[] classes = new Class<?>[fields.length+1];
