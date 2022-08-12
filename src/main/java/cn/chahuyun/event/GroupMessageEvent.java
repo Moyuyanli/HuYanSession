@@ -3,7 +3,7 @@ package cn.chahuyun.event;
 import cn.chahuyun.HuYanSession;
 import cn.chahuyun.data.StaticData;
 import cn.chahuyun.dialogue.Dialogue;
-import cn.chahuyun.entity.GroupNumber;
+import cn.chahuyun.entity.GroupInfo;
 import cn.chahuyun.entity.GroupList;
 import cn.chahuyun.entity.Scope;
 import cn.chahuyun.entity.Session;
@@ -156,8 +156,8 @@ public class GroupMessageEvent extends SimpleListenerHost {
 
         if (scope.getGroupInfo()) {
             GroupList groupList = groupListMap.get(scope.getListId());
-            List<GroupNumber> groupNumbers = groupList.getGroups();
-            for (GroupNumber aLong : groupNumbers) {
+            List<GroupInfo> groupNumbers = groupList.getGroups();
+            for (GroupInfo aLong : groupNumbers) {
                 if (group == aLong.getGroupId()) {
                     return true;
                 }

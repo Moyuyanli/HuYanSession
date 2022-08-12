@@ -1,8 +1,8 @@
 package cn.chahuyun.utils;
 
 import cn.chahuyun.HuYanSession;
+import cn.chahuyun.entity.GroupInfo;
 import cn.chahuyun.entity.GroupList;
-import cn.chahuyun.entity.GroupNumber;
 import cn.chahuyun.entity.Scope;
 import cn.chahuyun.entity.Session;
 import net.mamoe.mirai.utils.MiraiLogger;
@@ -47,7 +47,7 @@ public class HibernateUtil {
         configuration.setProperty("hibernate.connection.url", path);
 //        configuration.scan("cn.chahuyun.entity");
         configuration.addAnnotatedClass(GroupList.class);
-        configuration.addAnnotatedClass(GroupNumber.class);
+        configuration.addAnnotatedClass(GroupInfo.class);
         configuration.addAnnotatedClass(Scope.class);
         configuration.addAnnotatedClass(Session.class);
 //        configuration.addAnnotatedClass(GroupNumber.class);

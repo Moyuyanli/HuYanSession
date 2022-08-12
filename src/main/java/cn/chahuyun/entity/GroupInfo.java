@@ -10,8 +10,8 @@ import jakarta.persistence.*;
  * @Date 2022/7/30 23:53
  */
 @Entity
-@Table(name = "GroupNumber")
-public class GroupNumber {
+@Table(name = "GroupInfo")
+public class GroupInfo {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -31,10 +31,10 @@ public class GroupNumber {
     @Transient
     private GroupList groupList;
 
-    public GroupNumber() {
+    public GroupInfo() {
     }
 
-    public GroupNumber(long bot, int listId, long groupId) {
+    public GroupInfo(long bot, int listId, long groupId) {
         this.mark = bot + "." + listId;
         this.bot = bot;
         this.listId = listId;

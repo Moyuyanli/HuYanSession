@@ -74,7 +74,6 @@ public class Session {
         this.scopeInfo = scopeInfo;
     }
 
-
     public int getId() {
         return id;
     }

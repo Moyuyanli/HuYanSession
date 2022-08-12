@@ -33,9 +33,9 @@ public class GroupList {
     /**
      * 所有群号
      */
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, targetEntity = GroupNumber.class)
-    @JoinColumn(name = "groupnumber_mark")
-    private List<GroupNumber> groups = new ArrayList<>();
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, targetEntity = GroupInfo.class)
+    @JoinColumn(name = "GroupInfo_mark")
+    private List<GroupInfo> groups = new ArrayList<>();
 
     public GroupList() {
     }
@@ -46,7 +46,7 @@ public class GroupList {
     }
 
 
-    public GroupList(long bot, int listId, List<GroupNumber> groups) {
+    public GroupList(long bot, int listId, List<GroupInfo> groups) {
         this.bot = bot;
         this.listId = listId;
         this.groups = groups;
@@ -76,11 +76,11 @@ public class GroupList {
         this.listId = listId;
     }
 
-    public List<GroupNumber> getGroups() {
+    public List<GroupInfo> getGroups() {
         return groups;
     }
 
-    public void setGroups(List<GroupNumber> groups) {
+    public void setGroups(List<GroupInfo> groups) {
         this.groups = groups;
     }
 
@@ -103,7 +103,7 @@ public class GroupList {
      * @date 2022/8/11 15:35
      */
     public boolean containsGroupId(long groupId) {
-        for (GroupNumber group : groups) {
+        for (GroupInfo group : groups) {
             if (group.getGroupId() == groupId) {
                 return true;
             }

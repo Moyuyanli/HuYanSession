@@ -2,9 +2,10 @@ package cn.chahuyun.utils;
 
 import cn.chahuyun.HuYanSession;
 import cn.chahuyun.data.StaticData;
+import cn.chahuyun.entity.GroupInfo;
 import cn.chahuyun.entity.GroupList;
-import cn.chahuyun.entity.GroupNumber;
 import cn.chahuyun.files.ConfigData;
+import jakarta.persistence.PersistenceException;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.Contact;
 import net.mamoe.mirai.event.events.MessageEvent;
@@ -107,10 +108,10 @@ public class ListUtil {
                     if (groupList.containsGroupId(groupId)) {
                         continue;
                     }
-                    GroupNumber groupNumber = new GroupNumber(bot.getId(), key, groupId);
-                    groupList.getGroups().add(groupNumber);
+                    GroupInfo groupInfo = new GroupInfo(bot.getId(), key, groupId);
+                    groupList.getGroups().add(groupInfo);
                 }
-                session.persist(groupList);
+                session.merge(groupList);
                 return 0;
             });
         } catch (Exception e) {
@@ -177,9 +178,9 @@ public class ListUtil {
             }
             forwardMessageBuilder.add(bot, chain -> {
                 chain.add("群组编号：" + entity.getListId() + "\n");
-                Iterator<GroupNumber> iterator = entity.getGroups().iterator();
+                Iterator<GroupInfo> iterator = entity.getGroups().iterator();
                 while (iterator.hasNext()) {
-                    GroupNumber next = iterator.next();
+                    GroupInfo next = iterator.next();
                     chain.add(next.getGroupId() + "->");
                     String groupName = null;
                     if (bot.getGroup(next.getGroupId()) == null) {
@@ -253,16 +254,19 @@ public class ListUtil {
                     return true;
                 } else {
                     assert groupList != null;
-                    GroupNumber groupNumber = groupList.getGroups().stream().filter(item -> item.getGroupId() == finalValue)
+                    GroupInfo groupInfo = groupList.getGroups().stream().filter(item -> item.getGroupId() == finalValue)
                             .collect(Collectors.toList()).get(0);
-                    groupList.getGroups().remove(groupNumber);
-                    session.persist(groupList);
+                    groupList.getGroups().remove(groupInfo);
+                    session.merge(groupList);
                     return true;
                 }
             });
         } catch (Exception e) {
-            l.error("数据库删除群组失败:" + e.getMessage());
-            e.printStackTrace();
+            if (e instanceof PersistenceException) {
+                l.error("不允许群组为空群组！");
+            } else {
+                l.error("数据库删除群组失败:", e);
+            }
         }
         if (Boolean.FALSE.equals(aBoolean)) {
             subject.sendMessage("群组删除失败!");
