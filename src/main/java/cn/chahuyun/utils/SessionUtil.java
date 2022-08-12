@@ -22,6 +22,9 @@ import net.mamoe.mirai.message.data.ForwardMessageBuilder;
 import net.mamoe.mirai.message.data.MessageChain;
 import net.mamoe.mirai.message.data.MessageChainBuilder;
 import net.mamoe.mirai.utils.MiraiLogger;
+import org.hibernate.query.criteria.HibernateCriteriaBuilder;
+import org.hibernate.query.criteria.JpaCriteriaQuery;
+import org.hibernate.query.criteria.JpaRoot;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -51,7 +54,7 @@ public class SessionUtil {
      * @author Moyuyanli
      * @date 2022/7/29 22:25
      */
-    public static void init(boolean type) {
+    public static void initHuTool(boolean type) {
 
         String querySessionSql =
                 "SELECT " +
@@ -110,7 +113,7 @@ public class SessionUtil {
                     return;
                 }
                 session.setMate(mate);
-                session.setScope(scope);
+                session.setScopeInfo(scope);
                 if (!sessionAll.containsKey(session.getBot())) {
                     sessionAll.put(session.getBot(), new HashMap<String, Session>() {{
                         put(session.getKey(), session);
@@ -133,6 +136,50 @@ public class SessionUtil {
         }
 
     }
+
+    public static void init(boolean type) {
+        List<Session> sessions;
+        try {
+            sessions = HibernateUtil.factory.fromTransaction(session -> {
+                HibernateCriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
+                JpaCriteriaQuery<Session> query = criteriaBuilder.createQuery(Session.class);
+                JpaRoot<Session> from = query.from(Session.class);
+                query.select(from);
+                return session.createQuery(query).list();
+            });
+        } catch (Exception e) {
+            l.error("会话数据加载失败:" + e.getMessage());
+            e.printStackTrace();
+            return;
+        }
+
+        Map<Long, Map<String, Session>> sessionAll = new HashMap<>();
+
+        if (sessions != null && !sessions.isEmpty()) {
+            for (Session entity : sessions) {
+                if (!sessionAll.containsKey(entity.getBot())) {
+                    sessionAll.put(entity.getBot(), new HashMap<String, Session>() {{
+                        put(entity.getKey(), entity);
+                    }});
+                    continue;
+                }
+                Map<String, Session> sessionMap = sessionAll.get(entity.getBot());
+                if (!sessionMap.containsKey(entity.getKey())) {
+                    sessionAll.get(entity.getBot()).put(entity.getKey(), entity);
+                }
+            }
+            StaticData.setSessionMap(sessionAll);
+        }
+        if (type) {
+            l.info("数据库会话数据初始化成功!");
+            return;
+        }
+        if (ConfigData.INSTANCE.getDebugSwitch()) {
+            l.info("会话数据更新成功!");
+        }
+
+    }
+    
 
     /**
      * 学习会话
@@ -464,10 +511,11 @@ public class SessionUtil {
     private static String judgeScope(MessageEvent event, Contact subject, Session session) {
         String trigger = "其他群触发";
         long groupId = event.getSubject().getId();
-        if (session.getScope().getGlobal()) {
+        Scope scopeInfo = session.getScopeInfo();
+        if (scopeInfo.getGlobal()) {
             trigger = "全局触发";
-        } else if (session.getScope().getGroupInfo()) {
-            trigger = "群组:" + session.getScope().getListId() + "触发";
+        } else if (scopeInfo.getGroupInfo()) {
+            trigger = "群组:" + scopeInfo.getListId() + "触发";
         } else if (groupId == subject.getId()) {
             trigger = "当前群触发";
         }

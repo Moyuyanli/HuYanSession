@@ -36,7 +36,7 @@ public class ListUtil {
      * @author Moyuyanli
      * @date 2022/7/10 16:18
      */
-    public static void initHibernate(boolean type) {
+    public static void init(boolean type) {
 
         Map<Long, Map<Integer, GroupList>> parseList = HibernateUtil.factory.fromTransaction(session -> {
             //创建构造器
@@ -144,7 +144,7 @@ public class ListUtil {
             message += "其中:\n" + reply;
         }
         subject.sendMessage(message);
-        initHibernate(false);
+        init(false);
     }
 
     /**
@@ -159,7 +159,7 @@ public class ListUtil {
         String code = event.getMessage().serializeToMiraiCode();
         Contact subject = event.getSubject();
         Bot bot = event.getBot();
-        initHibernate(false);
+        init(false);
 
         String[] split = code.split("\\\\?[:：]");
 
@@ -287,7 +287,7 @@ public class ListUtil {
             return;
         }
         subject.sendMessage("群组" + key + "删除" + ((value == null) ? "成功!" : value + "群成功!"));
-        initHibernate(false);
+        init(false);
     }
 
 
@@ -295,12 +295,12 @@ public class ListUtil {
      * 判断这个群组是否存在
      *
      * @param bot     所属机器人
-     * @param list_id 群组编号
+     * @param listId 群组编号
      * @return boolean 存在 true
      * @author Moyuyanli
      * @date 2022/7/11 12:13
      */
-    public static boolean isContainsList(Bot bot, int list_id) {
+    public static boolean isContainsList(Bot bot, int listId) {
         Map<Integer, GroupList> groupListMap;
         try {
             groupListMap = StaticData.getGroupListMap(bot);
@@ -311,7 +311,7 @@ public class ListUtil {
             e.printStackTrace();
             return false;
         }
-        return groupListMap.containsKey(list_id);
+        return groupListMap.containsKey(listId);
     }
 
     /**

@@ -123,7 +123,7 @@ public class GroupMessageEvent extends SimpleListenerHost {
                 }
                 //存在则尝试匹配作用域
                 Session session = entry.getValue();
-                if (mateScope(event, session.getScope())) {
+                if (mateScope(event, session.getScopeInfo())) {
                     if (ConfigData.INSTANCE.getDebugSwitch()) {
                         l.info("匹配作用域->存在");
                     }

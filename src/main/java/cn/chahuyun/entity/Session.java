@@ -2,6 +2,7 @@ package cn.chahuyun.entity;
 
 import cn.chahuyun.enums.Mate;
 import jakarta.persistence.*;
+import org.hibernate.annotations.Cascade;
 
 /**
  * 说明
@@ -39,35 +40,39 @@ public class Session {
     /**
      * 匹配方式
      */
+    private int mateInter;
     @Transient
     private Mate mate;
     /**
      * 作用域
      */
-    @ManyToOne(cascade = CascadeType.ALL,fetch = FetchType.LAZY,targetEntity = Scope.class)
-    @JoinColumn(name = "scope_mark")
-    private Scope scope;
+    @Transient
+//    @ManyToOne(cascade = CascadeType.ALL,fetch = FetchType.EAGER,targetEntity = Scope.class)
+//    @JoinColumn(name = "scope_mark")
+    private Scope scopeInfo;
 
     public Session() {
     }
 
-    public Session(long bot, int type, String key, String value, Mate mate, Scope scope) {
+    public Session(long bot, int type, String key, String value, Mate mate, Scope scopeInfo) {
         this.bot = bot;
         this.type = type;
         this.key = key;
         this.value = value;
+        this.mateInter = mate.getMateType();
         this.mate = mate;
-        this.scope = scope;
+        this.scopeInfo = scopeInfo;
     }
 
-    public Session(int id, long bot, int type, String key, String value, Mate mate, Scope scope) {
+    public Session(int id, long bot, int type, String key, String value, Mate mate, Scope scopeInfo) {
         this.id = id;
         this.bot = bot;
         this.type = type;
         this.key = key;
+        this.mateInter = mate.getMateType();
         this.value = value;
         this.mate = mate;
-        this.scope = scope;
+        this.scopeInfo = scopeInfo;
     }
 
 
@@ -112,19 +117,39 @@ public class Session {
     }
 
     public Mate getMate() {
-        return mate;
+        switch (mateInter) {
+            case 1:
+                return Mate.ACCURATE;
+            case 2:
+                return Mate.VAGUE;
+            case 3:
+                return Mate.START;
+            case 4:
+                return Mate.END;
+            default:
+                return Mate.ACCURATE;
+        }
     }
 
     public void setMate(Mate mate) {
         this.mate = mate;
+        this.mateInter = mate.getMateType();
     }
 
-    public Scope getScope() {
-        return scope;
+    public Scope getScopeInfo() {
+        return scopeInfo;
     }
 
-    public void setScope(Scope scope) {
-        this.scope = scope;
+    public void setScopeInfo(Scope scopeInfo) {
+        this.scopeInfo = scopeInfo;
+    }
+
+    public int getMateInter() {
+        return mateInter;
+    }
+
+    public void setMateInter(int mateInter) {
+        this.mateInter = mateInter;
     }
 
     @Override
@@ -136,7 +161,7 @@ public class Session {
                 ", key='" + key + '\'' +
                 ", value='" + value + '\'' +
                 ", mate=" + mate +
-                ", scope=" + scope +
+                ", scope=" + scopeInfo +
                 '}';
     }
 }

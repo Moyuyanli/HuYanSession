@@ -53,8 +53,8 @@ public final class HuYanSession extends JavaPlugin {
 //        HuToolUtil.init();
 //        getLogger().info("数据库sqlite已加载！");
 
-        ListUtil.initHibernate(true);
-//        SessionUtil.init(true);
+        ListUtil.init(true);
+        SessionUtil.init(true);
 
 
         //注册群消息事件
