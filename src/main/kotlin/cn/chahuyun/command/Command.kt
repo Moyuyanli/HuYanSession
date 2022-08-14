@@ -10,6 +10,13 @@ object Command : CompositeCommand(
     description = "壶言指令"
 ) {
 
+    @SubCommand("owner") // 可以设置多个子指令名。此时函数名会被忽略。
+    @Description("添加检测群")
+    suspend fun CommandSender.setOwner(owner:Long) {
+        ConfigData.owner = owner
+        sendMessage("主人设置成功!")
+    }
+
     @SubCommand("aGroup") // 可以设置多个子指令名。此时函数名会被忽略。
     @Description("添加检测群")
     suspend fun CommandSender.addGroup(group :Long) {

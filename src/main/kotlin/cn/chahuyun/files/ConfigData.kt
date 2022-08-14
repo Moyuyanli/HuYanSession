@@ -23,14 +23,9 @@ object ConfigData : AutoSavePluginConfig("config") {
      * 主人识别
      */
     @ValueDescription("主人qq")
-    val owner: Long by value()
+    var owner: Long by value()
 
-    @ValueDescription("是否开启斗地主帮助")
-    val douSwitch: Boolean by value()
-    @ValueDescription("是否开启详细帮助链接提示")
-    val linkSwitch: Boolean  by value()
-    @ValueDescription("是否开启帮助在群内显示")
-    val helpSwitch: Boolean  by value()
+
     @ValueDescription("是否开启DEBUG级别日志显示")
     val debugSwitch:Boolean by value()
 
