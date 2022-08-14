@@ -215,7 +215,7 @@ public class PowerUtil {
                 session.remove(finalPower);
                 return 0;
             });
-            subject.sendMessage("删除用户 " + friend.getRemark() + " 所有权限成功！");
+            subject.sendMessage("清除用户 " + friend.getRemark() + " 所有权限成功！");
         }
 
         Power updatePower = power;
@@ -247,6 +247,7 @@ public class PowerUtil {
         String[] splits = code.split(" +");
         if (splits.length == 2) {
             String split = splits[1];
+            //带参数 并且参数是 all
             if (split.equals("all")) {
                 int pageNo = 1;
                 Map<String, Power> powerMap = StaticData.getPowerMap(bot);
@@ -258,6 +259,7 @@ public class PowerUtil {
                 return;
             }
             //todo 先做一个识别全部吧  剩下的后面再补
+            //一个识别群  一个识别个人
         }
 
 
@@ -300,9 +302,11 @@ public class PowerUtil {
     }
 
     /**
+     * 分也查询所有用户权限
      * 整个类的精髓所在地
      * todo 多个方法的案例所在地
-     * @param event 消息事件
+     *
+     * @param event  消息事件
      * @param pageNo 当前页数
      * @author Moyuyanli
      * @date 2022/8/14 22:23
