@@ -30,7 +30,7 @@ public final class HuYanSession extends JavaPlugin {
     private EventChannel channel;
 
     private HuYanSession() {
-        super(new JvmPluginDescriptionBuilder("cn.chahuyun.HuYanSession", "2.0")
+        super(new JvmPluginDescriptionBuilder("cn.chahuyun.HuYanSession", "2.0.0")
                 .name("HuYanSession")
                 .info("壶言会话-服务于你的群聊!")
                 .author("Moyuyanli")
@@ -41,21 +41,23 @@ public final class HuYanSession extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        getLogger().info("===================HuYanSession===================");
+        getLogger().info("HuYanSession2 当前版本: 2.0.0");
+
+        getLogger().info("===================HuYanSession2===================");
         MiraiHibernateConfiguration configuration = new MiraiHibernateConfiguration(this);
         HibernateUtil.init(configuration);
 
         channel = GlobalEventChannel.INSTANCE.parentScope(HuYanSession.INSTANCE);
         //加载插件，打印日志
         reloadPluginConfig(ConfigData.INSTANCE);
-        getLogger().info("配置config已加载！");
+        getLogger().info("插件配置已加载！");
         if (ConfigData.INSTANCE.getOwner() == 0) {
             getLogger().warning("主人还没有设置，请设置主人!");
         }
         getLogger().info("主人已设置:"+ConfigData.INSTANCE.getOwner());
 
         CommandManager.INSTANCE.registerCommand(Command.INSTANCE, true);
-        getLogger().info("指令command已加载！");
+        getLogger().info("插件指令已加载！");
 
         ListUtil.init(true);
         SessionUtil.init(true);
@@ -67,7 +69,7 @@ public final class HuYanSession extends JavaPlugin {
 
 
         getLogger().info("壶言会话插件加载完成!");
-        getLogger().info("===================HuYanSession===================");
+        getLogger().info("===================HuYanSession2===================");
     }
 
     @Override

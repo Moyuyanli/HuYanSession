@@ -4,8 +4,10 @@ package cn.chahuyun.files
 import net.mamoe.mirai.console.data.AutoSavePluginConfig
 import net.mamoe.mirai.console.data.ValueDescription
 import net.mamoe.mirai.console.data.value
+import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.MessageChainBuilder
+import net.mamoe.mirai.message.data.PlainText
 
 
 /**
@@ -43,16 +45,16 @@ object ConfigData : AutoSavePluginConfig("config") {
      * @date 2022/6/30 19:23
      * @return 消息
      */
-    fun setGroupList(operate: Boolean, group: Long): MessageChain {
+    fun setGroupList(operate: Boolean, group: Long): Message {
         return if (operate) {
             groupList.add(group)
-            MessageChainBuilder().append("群  $group 检测添加成功!").build()
+            PlainText("群  $group 检测添加成功!")
         } else {
             try {
                 groupList.remove(group)
-                MessageChainBuilder().append("群 $group 检测删除成功!").build()
+                PlainText("群 $group 检测删除成功!")
             } catch (e: Exception) {
-                MessageChainBuilder().append("没有该群!").build()
+                PlainText("没有该群!")
             }
         }
     }
