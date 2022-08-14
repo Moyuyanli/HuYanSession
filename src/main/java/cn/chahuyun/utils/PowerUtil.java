@@ -4,9 +4,13 @@ import cn.chahuyun.HuYanSession;
 import cn.chahuyun.data.StaticData;
 import cn.chahuyun.entity.Power;
 import cn.chahuyun.files.ConfigData;
-import cn.hutool.core.collection.ListUtil;
+import kotlin.coroutines.EmptyCoroutineContext;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.*;
+import net.mamoe.mirai.event.ConcurrencyKind;
+import net.mamoe.mirai.event.EventChannel;
+import net.mamoe.mirai.event.EventPriority;
+import net.mamoe.mirai.event.GlobalEventChannel;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.data.*;
 import net.mamoe.mirai.utils.MiraiLogger;
@@ -14,10 +18,7 @@ import org.hibernate.query.criteria.HibernateCriteriaBuilder;
 import org.hibernate.query.criteria.JpaCriteriaQuery;
 import org.hibernate.query.criteria.JpaRoot;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * 说明
@@ -67,7 +68,7 @@ public class PowerUtil {
      * 修改权限信息
      *
      * @param event 消息事件
-     * @param type true 添加 false 删除
+     * @param type  true 添加 false 删除
      * @author Moyuyanli
      * @date 2022/8/14 19:58
      */
@@ -230,7 +231,13 @@ public class PowerUtil {
         init(false);
     }
 
-
+    /**
+     * 查询权限信息
+     *
+     * @param event 消息事件
+     * @author Moyuyanli
+     * @date 2022/8/14 22:24
+     */
     public static void inquirePower(MessageEvent event) {
         //power:id?
         String code = event.getMessage().serializeToMiraiCode();
@@ -250,7 +257,7 @@ public class PowerUtil {
                 paginationQueryAll(event, pageNo);
                 return;
             }
-            long id = Long.parseLong(split);
+            //todo 先做一个识别全部吧  剩下的后面再补
         }
 
 
@@ -292,18 +299,33 @@ public class PowerUtil {
 
     }
 
-
+    /**
+     * 整个类的精髓所在地
+     * todo 多个方法的案例所在地
+     * @param event 消息事件
+     * @param pageNo 当前页数
+     * @author Moyuyanli
+     * @date 2022/8/14 22:23
+     */
     private static void paginationQueryAll(MessageEvent event, int pageNo) {
         Contact subject = event.getSubject();
+        User user = event.getSender();
         Bot bot = event.getBot();
         List<Power> powerList = new ArrayList<>(StaticData.getPowerMap(bot).values());
-
-        int pageTotal = powerList.size() / 10;
+        //排序
+        Collections.sort(powerList, (a, b) -> {
+            if (a.getGroupId() >= b.getGroupId()) {
+                return -1;
+            } else {
+                return 1;
+            }
+        });
+        int pageTotal = powerList.size() % 10 == 0 ? powerList.size() / 10 : powerList.size() / 10 + 1;
         int pageMax = pageNo * 10;
-        powerList.subList(pageMax - 6, Math.min(powerList.size(), pageMax));
+        powerList = powerList.subList(pageMax - 10, Math.min(powerList.size(), pageMax));
 
         ForwardMessageBuilder forwardMessageBuilder = new ForwardMessageBuilder(subject);
-        forwardMessageBuilder.add(bot,singleMessages -> {
+        forwardMessageBuilder.add(bot, singleMessages -> {
             singleMessages.add("以下是本bot的所有权限信息↓");
             return null;
         });
@@ -313,10 +335,13 @@ public class PowerUtil {
         if (friend != null) {
             ownerString += friend.getRemark();
         }
-        ownerString += "("+owner+")";
+        ownerString += "(" + owner + ")";
         String finalOwnerString = ownerString;
         //下面这一堆方法，就为了拼一个好看一点的列表出来...
-        forwardMessageBuilder.add(bot, singleMessages -> {singleMessages.add(finalOwnerString);return null;});
+        forwardMessageBuilder.add(bot, singleMessages -> {
+            singleMessages.add(finalOwnerString);
+            return null;
+        });
         for (Power power : powerList) {
             forwardMessageBuilder.add(bot, singleMessages -> {
                 Group group = bot.getGroup(power.getGroupId());
@@ -324,16 +349,16 @@ public class PowerUtil {
                 String groupPowerString = "";
                 String userPowerString = "";
                 if (group == null) {
-                    groupPowerString = "未知群("+power.getGroupId()+")";
-                    userPowerString = "未知用户("+power.getQq()+")";
+                    groupPowerString = "未知群(" + power.getGroupId() + ")";
+                    userPowerString = "未知用户(" + power.getQq() + ")";
                     builder.append(userPowerString).append("\n")
                             .append("所属群:").append(groupPowerString).append("\n");
                 }
                 NormalMember member = group.get(power.getQq());
                 if (member == null) {
-                    userPowerString = "未知用户("+power.getQq()+")";
+                    userPowerString = "未知用户(" + power.getQq() + ")";
                     builder.append(userPowerString).append("\n");
-                }else {
+                } else {
                     builder.append(NormalMemberKt.getNameCardOrNick(member)).append("(").append(power.getQq() + "").append(")\n");
                     builder.append("所属群:").append(group.getName()).append("(").append(power.getGroupId() + "").append(")\n");
                 }
@@ -346,11 +371,29 @@ public class PowerUtil {
             }).build());
         }
 
-        forwardMessageBuilder.add(bot, singleMessages -> {singleMessages.add("当前页数:"+pageNo+"/总页数:"+pageTotal);return null;});
+        forwardMessageBuilder.add(bot, singleMessages -> {
+            singleMessages.add("当前页数:" + pageNo + "/总页数:" + pageTotal);
+            return null;
+        });
         subject.sendMessage(forwardMessageBuilder.build());
 
-
-
+        //循环判断是否进行下一页的显示
+        EventChannel<MessageEvent> channel = GlobalEventChannel.INSTANCE.parentScope(HuYanSession.INSTANCE)
+                .filterIsInstance(MessageEvent.class)
+                .filter(nextEvent -> nextEvent.getSender().getId() == user.getId());
+        channel.subscribeOnce(MessageEvent.class, EmptyCoroutineContext.INSTANCE,
+                ConcurrencyKind.LOCKED, EventPriority.HIGH, nextEvent -> {
+                    String string = nextEvent.getMessage().contentToString();
+                    if (string.equals("下一页")) {
+                        if (pageNo + 1 <= pageTotal) {
+                            paginationQueryAll(nextEvent, pageNo + 1);
+                        }
+                    } else if (string.equals("上一页")) {
+                        if (pageNo - 1 > 0) {
+                            paginationQueryAll(nextEvent, pageNo - 1);
+                        }
+                    }
+                });
     }
 
 
