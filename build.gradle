@@ -1,8 +1,8 @@
 plugins {
-    id 'org.jetbrains.kotlin.jvm' version '1.5.10'
-    id 'org.jetbrains.kotlin.plugin.serialization' version '1.5.10'
+    id 'org.jetbrains.kotlin.jvm' version '1.6.21'
+    id 'org.jetbrains.kotlin.plugin.serialization' version '1.6.21'
 
-    id 'net.mamoe.mirai-console' version '2.11.1'
+    id 'net.mamoe.mirai-console' version '2.12.1'
 }
 
 tasks.withType(JavaCompile) {
@@ -15,24 +15,25 @@ version = '2.0-alpha'
 
 repositories {
     maven { url 'https://maven.aliyun.com/repository/public' }
-    mavenCentral()
     maven {
         url 'https://maven.pkg.jetbrains.space/public/p/ktor/eap'
         name 'ktor-eap'
     }
+    maven { url "https://maven.appspector.com/artifactory/android-sdk" }
+    mavenCentral()
 }
 
 dependencies {
-    implementation 'org.junit.jupiter:junit-jupiter:5.7.0'
-    compileOnly("xyz.cssxsh.mirai:mirai-hibernate-plugin:2.4.2")
+    compileOnly("xyz.cssxsh.mirai:mirai-hibernate-plugin:2.4.3")
+
 
     implementation 'com.alibaba:druid:1.2.11'
     implementation 'org.quartz-scheduler:quartz:2.3.2'
     implementation 'org.xerial:sqlite-jdbc:3.36.0.3'
-    implementation 'cn.hutool:hutool-all:5.8.4'
+    implementation 'cn.hutool:hutool-all:5.8.5'
 
     testImplementation('junit:junit:4.13.2')
-    testImplementation("xyz.cssxsh.mirai:mirai-hibernate-plugin:2.4.2")
+    testImplementation("xyz.cssxsh.mirai:mirai-hibernate-plugin:2.4.3")
 }
 
 

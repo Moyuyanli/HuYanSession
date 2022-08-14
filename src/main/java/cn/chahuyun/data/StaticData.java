@@ -2,6 +2,7 @@ package cn.chahuyun.data;
 
 import cn.chahuyun.HuYanSession;
 import cn.chahuyun.entity.GroupList;
+import cn.chahuyun.entity.Power;
 import cn.chahuyun.entity.Session;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.utils.MiraiLogger;
@@ -32,20 +33,24 @@ public class StaticData {
      */
     private static Map<Long, Map<String, Session>> sessionMap;
 
+    /**
+     * 不同机器人的权限map
+     */
+    private static Map<Long, Map<String, Power>> powerMap;
+
     private StaticData() {
     }
 
     public static Map<Integer, GroupList> getGroupListMap(Bot bot) {
-        try {
-            return groupListMap.get(bot.getId());
-        } catch (Exception e) {
-            if (e instanceof NullPointerException) {
-                return new HashMap<>();
-            } else {
-                e.printStackTrace();
-            }
-            return null;
+
+        if (groupListMap == null) {
+            groupListMap = new HashMap<>();
+            return new HashMap<>();
         }
+        if (groupListMap.containsKey(bot.getId())) {
+            return groupListMap.get(bot.getId());
+        }
+        return new HashMap<>();
     }
 
     public static void setGroupListMap(Map<Long, Map<Integer, GroupList>> groupListMap) {
@@ -53,16 +58,14 @@ public class StaticData {
     }
 
     public static Map<String, Session> getSessionMap(Bot bot) {
-        try {
-            return sessionMap.get(bot.getId());
-        } catch (Exception e) {
-            if (e instanceof NullPointerException) {
-                return new HashMap<>();
-            } else {
-                e.printStackTrace();
-            }
-            return null;
+        if (sessionMap == null) {
+            sessionMap = new HashMap<>();
+            return new HashMap<>();
         }
+        if (sessionMap.containsKey(bot.getId())) {
+            return sessionMap.get(bot.getId());
+        }
+        return new HashMap<>();
     }
 
     public static void setSessionMap(Map<Long, Map<String, Session>> sessionMap) {
@@ -100,19 +103,20 @@ public class StaticData {
      */
     public static boolean isGrouper(Bot bot, int key) {
         if (groupListMap.containsKey(bot.getId())) {
-                return groupListMap.get(bot.getId()).containsKey(key);
+            return groupListMap.get(bot.getId()).containsKey(key);
         }
         return false;
     }
 
     /**
      * 判断有没有对应群
-     * @param bot 所属机器人
-     * @param key 群组id
+     *
+     * @param bot     所属机器人
+     * @param key     群组id
      * @param groupId 群号
      * @return boolean true 存在
      */
-    public static boolean isGrouper(Bot bot, int key,long groupId) {
+    public static boolean isGrouper(Bot bot, int key, long groupId) {
         if (groupListMap.containsKey(bot.getId())) {
             if (groupListMap.get(bot.getId()).containsKey(key)) {
                 return groupListMap.get(bot.getId()).get(key).containsGroupId(groupId);
@@ -122,4 +126,19 @@ public class StaticData {
         return false;
     }
 
+
+    public static Map<String, Power> getPowerMap(Bot bot) {
+        if (powerMap == null) {
+            powerMap = new HashMap<>();
+            return new HashMap<>();
+        }
+        if (powerMap.containsKey(bot.getId())) {
+            return powerMap.get(bot.getId());
+        }
+        return new HashMap<>();
+    }
+
+    public static void setPowerMap(Map<Long, Map<String, Power>> powerMap) {
+        StaticData.powerMap = powerMap;
+    }
 }

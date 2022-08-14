@@ -3,17 +3,16 @@ package cn.chahuyun.event;
 import cn.chahuyun.HuYanSession;
 import cn.chahuyun.data.StaticData;
 import cn.chahuyun.dialogue.Dialogue;
-import cn.chahuyun.entity.GroupInfo;
-import cn.chahuyun.entity.GroupList;
-import cn.chahuyun.entity.Scope;
-import cn.chahuyun.entity.Session;
+import cn.chahuyun.entity.*;
 import cn.chahuyun.enums.Mate;
 import cn.chahuyun.files.ConfigData;
 import cn.chahuyun.utils.ListUtil;
+import cn.chahuyun.utils.PowerUtil;
 import cn.chahuyun.utils.SessionUtil;
 import kotlin.coroutines.CoroutineContext;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.Contact;
+import net.mamoe.mirai.contact.User;
 import net.mamoe.mirai.event.EventHandler;
 import net.mamoe.mirai.event.SimpleListenerHost;
 import net.mamoe.mirai.event.events.MessageEvent;
@@ -31,7 +30,7 @@ import java.util.regex.Pattern;
  * @Description :群消息检测
  * @Date 2022/7/9 18:11
  */
-public class GroupMessageEvent extends SimpleListenerHost {
+public class GroupMessageEventListener extends SimpleListenerHost {
 
     private static final MiraiLogger l = HuYanSession.INSTANCE.getLogger();
 
@@ -46,13 +45,30 @@ public class GroupMessageEvent extends SimpleListenerHost {
     public void onMessage(@NotNull MessageEvent event) throws Exception { // 可以抛出任何异常, 将在 handleException 处理
         String code = event.getMessage().serializeToMiraiCode();
         Contact subject = event.getSubject();
+        User sender = event.getSender();
         Bot bot = event.getBot();
 
+        //权限用户识别符
+        String powerString = subject.getId() + "." + sender.getId();
+        //主人
+        boolean owner = ConfigData.INSTANCE.getOwner() == sender.getId();
 
         if (ConfigData.INSTANCE.getDebugSwitch()) {
             l.info("MiraiCode-> "+code);
 //            l.info("MiraiJson-> "+ MessageChain.serializeToJsonString(event.getMessage()));
         }
+
+        Map<String, Power> powerMap = StaticData.getPowerMap(bot);
+        if (!owner && !powerMap.containsKey(powerString)) {
+            isSessionMessage(event);
+            return;
+        }
+
+        /*
+        用户权限
+         */
+        Power power = powerMap.get(powerString);
+
 
         /*
         群组正则
@@ -60,6 +76,23 @@ public class GroupMessageEvent extends SimpleListenerHost {
         String addListPattern = "^\\+?gr\\\\?[:：]\\d+( +\\d+)+|^添加群组\\\\?[:：]\\d+( +\\d+)+";
         String queryListPattern = "^gr\\\\?[:：](\\d+)?|^查询群组\\\\?[:：](\\d+)?";
         String deleteListPattern = "^-gr\\\\?[：:]\\d+( +\\d+)?|^删除群组\\\\?[:：]\\d+( +\\d+)?";
+
+        if (owner || power.isGroupList()) {
+            if (Pattern.matches(addListPattern, code)) {
+                l.info("添加群组指令");
+                ListUtil.addGroupListInfo(event);
+                return;
+            } else if (Pattern.matches(queryListPattern, code)) {
+                l.info("查询群组指令");
+                ListUtil.queryGroupListInfo(event);
+                return;
+            } else if (Pattern.matches(deleteListPattern, code)) {
+                l.info("删除群组指令");
+                ListUtil.deleteGroupListInfo(event);
+                return;
+            }
+
+        }
 
         /*
         会话正则
@@ -69,30 +102,47 @@ public class GroupMessageEvent extends SimpleListenerHost {
         String addsStudyPattern = "^%xx|^学习对话";
         String deleteStudyPattern = "^-xx\\\\?[:：](\\S+)|^删除( +\\S+)";
 
-
-        if (Pattern.matches(addListPattern, code)) {
-            l.info("添加群组指令");
-            ListUtil.addGroupListInfo(event);
-        } else if (Pattern.matches(queryListPattern, code)) {
-            l.info("查询群组指令");
-            ListUtil.queryGroupListInfo(event);
-        } else if (Pattern.matches(deleteListPattern, code)) {
-            l.info("删除群组指令");
-            ListUtil.deleteGroupListInfo(event);
+        if (owner || power.isSession() || power.isSessionX()) {
+            if (Pattern.matches(addStudyPattern, code)) {
+                l.info("学习会话指令");
+                SessionUtil.studySession(event);
+                return;
+            } else if (Pattern.matches(queryStudyPattern, code)) {
+                l.info("查询会话指令");
+                SessionUtil.querySession(event);
+                return;
+            } else if (Pattern.matches(addsStudyPattern, code)) {
+                l.info("添加会话指令");
+                SessionUtil.studyDialogue(event);
+                return;
+            } else if (Pattern.matches(deleteStudyPattern, code)) {
+                l.info("删除会话指令");
+                SessionUtil.deleteSession(event);
+                return;
+            }
         }
 
-        if (Pattern.matches(addStudyPattern, code)) {
-            l.info("学习会话指令");
-            SessionUtil.studySession(event);
-        } else if (Pattern.matches(queryStudyPattern, code)) {
-            l.info("查询会话指令");
-            SessionUtil.querySession(event);
-        } else if (Pattern.matches(addsStudyPattern, code)) {
-            l.info("添加会话指令");
-            SessionUtil.studyDialogue(event);
-        } else if (Pattern.matches(deleteStudyPattern, code)) {
-            l.info("删除会话指令");
-            SessionUtil.deleteSession(event);
+        /*
+         权限正则
+         */
+        String addPowerPattern = "^\\+\\[mirai:at:\\d+] +\\S+|^添加\\[mirai:at:\\d+] +\\S+";
+        String deletePowerPattern = "^\\-\\[mirai:at:\\d+] +\\S+|^删除\\[mirai:at:\\d+] +\\S+";
+        String queryPowerPattern = "^power( \\S+)?|^权限列表\\\\:( \\S+)?";
+
+        if (owner || power.isAdmin()) {
+            if (Pattern.matches(addPowerPattern, code)) {
+                l.info("添加权限指令");
+                PowerUtil.addOrUpdatePower(event, true);
+                return;
+            } else if (Pattern.matches(deletePowerPattern, code)) {
+                l.info("删除权限指令");
+                PowerUtil.addOrUpdatePower(event, false);
+                return;
+            } else if (Pattern.matches(queryPowerPattern, code)) {
+                l.info("查询权限指令");
+                PowerUtil.inquirePower(event);
+                return;
+            }
         }
 
 

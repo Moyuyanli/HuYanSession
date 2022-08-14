@@ -6,7 +6,6 @@ import cn.chahuyun.entity.Scope;
 import cn.chahuyun.entity.Session;
 import cn.chahuyun.enums.Mate;
 import cn.chahuyun.files.ConfigData;
-import cn.hutool.db.Entity;
 import kotlin.coroutines.EmptyCoroutineContext;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.Contact;
@@ -26,7 +25,6 @@ import org.hibernate.query.criteria.HibernateCriteriaBuilder;
 import org.hibernate.query.criteria.JpaCriteriaQuery;
 import org.hibernate.query.criteria.JpaRoot;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -94,7 +92,7 @@ public class SessionUtil {
             StaticData.setSessionMap(sessionAll);
         }
         if (type) {
-            l.info("数据库会话数据初始化成功!");
+            l.info("数据库会话信息初始化成功!");
             return;
         }
         if (ConfigData.INSTANCE.getDebugSwitch()) {
@@ -195,6 +193,7 @@ public class SessionUtil {
         String code = event.getMessage().serializeToMiraiCode();
         Contact subject = event.getSubject();
         Bot bot = event.getBot();
+        init(false);
         //匹配是否查询单条
         String querySessionPattern = "xx\\\\?[:：](\\S+)|查询 +\\S+";
         boolean type = Pattern.matches(querySessionPattern, code);
@@ -205,7 +204,6 @@ public class SessionUtil {
             key = split[1];
             Map<String, Session> sessionMap;
             try {
-                init(false);
                 sessionMap = StaticData.getSessionMap(bot);
             } catch (Exception e) {
                 subject.sendMessage("查询会话消息为空!");

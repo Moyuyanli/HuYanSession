@@ -1,8 +1,6 @@
 package cn.chahuyun.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 /**
  * 说明
@@ -19,6 +17,7 @@ public class Power {
      * 唯一识别符
      */
     @Id
+//    @GeneratedValue(strategy = GenerationType.AUTO)
     private String id;
     /**
      * 所属bot
@@ -230,5 +229,45 @@ public class Power {
 
     public void setGroupTr(boolean groupTr) {
         this.groupTr = groupTr;
+    }
+
+    @Override
+    public String toString() {
+        return "权限列表:" +
+                "\nadmin         -管理员:" + (admin?"是":"否") +
+                "\nlist        \t-群组管理权限:" + (groupList?"是":"否") +
+                "\nsession       -会话管理权限:" + (session?"是":"否") +
+                "\nsessionx      -会话管理权限(单一):" + (sessionX?"是":"否") +
+                "\nsessiondct   -会话管理权限(多词条):" + (sessionDct?"是":"否") +
+                "\nds         \t-定时任务管理权限:" + (ds?"是":"否") +
+                "\ndscz      \t-定时任务控制权限:" + (dscz?"是":"否") +
+                "\ngroup          -群操作管理权限:" + (groupManage?"是":"否") +
+                "\ngroupHyc     -群操作欢迎词权限:" + (groupHyc?"是":"否") +
+                "\ngroupJy       -群操作禁言权限:" + (groupJy?"是":"否") +
+                "\ngroupHmd   -群操作黑名单权限:" + (groupHmd?"是":"否") +
+                "\ngroupCh      -群操作消息撤回权限:" + (groupCh?"是":"否") +
+                "\ngroupTr       -群操作踢人权限:" + (groupTr?"是":"否");
+    }
+
+    /**
+     * 设置全部权限为 true
+     *
+     * @author Moyuyanli
+     * @date 2022/8/14 18:07
+     */
+    public void setAll() {
+        this.admin = true;
+        this.groupList = true;
+        this.session = true;
+        this.sessionX = true;
+        this.sessionDct = true;
+        this.ds = true;
+        this.dscz = true;
+        this.groupManage = true;
+        this.groupHyc = true;
+        this.groupJy = true;
+        this.groupHmd = true;
+        this.groupCh = true;
+        this.groupTr = true;
     }
 }
