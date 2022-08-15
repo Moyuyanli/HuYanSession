@@ -35,6 +35,7 @@ public class Session {
     /**
      * 回复内容
      */
+    @Column(length = 512)
     private String reply;
     /**
      * 匹配方式

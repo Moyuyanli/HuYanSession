@@ -52,7 +52,7 @@ public class GroupMessageEventListener extends SimpleListenerHost {
         //关闭多机器人自触发
         List<Bot> instances = Bot.getInstances();
         for (Bot instance : instances) {
-            if (instance.getId() == bot.getId()) {
+            if (instance.getId() == sender.getId()) {
                 return;
             }
         }

@@ -65,8 +65,7 @@ public class SessionUtil {
                 return session.createQuery(query).list();
             });
         } catch (Exception e) {
-            l.error("会话数据加载失败:" + e.getMessage());
-            e.printStackTrace();
+            l.error("会话数据加载失败:" , e);
             return;
         }
 
@@ -89,6 +88,8 @@ public class SessionUtil {
                     sessionAll.get(entity.getBot()).put(entity.getTerm(), entity);
                 }
             }
+            StaticData.setSessionMap(sessionAll);
+        }else {
             StaticData.setSessionMap(sessionAll);
         }
         if (type) {
@@ -255,7 +256,7 @@ public class SessionUtil {
             return;
         }
         String key = nextMessageEventFromUser.getMessage().serializeToMiraiCode();
-        nextMessageEventFromUser.intercept();
+
 
         subject.sendMessage("请发送回复消息:");
         nextMessageEventFromUser = getNextMessageEventFromUser(user);
@@ -263,7 +264,6 @@ public class SessionUtil {
             return;
         }
         String value = MessageChain.serializeToJsonString(nextMessageEventFromUser.getMessage());
-        nextMessageEventFromUser.intercept();
 
         subject.sendMessage("请发送参数(一次发送，多参数中间隔开):");
         nextMessageEventFromUser = getNextMessageEventFromUser(user);
@@ -419,7 +419,9 @@ public class SessionUtil {
 
         channel.subscribeOnce(MessageEvent.class, EmptyCoroutineContext.INSTANCE,
                 ConcurrencyKind.LOCKED, EventPriority.HIGH, future::complete);
-        return future.get();
+        MessageEvent event = future.get();
+        event.intercept();
+        return event;
     }
 
 
