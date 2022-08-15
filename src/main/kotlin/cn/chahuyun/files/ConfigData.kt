@@ -28,7 +28,7 @@ object ConfigData : AutoSavePluginConfig("config") {
     var owner: Long by value()
 
 
-    @ValueDescription("是否开启DEBUG级别日志显示")
+    @ValueDescription("是否开启DEBUG级别日志显示(不建议开启)")
     val debugSwitch:Boolean by value()
 
     /**

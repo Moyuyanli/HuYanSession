@@ -92,7 +92,7 @@ public class Power {
     }
 
     public Power(long bot, long groupId, long qq) {
-        this.id = bot + "." + groupId + '.' + qq;
+        this.id = bot + "." + groupId + "." + qq;
         this.bot = bot;
         this.groupId = groupId;
         this.qq = qq;

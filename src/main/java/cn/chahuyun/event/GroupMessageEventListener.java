@@ -9,6 +9,7 @@ import cn.chahuyun.files.ConfigData;
 import cn.chahuyun.utils.ListUtil;
 import cn.chahuyun.utils.PowerUtil;
 import cn.chahuyun.utils.SessionUtil;
+import cn.chahuyun.utils.ShareUtils;
 import kotlin.coroutines.CoroutineContext;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.Contact;
@@ -48,6 +49,14 @@ public class GroupMessageEventListener extends SimpleListenerHost {
         User sender = event.getSender();
         Bot bot = event.getBot();
 
+        //关闭多机器人自触发
+        List<Bot> instances = Bot.getInstances();
+        for (Bot instance : instances) {
+            if (instance.getId() == bot.getId()) {
+                return;
+            }
+        }
+
         //权限用户识别符
         String powerString = subject.getId() + "." + sender.getId();
         //主人
@@ -55,7 +64,6 @@ public class GroupMessageEventListener extends SimpleListenerHost {
 
         if (ConfigData.INSTANCE.getDebugSwitch()) {
             l.info("MiraiCode-> "+code);
-//            l.info("MiraiJson-> "+ MessageChain.serializeToJsonString(event.getMessage()));
         }
 
         Map<String, Power> powerMap = StaticData.getPowerMap(bot);
@@ -65,10 +73,30 @@ public class GroupMessageEventListener extends SimpleListenerHost {
         }
 
         /*
+        特殊匹配
+         */
+
+        String pauseEventPattern = "^[!！]pause +\\[mirai:at:\\d+]( +\\d+)?";
+
+        //是否忽略下一条消息
+        if (ShareUtils.isPause(event)) {
+            if (ConfigData.INSTANCE.getDebugSwitch()) {
+                l.info("本Bot" + bot.getNick() + "还不是很想理你");
+            }
+            return;
+        }
+
+        //添加忽略消息
+        if (Pattern.matches(pauseEventPattern, code)) {
+            l.info("添加忽略消息指令");
+            ShareUtils.spotPause(event);
+        }
+
+
+        /*
         用户权限
          */
         Power power = powerMap.get(powerString);
-
 
         /*
         群组正则
@@ -170,7 +198,7 @@ public class GroupMessageEventListener extends SimpleListenerHost {
             //先做模糊查询判断存在不存在
             if (code.contains(entry.getKey())) {
                 if (ConfigData.INSTANCE.getDebugSwitch()) {
-                    l.info("匹配->存在");
+                    l.info("匹配触发内容->存在");
                 }
                 //存在则尝试匹配作用域
                 Session session = entry.getValue();
