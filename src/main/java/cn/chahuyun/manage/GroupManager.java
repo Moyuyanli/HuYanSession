@@ -6,10 +6,15 @@ import net.mamoe.mirai.contact.*;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.data.At;
 import net.mamoe.mirai.message.data.MessageChainBuilder;
+import net.mamoe.mirai.message.data.MessageSource;
 import net.mamoe.mirai.message.data.SingleMessage;
 import net.mamoe.mirai.utils.MiraiLogger;
+import xyz.cssxsh.mirai.hibernate.MiraiHibernateRecorder;
+import xyz.cssxsh.mirai.hibernate.entry.MessageRecord;
 
-import java.util.regex.Pattern;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * GroupManager
@@ -25,9 +30,9 @@ public class GroupManager {
 
 
     /**
+     * @param event 消息事件
      * @description 解禁言
      * @author zhangjiaxing
-     * @param event 消息事件
      * @date 2022/6/21 16:44
      */
     public static void prohibit(MessageEvent event) {
@@ -44,8 +49,8 @@ public class GroupManager {
 
         //获取群友对象
         Long qq = null;
-        for(SingleMessage s:event.getMessage()){
-            if(s instanceof At){
+        for (SingleMessage s : event.getMessage()) {
+            if (s instanceof At) {
                 qq = ((At) s).getTarget();
             }
         }
@@ -73,21 +78,22 @@ public class GroupManager {
         switch (type) {
             case "s":
                 time = timeParam;
-                messages.append("禁言:"+timeParam+"秒");
+                messages.append("禁言:" + timeParam + "秒");
                 break;
             case "m":
-                time = timeParam*60;
-                messages.append("禁言:"+timeParam+"分钟");
+                time = timeParam * 60;
+                messages.append("禁言:" + timeParam + "分钟");
                 break;
             case "h":
-                time = timeParam*60*60;
-                messages.append("禁言:"+timeParam+"小时");
+                time = timeParam * 60 * 60;
+                messages.append("禁言:" + timeParam + "小时");
                 break;
             case "d":
-                time = timeParam*60*60*24;
-                messages.append("禁言:"+timeParam+"天");
+                time = timeParam * 60 * 60 * 24;
+                messages.append("禁言:" + timeParam + "天");
                 break;
-            default:break;
+            default:
+                break;
         }
         //禁言
         assert member != null;
@@ -98,9 +104,76 @@ public class GroupManager {
                 subject.sendMessage("禁言失败,你机器居然不是管理员???");
             } else {
                 subject.sendMessage("出错啦~");
-                l.error("出错啦~",e);
+                l.error("出错啦~", e);
             }
         }
         subject.sendMessage(messages.build());
     }
+
+    /**
+     * 三种形式撤回消息
+     * ！recall 撤回上一条
+     * ！recall 5 撤回不带本条的前 5 条消息
+     * ！recall 0-5 撤回从本条消息开始算起的总共6条消息
+     *
+     * @param event 消息事件
+     * @author Moyuyanli
+     * @date 2022/8/15 17:15
+     */
+    public static void recall(MessageEvent event) {
+        //!recall 0? - 0?
+        String code = event.getMessage().serializeToMiraiCode();
+        Contact subject = event.getSubject();
+
+        //只有是群的情况下才会触发
+        Group group;
+        if (subject instanceof Group) {
+            group = (Group) subject;
+        } else {
+            return;
+        }
+
+        //如果不是管理员，就直接不反应
+        boolean botIsAdmin = group.getBotPermission() == MemberPermission.MEMBER;
+        if (botIsAdmin) {
+            return;
+        }
+
+        //拿到所有本群的所有消息
+        List<MessageRecord> records = MiraiHibernateRecorder.INSTANCE.get(group).collect(Collectors.toList());
+
+        //识别参数并分割消息
+        String[] split = code.split(" +");
+        if (split.length == 1) {
+            records = records.subList(1, 2);
+        } else if (split.length == 2) {
+            String string = split[1];
+            if (string.contains("-")) {
+                String[] strings = string.split("-");
+                int start = Integer.parseInt(strings[0]);
+                int end = Integer.parseInt(strings[1]);
+                l.info("s-" + start + " e-" + end);
+                records = records.subList(start, end);
+            } else {
+                int end = Integer.parseInt(split[1]);
+                records = records.subList(1, end);
+            }
+        }
+
+        //循环禁言
+        for (MessageRecord record : records) {
+            try {
+                MessageSource.recall(record.toMessageSource());
+            } catch (PermissionDeniedException e) {
+                l.warning("消息撤回冲突-无权操作");
+            } catch (IllegalStateException e) {
+                l.warning("消息撤回冲突-已被撤回 或 消息未找到");
+            } catch (Exception e) {
+                subject.sendMessage("消息撤回失败!");
+                l.error("出错啦~", e);
+            }
+        }
+    }
+
+
 }

@@ -161,7 +161,7 @@ public class GroupMessageEventListener extends SimpleListenerHost {
          */
         String addPowerPattern = "^\\+\\[mirai:at:\\d+] +\\S+|^添加\\[mirai:at:\\d+] +\\S+";
         String deletePowerPattern = "^\\-\\[mirai:at:\\d+] +\\S+|^删除\\[mirai:at:\\d+] +\\S+";
-        String queryPowerPattern = "^power( \\S+)?|^权限列表\\\\:( \\S+)?";
+        String queryPowerPattern = "^[!！]power( \\S+)?|^权限列表\\\\:( \\S+)?";
 
         if (owner || power.isAdmin()) {
             if (Pattern.matches(addPowerPattern, code)) {
@@ -179,12 +179,29 @@ public class GroupMessageEventListener extends SimpleListenerHost {
             }
         }
 
+        /*
+        禁言正则
+         */
         String groupProhibitPattern = "\\[mirai:at:\\d+\\] \\d+[s|d|h|m]";
 
         if (owner || power.isGroupManage() || power.isGroupJy() ) {
             if (Pattern.matches(groupProhibitPattern, code)) {
                 l.info("禁言指令");
                 GroupManager.prohibit(event);
+                return;
+            }
+        }
+
+        /*
+        撤回正则
+         */
+
+        String groupRecallPattern = "^[!！]recall( +\\d+)?(-\\d+)?|^撤回( +\\d+)?(-\\d+)?";
+
+        if (owner || power.isGroupManage() || power.isGroupCh()) {
+            if (Pattern.matches(groupRecallPattern, code)) {
+                l.info("撤回消息指令");
+                GroupManager.recall(event);
                 return;
             }
         }
