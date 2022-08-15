@@ -6,12 +6,14 @@ import cn.chahuyun.dialogue.Dialogue;
 import cn.chahuyun.entity.*;
 import cn.chahuyun.enums.Mate;
 import cn.chahuyun.files.ConfigData;
+import cn.chahuyun.manage.GroupManager;
 import cn.chahuyun.utils.ListUtil;
 import cn.chahuyun.utils.PowerUtil;
 import cn.chahuyun.utils.SessionUtil;
 import cn.chahuyun.utils.ShareUtils;
 import kotlin.coroutines.CoroutineContext;
 import net.mamoe.mirai.Bot;
+import net.mamoe.mirai.contact.BotIsBeingMutedException;
 import net.mamoe.mirai.contact.Contact;
 import net.mamoe.mirai.contact.User;
 import net.mamoe.mirai.event.EventHandler;
@@ -37,6 +39,10 @@ public class GroupMessageEventListener extends SimpleListenerHost {
 
     @Override
     public void handleException(@NotNull CoroutineContext context, @NotNull Throwable exception){
+        if (exception instanceof BotIsBeingMutedException) {
+            l.warning("机器人已被禁言");
+        }
+
         // 处理事件处理时抛出的异常
         l.error("插件异常:",exception);
     }
@@ -173,7 +179,15 @@ public class GroupMessageEventListener extends SimpleListenerHost {
             }
         }
 
+        String groupProhibitPattern = "\\[mirai:at:\\d+\\] \\d+[s|d|h|m]";
 
+        if (owner || power.isGroupManage() || power.isGroupJy() ) {
+            if (Pattern.matches(groupProhibitPattern, code)) {
+                l.info("禁言指令");
+                GroupManager.prohibit(event);
+                return;
+            }
+        }
 
 
         isSessionMessage(event);

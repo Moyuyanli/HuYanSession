@@ -216,6 +216,7 @@ public class PowerUtil {
                 return 0;
             });
             subject.sendMessage("清除用户 " + friend.getRemark() + " 所有权限成功！");
+            return;
         }
 
         Power updatePower = power;
