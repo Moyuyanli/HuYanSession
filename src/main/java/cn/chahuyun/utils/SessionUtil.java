@@ -74,7 +74,7 @@ public class SessionUtil {
         if (sessions != null && !sessions.isEmpty()) {
             for (Session entity : sessions) {
                 if (entity.getScopeInfo() == null) {
-                    Scope scope = ScopeUtil.getScope(entity.getScopeInfoId());
+                    Scope scope = ScopeUtil.getScope(entity.getScopeMark());
                     entity.setScopeInfo(scope);
                 }
                 if (!sessionAll.containsKey(entity.getBot())) {

@@ -35,7 +35,7 @@ public class Session {
     /**
      * 回复内容
      */
-    @Column(length = 512)
+    @Column(length = 10240)
     private String reply;
     /**
      * 匹配方式
@@ -44,7 +44,7 @@ public class Session {
     /**
      * 作用域匹配id
      */
-    private String scopeInfoId;
+    private String scopeMark;
     @Transient
     private Mate mate;
     @Transient
@@ -61,7 +61,7 @@ public class Session {
         this.mateInter = mate.getMateType();
         this.mate = mate;
         this.scopeInfo = scopeInfo;
-        this.scopeInfoId = bot + "." + scopeInfo.isGlobal() + "." + scopeInfo.isGroupInfo() + "." + scopeInfo.getGroupNumber() + "." + scopeInfo.getListId();
+        this.scopeMark = bot + "." + scopeInfo.isGlobal() + "." + scopeInfo.isGroupInfo() + "." + scopeInfo.getGroupNumber() + "." + scopeInfo.getListId();
     }
 
     public Session(int id, long bot, int type, String term, String reply, Mate mate, Scope scopeInfo) {
@@ -115,12 +115,12 @@ public class Session {
         this.reply = reply;
     }
 
-    public String getScopeInfoId() {
-        return scopeInfoId;
+    public String getScopeMark() {
+        return scopeMark;
     }
 
-    public void setScopeInfoId(String scopeInfoId) {
-        this.scopeInfoId = scopeInfoId;
+    public void setScopeMark(String scopeMark) {
+        this.scopeMark = scopeMark;
     }
 
     public Mate getMate() {

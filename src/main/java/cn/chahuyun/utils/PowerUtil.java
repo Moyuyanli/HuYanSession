@@ -209,7 +209,7 @@ public class PowerUtil {
 
         NormalMember friend = bot.getGroup(group).get(user);
 
-        if (value.equals("all")) {
+        if (!type && value.equals("all")) {
             Power finalPower = power;
             HibernateUtil.factory.fromTransaction(session -> {
                 session.remove(finalPower);

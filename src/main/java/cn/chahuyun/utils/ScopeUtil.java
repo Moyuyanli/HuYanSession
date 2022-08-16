@@ -49,18 +49,18 @@ public class ScopeUtil {
     /**
      * 获取作用域
      *
-     * @param scopeInfoId 作用域id
+     * @param scopeMark 作用域标识
      * @return cn.chahuyun.entity.Scope
      * @author Moyuyanli
      * @date 2022/8/12 16:00
      */
-    public static Scope getScope(String scopeInfoId) {
+    public static Scope getScope(String scopeMark) {
         List<Scope> scopeList = HibernateUtil.factory.fromTransaction(session -> {
             HibernateCriteriaBuilder builder = session.getCriteriaBuilder();
             JpaCriteriaQuery<Scope> query = builder.createQuery(Scope.class);
             JpaRoot<Scope> from = query.from(Scope.class);
             query.select(from);
-            query.where(builder.equal(from.get("id"), scopeInfoId));
+            query.where(builder.equal(from.get("id"), scopeMark));
             return session.createQuery(query).list();
         });
         if (scopeList == null || scopeList.isEmpty()) {

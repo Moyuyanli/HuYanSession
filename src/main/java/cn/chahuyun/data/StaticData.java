@@ -1,13 +1,12 @@
 package cn.chahuyun.data;
 
 import cn.chahuyun.HuYanSession;
-import cn.chahuyun.entity.GroupList;
-import cn.chahuyun.entity.Power;
-import cn.chahuyun.entity.Session;
+import cn.chahuyun.entity.*;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.utils.MiraiLogger;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -24,19 +23,33 @@ public class StaticData {
 
 
     /**
-     * 不同机器人的群组map
+     * 不同机器人
+     * 不同群组
+     * 群组信息
      */
     private static Map<Long, Map<Integer, GroupList>> groupListMap;
 
     /**
-     * 不同机器人的session map
+     * 不同机器人
+     * 不同触发词
+     * 消息信息
      */
     private static Map<Long, Map<String, Session>> sessionMap;
 
     /**
-     * 不同机器人的权限map
+     * 不同机器人
+     * 不同人
+     * 权限
      */
     private static Map<Long, Map<String, Power>> powerMap;
+
+    /**
+     * 不同机器人
+     * 不同作用域
+     * 多条违禁词
+     */
+    private static Map<Long, Map<Scope, List<GroupProhibited>>> prohibitedMap;
+
 
     private StaticData() {
     }
@@ -72,6 +85,20 @@ public class StaticData {
         StaticData.sessionMap = sessionMap;
     }
 
+
+    public static Map<Scope, List<GroupProhibited>> getProhibitedMap(Bot bot) {
+        if (prohibitedMap == null) {
+            prohibitedMap = new HashMap<>();
+        }
+        if (prohibitedMap.containsKey(bot.getId())) {
+            return prohibitedMap.get(bot.getId());
+        }
+        return new HashMap<>();
+    }
+
+    public static void setProhibitedMap(Map<Long ,Map<Scope, List<GroupProhibited>>> prohibitedMap) {
+        StaticData.prohibitedMap = prohibitedMap;
+    }
 
     /**
      * 是否存在该会话 key

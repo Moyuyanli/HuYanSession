@@ -145,6 +145,8 @@ public class Scope {
                 '}';
     }
 
-
-
+    @Override
+    public boolean equals(Object scope) {
+        return this.mark.equals(((Scope) scope).getMark());
+    }
 }
