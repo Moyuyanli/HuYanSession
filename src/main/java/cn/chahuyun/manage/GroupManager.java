@@ -160,7 +160,7 @@ public class GroupManager {
             }
         }
 
-        //循环禁言
+        //循环撤回
         for (MessageRecord record : records) {
             try {
                 MessageSource.recall(record.toMessageSource());
@@ -173,6 +173,17 @@ public class GroupManager {
                 l.error("出错啦~", e);
             }
         }
+    }
+
+    /**
+     * 判断是否是违禁词
+     *
+     * @param event 消息事件
+     * @author Moyuyanli
+     * @date 2022/8/16 17:26
+     */
+    public static boolean isProhibited(MessageEvent event) {
+
     }
 
 

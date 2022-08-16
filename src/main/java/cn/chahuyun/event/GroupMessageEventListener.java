@@ -7,10 +7,7 @@ import cn.chahuyun.entity.*;
 import cn.chahuyun.enums.Mate;
 import cn.chahuyun.files.ConfigData;
 import cn.chahuyun.manage.GroupManager;
-import cn.chahuyun.utils.ListUtil;
-import cn.chahuyun.utils.PowerUtil;
-import cn.chahuyun.utils.SessionUtil;
-import cn.chahuyun.utils.ShareUtils;
+import cn.chahuyun.utils.*;
 import kotlin.coroutines.CoroutineContext;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.BotIsBeingMutedException;
@@ -77,10 +74,38 @@ public class GroupMessageEventListener extends SimpleListenerHost {
         if (ConfigData.INSTANCE.getDebugSwitch()) {
             l.info("owner-"+owner+" power-"+powerMap.containsKey(powerString));
         }
-        if (!owner && !powerMap.containsKey(powerString)) {
+        //是否是有权限的用户 true 是有权限的用户
+        boolean powerUser = powerMap.containsKey(powerString);
+
+        //是否触发违禁词
+        boolean prohibited = false;
+
+        if (!owner) {
+            if (powerUser) {
+                if (!powerMap.get(powerString).isGroupManage() && !powerMap.get(powerString).isGroupWjc()) {
+                    prohibited = GroupManager.isProhibited(event);
+                }
+            } else {
+                prohibited = GroupManager.isProhibited(event);
+            }
+        }
+
+
+        /*
+        不是主人
+        没有指令权限
+        没有触发违禁词
+        → 直接跳过指令判断
+         */
+        if (!owner && !powerUser && !prohibited) {
             isSessionMessage(event);
             return;
         }
+
+        /*
+        用户权限
+         */
+        Power power = powerMap.get(powerString);
 
         /*
         特殊匹配
@@ -103,10 +128,6 @@ public class GroupMessageEventListener extends SimpleListenerHost {
             return;
         }
 
-        /*
-        用户权限
-         */
-        Power power = powerMap.get(powerString);
 
         /*
         群组正则
@@ -210,6 +231,23 @@ public class GroupMessageEventListener extends SimpleListenerHost {
             }
         }
 
+        /*
+        违禁词正则
+         */
+
+        //+wjc:body [3h|gr1|%(重设回复消息)|ch|jy|hmd3|0|全局]
+        String addProhibitedPattern = "\\+wjc\\\\?[:：]\\S+( +\\S+){0.6}|添加违禁词\\\\?[:：]\\S+( +\\S+){0.6}";
+
+
+        if (owner || power.isGroupManage() || power.isGroupWjc()) {
+            if (Pattern.matches(addListPattern, code)) {
+                l.info("添加违禁词指令");
+                GroupProhibitedUtil.addProhibited(event);
+                return;
+            }
+
+
+        }
 
         isSessionMessage(event);
 

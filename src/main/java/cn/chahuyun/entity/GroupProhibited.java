@@ -37,7 +37,7 @@ public class GroupProhibited {
      */
     private int prohibitTime;
     /**
-     * 禁言时间中文
+     * 禁言时间字符
      */
     private String prohibitString;
     /**
@@ -67,6 +67,19 @@ public class GroupProhibited {
     private Scope scopeInfo;
 
     public GroupProhibited() {
+    }
+
+    public GroupProhibited(Long bot, String trigger, String reply, int prohibitTime, String prohibitString, boolean prohibit, boolean withdraw, boolean accumulate, int accumulateNumber) {
+        this.bot = bot;
+        this.trigger = trigger;
+        this.reply = reply;
+        this.prohibitTime = prohibitTime;
+        this.prohibitString = prohibitString;
+        this.prohibit = prohibit;
+        this.withdraw = withdraw;
+        this.accumulate = accumulate;
+        this.accumulateNumber = accumulateNumber;
+
     }
 
     public GroupProhibited(Long bot, String trigger, String reply, int prohibitTime, String prohibitString, boolean prohibit, boolean withdraw, boolean accumulate, int accumulateNumber, Scope scopeInfo) {
@@ -177,6 +190,7 @@ public class GroupProhibited {
 
     public void setScopeInfo(Scope scopeInfo) {
         this.scopeInfo = scopeInfo;
+        this.scopeMark = bot + "." + scopeInfo.isGlobal() + "." + scopeInfo.isGroupInfo() + "." + scopeInfo.getGroupNumber() + "." + scopeInfo.getListId();
     }
 }
 

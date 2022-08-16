@@ -72,6 +72,10 @@ public class Power {
      */
     private boolean groupHyc;
     /**
+     * 群违禁词的权限
+     */
+    private boolean groupWjc;
+    /**
      * 群禁言的权限
      */
     private boolean groupJy;
@@ -234,6 +238,14 @@ public class Power {
         this.groupTr = groupTr;
     }
 
+    public boolean isGroupWjc() {
+        return groupWjc;
+    }
+
+    public void setGroupWjc(boolean groupWjc) {
+        this.groupWjc = groupWjc;
+    }
+
     @Override
     public String toString() {
         return "权限列表:" +
@@ -246,6 +258,7 @@ public class Power {
                 "\ndscz      \t-定时任务控制权限:" + (dscz ? "是" : "否") +
                 "\ngroup          -群操作管理权限:" + (groupManage ? "是" : "否") +
                 "\ngroupHyc     -群操作欢迎词权限:" + (groupHyc ? "是" : "否") +
+                "\ngroupWjc     -群操作违禁词权限:" + (groupWjc ? "是" : "否") +
                 "\ngroupJy       -群操作禁言权限:" + (groupJy ? "是" : "否") +
                 "\ngroupHmd   -群操作黑名单权限:" + (groupHmd ? "是" : "否") +
                 "\ngroupCh      -群操作消息撤回权限:" + (groupCh ? "是" : "否") +
@@ -272,5 +285,6 @@ public class Power {
         this.groupHmd = true;
         this.groupCh = true;
         this.groupTr = true;
+        this.groupWjc = true;
     }
 }
