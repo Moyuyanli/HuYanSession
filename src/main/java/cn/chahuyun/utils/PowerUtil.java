@@ -213,9 +213,11 @@ public class PowerUtil {
             Power finalPower = power;
             HibernateUtil.factory.fromTransaction(session -> {
                 session.remove(finalPower);
+                init(false);
                 return 0;
             });
             subject.sendMessage("清除用户 " + friend.getRemark() + " 所有权限成功！");
+            init(false);
             return;
         }
 
@@ -244,6 +246,8 @@ public class PowerUtil {
         String code = event.getMessage().serializeToMiraiCode();
         Contact subject = event.getSubject();
         Bot bot = event.getBot();
+
+        init(false);
 
         String[] splits = code.split(" +");
         if (splits.length == 2) {

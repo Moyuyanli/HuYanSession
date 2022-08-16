@@ -63,16 +63,20 @@ public class GroupMessageEventListener extends SimpleListenerHost {
             }
         }
 
-        //权限用户识别符
-        String powerString = subject.getId() + "." + sender.getId();
-        //主人
-        boolean owner = ConfigData.INSTANCE.getOwner() == sender.getId();
-
         if (ConfigData.INSTANCE.getDebugSwitch()) {
             l.info("MiraiCode-> "+code);
         }
 
+        //主人
+        boolean owner = ConfigData.INSTANCE.getOwner() == sender.getId();
+
+        //权限用户识别符
+        String powerString = subject.getId() + "." + sender.getId();
+
         Map<String, Power> powerMap = StaticData.getPowerMap(bot);
+        if (ConfigData.INSTANCE.getDebugSwitch()) {
+            l.info("owner-"+owner+" power-"+powerMap.containsKey(powerString));
+        }
         if (!owner && !powerMap.containsKey(powerString)) {
             isSessionMessage(event);
             return;
@@ -87,7 +91,7 @@ public class GroupMessageEventListener extends SimpleListenerHost {
         //是否忽略下一条消息
         if (ShareUtils.isPause(event)) {
             if (ConfigData.INSTANCE.getDebugSwitch()) {
-                l.info("本Bot" + bot.getNick() + "还不是很想理你");
+                l.info("本" + bot.getNick() + "(Bot)还不是很想理你");
             }
             return;
         }
@@ -96,8 +100,8 @@ public class GroupMessageEventListener extends SimpleListenerHost {
         if (Pattern.matches(pauseEventPattern, code)) {
             l.info("添加忽略消息指令");
             ShareUtils.spotPause(event);
+            return;
         }
-
 
         /*
         用户权限
