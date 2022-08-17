@@ -25,6 +25,10 @@ public class GroupProhibited {
      */
     private Long bot;
     /**
+     * 匹配方式
+     */
+    private int mateType;
+    /**
      * 触发词
      */
     private String trigger;
@@ -72,6 +76,7 @@ public class GroupProhibited {
     public GroupProhibited(Long bot, String trigger, String reply, int prohibitTime, String prohibitString, boolean prohibit, boolean withdraw, boolean accumulate, int accumulateNumber) {
         this.bot = bot;
         this.trigger = trigger;
+        this.mateType = 2;
         this.reply = reply;
         this.prohibitTime = prohibitTime;
         this.prohibitString = prohibitString;
@@ -84,6 +89,7 @@ public class GroupProhibited {
 
     public GroupProhibited(Long bot, String trigger, String reply, int prohibitTime, String prohibitString, boolean prohibit, boolean withdraw, boolean accumulate, int accumulateNumber, Scope scopeInfo) {
         this.bot = bot;
+        this.mateType = 2;
         this.trigger = trigger;
         this.reply = reply;
         this.prohibitTime = prohibitTime;
@@ -110,6 +116,14 @@ public class GroupProhibited {
 
     public void setBot(Long bot) {
         this.bot = bot;
+    }
+
+    public int getMateType() {
+        return mateType;
+    }
+
+    public void setMateType(int mateType) {
+        this.mateType = mateType;
     }
 
     public String getTrigger() {

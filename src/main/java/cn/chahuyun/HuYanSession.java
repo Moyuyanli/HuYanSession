@@ -3,10 +3,7 @@ package cn.chahuyun;
 import cn.chahuyun.command.Command;
 import cn.chahuyun.event.GroupMessageEventListener;
 import cn.chahuyun.files.ConfigData;
-import cn.chahuyun.utils.HibernateUtil;
-import cn.chahuyun.utils.ListUtil;
-import cn.chahuyun.utils.PowerUtil;
-import cn.chahuyun.utils.SessionUtil;
+import cn.chahuyun.utils.*;
 import net.mamoe.mirai.console.command.CommandManager;
 import net.mamoe.mirai.console.plugin.jvm.JavaPlugin;
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescriptionBuilder;
@@ -62,6 +59,7 @@ public final class HuYanSession extends JavaPlugin {
         ListUtil.init(true);
         SessionUtil.init(true);
         PowerUtil.init(true);
+        GroupProhibitedUtil.init(true);
 
         //注册群消息事件
         channel.registerListenerHost(new GroupMessageEventListener());

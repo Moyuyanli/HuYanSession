@@ -68,18 +68,18 @@ public class GroupProhibitedUtil {
 
         StaticData.setProhibitedMap(parseList(groupProhibiteds));
 
-        if (type) {
-            l.info("数据库会话信息初始化成功!");
+        if (ConfigData.INSTANCE.getDebugSwitch() && type) {
+            l.info("数据库违禁词信息初始化成功!");
             return;
         }
         if (ConfigData.INSTANCE.getDebugSwitch()) {
-            l.info("会话数据更新成功!");
+            l.info("违禁词数据更新成功!");
         }
 
     }
 
     public static void addProhibited(MessageEvent event) throws ExecutionException, InterruptedException {
-        //+wjc:body [3h|gr1|%(重设回复消息)|ch|jy|hmd3|0|全局]
+        //+wjc:body [3h|gr1|%(重设回复消息)|ch|jy|hmd3|0|全局|1|2|3|4]
         String code = event.getMessage().serializeToMiraiCode();
         Contact subject = event.getSubject();
         Bot bot = event.getBot();
@@ -101,6 +101,18 @@ public class GroupProhibitedUtil {
                         break;
                     case "jy":
                         groupProhibited.setProhibit(false);
+                        break;
+                    case "精准":
+                    case "1":
+                        groupProhibited.setMateType(1);
+                        break;
+                    case "头部":
+                    case "3":
+                        groupProhibited.setMateType(3);
+                        break;
+                    case "结尾":
+                    case "4":
+                        groupProhibited.setMateType(4);
                         break;
                     case "0":
                     case "全局":
@@ -168,6 +180,11 @@ public class GroupProhibitedUtil {
 
         try {
             HibernateUtil.factory.fromTransaction(session -> {
+                //判断对应作用域是否存在
+                if (!ScopeUtil.isScopeEmpty(scope)) {
+                    //不存在则先添加作用域
+                    session.persist(scope);
+                }
                 session.merge(groupProhibited);
                 return 0;
             });
@@ -176,6 +193,8 @@ public class GroupProhibitedUtil {
             l.error("出错啦~", e);
             return;
         }
+
+        subject.sendMessage("违禁词 " + key + " 添加成功！");
 
         init(false);
     }
@@ -203,7 +222,7 @@ public class GroupProhibitedUtil {
             Scope scope = entity.getScopeInfo();
 
             if (!listMap.containsKey(bot)) {
-                listMap.put(bot, new HashMap<>() {{
+                listMap.put(bot, new HashMap<Scope,List<GroupProhibited>>() {{
                     put(scope, new ArrayList<>() {{
                         add(entity);
                     }});
@@ -211,8 +230,12 @@ public class GroupProhibitedUtil {
                 continue;
             }
             if (!listMap.get(bot).containsKey(scope)) {
-                listMap.get(bot).get(scope).add(entity);
+                listMap.get(bot).put(scope,new ArrayList<>(){{
+                    add(entity);
+                }});
+                continue;
             }
+            listMap.get(bot).get(scope).add(entity);
         }
         return listMap;
     }

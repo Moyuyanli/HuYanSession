@@ -83,10 +83,14 @@ public class GroupMessageEventListener extends SimpleListenerHost {
         if (!owner) {
             if (powerUser) {
                 if (!powerMap.get(powerString).isGroupManage() && !powerMap.get(powerString).isGroupWjc()) {
-                    prohibited = GroupManager.isProhibited(event);
+                    if (GroupManager.isProhibited(event)) {
+                        return;
+                    }
                 }
             } else {
-                prohibited = GroupManager.isProhibited(event);
+                if (GroupManager.isProhibited(event)) {
+                    return;
+                }
             }
         }
 
@@ -236,11 +240,11 @@ public class GroupMessageEventListener extends SimpleListenerHost {
          */
 
         //+wjc:body [3h|gr1|%(重设回复消息)|ch|jy|hmd3|0|全局]
-        String addProhibitedPattern = "\\+wjc\\\\?[:：]\\S+( +\\S+){0.6}|添加违禁词\\\\?[:：]\\S+( +\\S+){0.6}";
+        String addProhibitedPattern = "\\+wjc\\\\?[:：]\\S+( +\\S+){0,6}|添加违禁词\\\\?[:：]\\S+( +\\S+){0,6}";
 
 
         if (owner || power.isGroupManage() || power.isGroupWjc()) {
-            if (Pattern.matches(addListPattern, code)) {
+            if (Pattern.matches(addProhibitedPattern, code)) {
                 l.info("添加违禁词指令");
                 GroupProhibitedUtil.addProhibited(event);
                 return;

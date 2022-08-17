@@ -1,19 +1,23 @@
 package cn.chahuyun.manage;
 
 import cn.chahuyun.HuYanSession;
+import cn.chahuyun.data.StaticData;
+import cn.chahuyun.entity.GroupInfo;
+import cn.chahuyun.entity.GroupList;
+import cn.chahuyun.entity.GroupProhibited;
+import cn.chahuyun.entity.Scope;
+import cn.chahuyun.enums.Mate;
+import cn.chahuyun.utils.ShareUtils;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.*;
 import net.mamoe.mirai.event.events.MessageEvent;
-import net.mamoe.mirai.message.data.At;
-import net.mamoe.mirai.message.data.MessageChainBuilder;
-import net.mamoe.mirai.message.data.MessageSource;
-import net.mamoe.mirai.message.data.SingleMessage;
+import net.mamoe.mirai.message.data.*;
 import net.mamoe.mirai.utils.MiraiLogger;
 import xyz.cssxsh.mirai.hibernate.MiraiHibernateRecorder;
 import xyz.cssxsh.mirai.hibernate.entry.MessageRecord;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -183,7 +187,137 @@ public class GroupManager {
      * @date 2022/8/16 17:26
      */
     public static boolean isProhibited(MessageEvent event) {
+        String code = event.getMessage().serializeToMiraiCode();
+        Contact subject = event.getSubject();
+        User sender = event.getSender();
+        Bot bot = event.getBot();
 
+        if (!(subject instanceof Group)) {
+            return false;
+        }
+
+        GroupProhibited groupProhibited = null;
+
+        Map<Scope, List<GroupProhibited>> prohibitedMap = StaticData.getProhibitedMap(bot);
+
+        for (Scope scope : prohibitedMap.keySet()) {
+            if (mateScope(event, scope)) {
+                List<GroupProhibited> groupProhibiteds = prohibitedMap.get(scope);
+                for (GroupProhibited prohibited : groupProhibiteds) {
+                    int mateType = prohibited.getMateType();
+                    Mate mate = Mate.VAGUE;
+                    String trigger = prohibited.getTrigger();
+                    if (mateType == 1) {
+                        mate = Mate.ACCURATE;
+                    } else if (mateType == 3) {
+                        mate = Mate.START;
+                    } else if (mateType == 4) {
+                        mate = Mate.END;
+                    }
+                    if (mateMate(code, mate, trigger)) {
+                        groupProhibited = prohibited;
+                    }
+                }
+            }
+        }
+
+        if (groupProhibited == null) {
+            return false;
+        }
+
+        //撤回
+        if (groupProhibited.isWithdraw()) {
+            try {
+                MessageSource.recall(event.getMessage());
+            } catch (PermissionDeniedException e) {
+                l.warning("违禁词撤回失败-权限不足");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        //禁言并回复消息
+        if (groupProhibited.isProhibit()) {
+            Member member = (Member) sender;
+            member.mute(groupProhibited.getProhibitTime());
+            MessageChain messages = ShareUtils.parseMessageParameter(event, groupProhibited.getReply(), groupProhibited);
+            if (messages != null) {
+                subject.sendMessage(messages);
+            }
+        }
+
+        if (groupProhibited.isAccumulate()) {
+
+        }
+
+        return true;
+    }
+
+    /**
+     * 匹配作用域
+     * @author Moyuyanli
+     * @param event 消息事件
+     * @param scope 作用域
+     * @date 2022/7/13 21:34
+     * @return boolean true 匹配成功! false 匹配失败！
+     */
+    private static boolean mateScope(MessageEvent event, Scope scope) {
+        Bot bot = event.getBot();
+        long group = event.getSubject().getId();
+
+        Map<Integer, GroupList> groupListMap = StaticData.getGroupListMap(bot);
+
+        if (scope.getGroupInfo()) {
+            GroupList groupList = groupListMap.get(scope.getListId());
+            List<GroupInfo> groupNumbers = groupList.getGroups();
+            for (GroupInfo aLong : groupNumbers) {
+                if (group == aLong.getGroupId()) {
+                    return true;
+                }
+            }
+        } else if (scope.getGlobal()) {
+            return true;
+        } else {
+            long l = scope.getGroupNumber();
+            return l == group;
+        }
+        return false;
+    }
+
+    /**
+     * 匹配匹配方式
+     * @author Moyuyanli
+     * @param code 消息
+     * @param mate 匹配方式
+     * @param key 匹配内容
+     * @date 2022/7/13 21:40
+     * @return boolean true 匹配成功! false 匹配失败！
+     */
+    private static boolean mateMate(String code, Mate mate, String key) {
+        switch (mate) {
+            case ACCURATE:
+                if (code.equals(key)) {
+                    return true;
+                }
+                break;
+            case VAGUE:
+                if (code.contains(key)) {
+                    return true;
+                }
+                break;
+            case START:
+                if (code.startsWith(key)) {
+                    return true;
+                }
+                break;
+            case END:
+                if (code.endsWith(key)) {
+                    return true;
+                }
+                break;
+            default:break;
+        }
+        return false;
     }
 
 

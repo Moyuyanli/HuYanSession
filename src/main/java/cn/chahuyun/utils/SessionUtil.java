@@ -92,7 +92,7 @@ public class SessionUtil {
         }else {
             StaticData.setSessionMap(sessionAll);
         }
-        if (type) {
+        if (ConfigData.INSTANCE.getDebugSwitch() && type) {
             l.info("数据库会话信息初始化成功!");
             return;
         }

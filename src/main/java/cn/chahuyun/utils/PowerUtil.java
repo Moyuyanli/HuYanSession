@@ -54,7 +54,7 @@ public class PowerUtil {
         Map<Long, Map<String, Power>> map = parseList(powerList);
         StaticData.setPowerMap(map);
 
-        if (type) {
+        if (ConfigData.INSTANCE.getDebugSwitch() && type) {
             l.info("数据库权限信息初始化成功!");
             return;
         }
