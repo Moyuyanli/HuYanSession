@@ -9,6 +9,7 @@ import net.mamoe.mirai.contact.Group;
 import net.mamoe.mirai.contact.NormalMember;
 import net.mamoe.mirai.contact.User;
 import net.mamoe.mirai.event.events.MessageEvent;
+import net.mamoe.mirai.message.code.MiraiCode;
 import net.mamoe.mirai.message.data.*;
 import net.mamoe.mirai.utils.MiraiLogger;
 
@@ -140,12 +141,16 @@ public class ShareUtils {
             String[] split = group.split("\\(");
             String valueType = split[0].substring(1);
             String value = split[1].substring(0,split[1].length() - 1);
-            builder.append(message.substring(index, start))
-                    .append(Objects.requireNonNull(parseMessage(event, value, valueType, object)));
+            MessageChain messages = parseMessage(event, value, valueType, object);
+            builder.append(MiraiCode.deserializeMiraiCode(message.substring(index, start)))
+                    .append(messages);
+            if (ConfigData.INSTANCE.getDebugSwitch()) {
+                l.info("动态消息-" + group +"->"+messages);
+            }
             index = end;
         }
         if (index < message.length()) {
-            builder.append(message.substring(index));
+            builder.append(MiraiCode.deserializeMiraiCode(message.substring(index)));
         }
         return builder.build();
     }
@@ -180,13 +185,18 @@ public class ShareUtils {
                 }
                 return MessageUtils.newChain().plus("未识别动态消息:"+"$"+valueType+"("+value+")");
             case "message":
-                if (value.equals("prohibitString")) {
-                    for (Object o : object) {
-                        if (o instanceof GroupProhibited) {
-                            return MessageUtils.newChain().plus(((GroupProhibited) o).getProhibitString());
+                switch (value) {
+                    case "prohibitString":
+                    case "jyString":
+                        for (Object o : object) {
+                            if (o instanceof GroupProhibited) {
+                                return MessageUtils.newChain().plus(((GroupProhibited) o).getProhibitString());
+                            }
                         }
-                    }
+                    case "this":
+                        return event.getMessage();
                 }
+
 
         }
 

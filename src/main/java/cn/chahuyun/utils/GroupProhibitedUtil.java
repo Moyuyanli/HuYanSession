@@ -14,6 +14,8 @@ import net.mamoe.mirai.event.EventChannel;
 import net.mamoe.mirai.event.EventPriority;
 import net.mamoe.mirai.event.GlobalEventChannel;
 import net.mamoe.mirai.event.events.MessageEvent;
+import net.mamoe.mirai.message.code.MiraiCode;
+import net.mamoe.mirai.message.data.MessageUtils;
 import net.mamoe.mirai.utils.MiraiLogger;
 import org.hibernate.query.criteria.HibernateCriteriaBuilder;
 import org.hibernate.query.criteria.JpaCriteriaQuery;
@@ -87,13 +89,17 @@ public class GroupProhibitedUtil {
 
         Map<Scope, List<GroupProhibited>> prohibitedMap = StaticData.getProhibitedMap(bot);
 
-        String[] strings = code.split("[:：]")[1].split(" +");
-        String key = strings[0];
+        //直接把第一个冒号替换为 [ ] 用于分割
+        code = code.replaceFirst("[:：]", " ");
+
+        String[] strings = code.split(" +");
+        String key = strings[1];
+
         Scope scope = new Scope(bot.getId(), "当前", false, false, subject.getId(), -1);
         GroupProhibited groupProhibited = new GroupProhibited(bot.getId(), key, "$at(this)触发天条,$message(prohibitString)", 60, "1m", true, true, false, 0, scope);
 
-        if (strings.length > 1) {
-            for (int i = 1; i < strings.length; i++) {
+        if (strings.length > 2) {
+            for (int i = 2; i < strings.length; i++) {
                 String string = strings[i];
                 switch (string) {
                     case "ch":
@@ -172,7 +178,7 @@ public class GroupProhibitedUtil {
         if (prohibitedMap.containsKey(scope)) {
             List<GroupProhibited> prohibitedList = prohibitedMap.get(scope);
             for (GroupProhibited prohibited : prohibitedList) {
-                if (prohibited.getTrigger().equals(prohibited.getTrigger())) {
+                if (prohibited.getTrigger().equals(groupProhibited.getTrigger())) {
                     groupProhibited.setId(prohibited.getId());
                 }
             }
@@ -194,7 +200,7 @@ public class GroupProhibitedUtil {
             return;
         }
 
-        subject.sendMessage("违禁词 " + key + " 添加成功！");
+        subject.sendMessage(MessageUtils.newChain().plus("违禁词 ").plus(MiraiCode.deserializeMiraiCode(key).plus(" 添加成功！")));
 
         init(false);
     }

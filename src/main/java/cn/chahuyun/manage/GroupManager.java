@@ -239,7 +239,9 @@ public class GroupManager {
         //禁言并回复消息
         if (groupProhibited.isProhibit()) {
             Member member = (Member) sender;
-            member.mute(groupProhibited.getProhibitTime());
+            if (groupProhibited.getProhibitTime() > 0) {
+                member.mute(groupProhibited.getProhibitTime());
+            }
             MessageChain messages = ShareUtils.parseMessageParameter(event, groupProhibited.getReply(), groupProhibited);
             if (messages != null) {
                 subject.sendMessage(messages);

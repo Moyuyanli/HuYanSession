@@ -2,6 +2,7 @@ package cn.chahuyun.dialogue;
 
 import cn.chahuyun.HuYanSession;
 import cn.chahuyun.entity.Session;
+import cn.chahuyun.utils.ShareUtils;
 import net.mamoe.mirai.contact.BotIsBeingMutedException;
 import net.mamoe.mirai.contact.Contact;
 import net.mamoe.mirai.contact.MessageTooLargeException;
@@ -14,6 +15,7 @@ import net.mamoe.mirai.utils.MiraiLogger;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.Objects;
 
 /**
  * 说明
@@ -55,7 +57,7 @@ public class Dialogue {
             if (session.getType() == 5) {
                 subject.sendMessage(MessageChain.deserializeFromJsonString(session.getReply()));
             } else {
-                subject.sendMessage(MiraiCode.deserializeMiraiCode(session.getReply()));
+                subject.sendMessage(Objects.requireNonNull(ShareUtils.parseMessageParameter(event, session.getReply(), (Object[]) null)));
             }
         } catch (EventCancelledException e) {
             l.error("发送消息被取消:" + e.getMessage());
