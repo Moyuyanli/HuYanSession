@@ -311,7 +311,7 @@ public class TimingManager {
         Contact subject = event.getSubject();
         String code = event.getMessage().contentToString();
 
-        Matcher matcher = Pattern.compile("\\$cron\\((\\S+ ){5}\\S\\)").matcher(code);
+        Matcher matcher = Pattern.compile("\\$cron\\(\\d( [\\d?*,]+){5}\\)").matcher(code);
         String group;
         if (matcher.find()) {
             group = matcher.group();
