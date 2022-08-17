@@ -2,8 +2,6 @@ package cn.chahuyun.manage;
 
 import cn.chahuyun.HuYanSession;
 import cn.chahuyun.data.StaticData;
-import cn.chahuyun.entity.GroupInfo;
-import cn.chahuyun.entity.GroupList;
 import cn.chahuyun.entity.GroupProhibited;
 import cn.chahuyun.entity.Scope;
 import cn.chahuyun.enums.Mate;
@@ -19,6 +17,7 @@ import xyz.cssxsh.mirai.hibernate.entry.MessageRecord;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
 
 /**
  * GroupManager
@@ -201,7 +200,7 @@ public class GroupManager {
         Map<Scope, List<GroupProhibited>> prohibitedMap = StaticData.getProhibitedMap(bot);
 
         for (Scope scope : prohibitedMap.keySet()) {
-            if (mateScope(event, scope)) {
+            if (ShareUtils.mateScope(event, scope)) {
                 List<GroupProhibited> groupProhibiteds = prohibitedMap.get(scope);
                 for (GroupProhibited prohibited : groupProhibiteds) {
                     int mateType = prohibited.getMateType();
@@ -214,7 +213,7 @@ public class GroupManager {
                     } else if (mateType == 4) {
                         mate = Mate.END;
                     }
-                    if (mateMate(code, mate, trigger)) {
+                    if (ShareUtils.mateMate(code, mate, trigger)) {
                         groupProhibited = prohibited;
                     }
                 }
@@ -236,16 +235,17 @@ public class GroupManager {
             }
         }
 
-        //禁言并回复消息
+        //禁言
         if (groupProhibited.isProhibit()) {
             Member member = (Member) sender;
             if (groupProhibited.getProhibitTime() > 0) {
                 member.mute(groupProhibited.getProhibitTime());
             }
-            MessageChain messages = ShareUtils.parseMessageParameter(event, groupProhibited.getReply(), groupProhibited);
-            if (messages != null) {
-                subject.sendMessage(messages);
-            }
+        }
+        //回复消息
+        MessageChain messages = ShareUtils.parseMessageParameter(event, groupProhibited.getReply(), groupProhibited);
+        if (messages != null) {
+            subject.sendMessage(messages);
         }
 
         if (groupProhibited.isAccumulate()) {
@@ -253,73 +253,6 @@ public class GroupManager {
         }
 
         return true;
-    }
-
-    /**
-     * 匹配作用域
-     * @author Moyuyanli
-     * @param event 消息事件
-     * @param scope 作用域
-     * @date 2022/7/13 21:34
-     * @return boolean true 匹配成功! false 匹配失败！
-     */
-    private static boolean mateScope(MessageEvent event, Scope scope) {
-        Bot bot = event.getBot();
-        long group = event.getSubject().getId();
-
-        Map<Integer, GroupList> groupListMap = StaticData.getGroupListMap(bot);
-
-        if (scope.getGroupInfo()) {
-            GroupList groupList = groupListMap.get(scope.getListId());
-            List<GroupInfo> groupNumbers = groupList.getGroups();
-            for (GroupInfo aLong : groupNumbers) {
-                if (group == aLong.getGroupId()) {
-                    return true;
-                }
-            }
-        } else if (scope.getGlobal()) {
-            return true;
-        } else {
-            long l = scope.getGroupNumber();
-            return l == group;
-        }
-        return false;
-    }
-
-    /**
-     * 匹配匹配方式
-     * @author Moyuyanli
-     * @param code 消息
-     * @param mate 匹配方式
-     * @param key 匹配内容
-     * @date 2022/7/13 21:40
-     * @return boolean true 匹配成功! false 匹配失败！
-     */
-    private static boolean mateMate(String code, Mate mate, String key) {
-        switch (mate) {
-            case ACCURATE:
-                if (code.equals(key)) {
-                    return true;
-                }
-                break;
-            case VAGUE:
-                if (code.contains(key)) {
-                    return true;
-                }
-                break;
-            case START:
-                if (code.startsWith(key)) {
-                    return true;
-                }
-                break;
-            case END:
-                if (code.endsWith(key)) {
-                    return true;
-                }
-                break;
-            default:break;
-        }
-        return false;
     }
 
 

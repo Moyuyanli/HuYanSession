@@ -241,7 +241,7 @@ public class PowerUtil {
      * @author Moyuyanli
      * @date 2022/8/14 22:24
      */
-    public static void inquirePower(MessageEvent event) {
+    public static void queryPower(MessageEvent event) {
         //power:id?
         String code = event.getMessage().serializeToMiraiCode();
         Contact subject = event.getSubject();

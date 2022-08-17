@@ -1,7 +1,7 @@
 package cn.chahuyun;
 
 import cn.chahuyun.command.Command;
-import cn.chahuyun.event.GroupMessageEventListener;
+import cn.chahuyun.event.MessageEventListener;
 import cn.chahuyun.files.ConfigData;
 import cn.chahuyun.utils.*;
 import net.mamoe.mirai.console.command.CommandManager;
@@ -62,7 +62,7 @@ public final class HuYanSession extends JavaPlugin {
         GroupProhibitedUtil.init(true);
 
         //注册群消息事件
-        channel.registerListenerHost(new GroupMessageEventListener());
+        channel.registerListenerHost(new MessageEventListener());
         getLogger().info("群消息监听已注册！");
 
 
