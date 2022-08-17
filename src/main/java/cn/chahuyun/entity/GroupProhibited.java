@@ -57,6 +57,10 @@ public class GroupProhibited {
      */
     private boolean accumulate;
     /**
+     * 当前触发了多少次
+     */
+    public int accumulateThisNumber;
+    /**
      * 触发多少次提出
      */
     private int accumulateNumber;
@@ -188,6 +192,14 @@ public class GroupProhibited {
 
     public void setAccumulateNumber(int accumulateNumber) {
         this.accumulateNumber = accumulateNumber;
+    }
+
+    public int getAccumulateThisNumber() {
+        return accumulateThisNumber;
+    }
+
+    public void setAccumulateThisNumber(int accumulateThisNumber) {
+        this.accumulateThisNumber = accumulateThisNumber;
     }
 
     public String getScopeMark() {

@@ -80,6 +80,13 @@ public class GroupProhibitedUtil {
 
     }
 
+    /**
+     * 添加违禁词
+     *
+     * @param event 消息事件
+     * @author Moyuyanli
+     * @date 2022/8/17 19:12
+     */
     public static void addProhibited(MessageEvent event) throws ExecutionException, InterruptedException {
         //+wjc:body [3h|gr1|%(重设回复消息)|ch|jy|hmd3|0|全局|1|2|3|4]
         String code = event.getMessage().serializeToMiraiCode();
@@ -206,6 +213,28 @@ public class GroupProhibitedUtil {
     }
 
 
+    /**
+     * 查询违禁词
+     *
+     * @param event 消息事件
+     * @author Moyuyanli
+     * @date 2022/8/17 19:14
+     */
+    public static void checkGroupProhibited(MessageEvent event) {
+        //wjc：
+        String code = event.getMessage().serializeToMiraiCode();
+        Contact subject = event.getSubject();
+        Bot bot = event.getBot();
+        User user = event.getSender();
+
+        Map<Scope, List<GroupProhibited>> prohibitedMap = StaticData.getProhibitedMap(bot);
+
+
+
+    }
+
+
+
     //==========================================================================================
 
 
@@ -228,7 +257,7 @@ public class GroupProhibitedUtil {
             Scope scope = entity.getScopeInfo();
 
             if (!listMap.containsKey(bot)) {
-                listMap.put(bot, new HashMap<Scope,List<GroupProhibited>>() {{
+                listMap.put(bot, new HashMap<Scope, List<GroupProhibited>>() {{
                     put(scope, new ArrayList<>() {{
                         add(entity);
                     }});
@@ -236,7 +265,7 @@ public class GroupProhibitedUtil {
                 continue;
             }
             if (!listMap.get(bot).containsKey(scope)) {
-                listMap.get(bot).put(scope,new ArrayList<>(){{
+                listMap.get(bot).put(scope, new ArrayList<>() {{
                     add(entity);
                 }});
                 continue;
