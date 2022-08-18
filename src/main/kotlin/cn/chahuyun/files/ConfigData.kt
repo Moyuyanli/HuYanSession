@@ -31,8 +31,11 @@ object ConfigData : AutoSavePluginConfig("config") {
     @ValueDescription("是否开启DEBUG级别日志显示(不建议开启)")
     val debugSwitch:Boolean by value()
 
+    @ValueDescription("同类消息匹配成功字符数量(当这条消息中的字符跟上条消息的字符匹配成功超过5个则视为同类消息)")
+    val matchingNumber: Int by value(2)
     @ValueDescription("最大刷屏次数")
     val screen:Int by value(10)
+
 
     /**
      * 群号
