@@ -64,6 +64,7 @@ public class MessageEventListener extends SimpleListenerHost {
             l.info("MiraiCode-> " + code);
         }
 
+
         //主人
         boolean owner = ConfigData.INSTANCE.getOwner() == sender.getId();
 
@@ -94,6 +95,10 @@ public class MessageEventListener extends SimpleListenerHost {
             }
         }
 
+
+        if (RepeatMessageUtil.isScreen(event)) {
+            return;
+        }
 
         /*
         不是主人

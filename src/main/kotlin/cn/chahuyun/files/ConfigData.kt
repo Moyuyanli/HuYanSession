@@ -31,6 +31,9 @@ object ConfigData : AutoSavePluginConfig("config") {
     @ValueDescription("是否开启DEBUG级别日志显示(不建议开启)")
     val debugSwitch:Boolean by value()
 
+    @ValueDescription("最大刷屏次数")
+    val screen:Int by value(10)
+
     /**
      * 群号
      */
