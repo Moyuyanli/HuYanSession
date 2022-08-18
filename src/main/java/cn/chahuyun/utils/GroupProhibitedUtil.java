@@ -15,7 +15,9 @@ import net.mamoe.mirai.event.EventPriority;
 import net.mamoe.mirai.event.GlobalEventChannel;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.code.MiraiCode;
-import net.mamoe.mirai.message.data.*;
+import net.mamoe.mirai.message.data.ForwardMessageBuilder;
+import net.mamoe.mirai.message.data.MessageUtils;
+import net.mamoe.mirai.message.data.PlainText;
 import net.mamoe.mirai.utils.MiraiLogger;
 import org.hibernate.query.criteria.HibernateCriteriaBuilder;
 import org.hibernate.query.criteria.JpaCriteriaQuery;
@@ -236,16 +238,9 @@ public class GroupProhibitedUtil {
                 List<GroupProhibited> prohibitedList = prohibitedMap.get(scope);
                 for (GroupProhibited prohibited : prohibitedList) {
                     builder.add(bot, singleMessages -> {
-                        singleMessages.add(
-                                "违禁词编号:" + prohibited.getId() + "\n" +
-                                        "违禁词触发词:" + prohibited.getTrigger() + "\n" +
-                                        "违禁词回复词:" + prohibited.getReply() + "\n" +
-                                        "是否撤回:" + (prohibited.isWithdraw() ? "是" : "否") + "\n" +
-                                        "是否禁言:" + (prohibited.isProhibit() ? "是" : "否") + "\n" +
-                                        "是否累计黑名单次数:" + (prohibited.isAccumulate() ? "是" : "否")
-                        );
+                        singleMessages.add("违禁词编号:" + prohibited.getId() + "\n" + "违禁词触发词:" + prohibited.getTrigger() + "\n" + "违禁词回复词:" + prohibited.getReply() + "\n" + "是否撤回:" + (prohibited.isWithdraw() ? "是" : "否") + "\n" + "是否禁言:" + (prohibited.isProhibit() ? "是" : "否") + "\n" + "是否累计黑名单次数:" + (prohibited.isAccumulate() ? "是" : "否"));
                         if (prohibited.isAccumulate()) {
-                            singleMessages.add("\n次数上限:"+prohibited.getAccumulateNumber());
+                            singleMessages.add("\n次数上限:" + prohibited.getAccumulateNumber());
                         }
                         return null;
                     });
@@ -254,6 +249,60 @@ public class GroupProhibitedUtil {
         }
 
         subject.sendMessage(builder.build());
+
+    }
+
+
+    /**
+     * 删除违禁词
+     *
+     * @param event 消息事件
+     * @author Moyuyanli
+     * @date 2022/8/18 14:20
+     */
+    public static void deleteProhibited(MessageEvent event) {
+        //-wjc:id
+        String code = event.getMessage().serializeToMiraiCode();
+        Contact subject = event.getSubject();
+        Bot bot = event.getBot();
+        User user = event.getSender();
+
+        int key = Integer.parseInt(code.split("[:：]")[1]);
+        Map<Scope, List<GroupProhibited>> prohibitedMap = StaticData.getProhibitedMap(bot);
+
+        GroupProhibited groupProhibited = null;
+
+        for (Scope scope : prohibitedMap.keySet()) {
+            if (ShareUtils.mateScope(event, scope)) {
+                List<GroupProhibited> prohibitedList = prohibitedMap.get(scope);
+                for (GroupProhibited prohibited : prohibitedList) {
+                    if (prohibited.getId() == key) {
+                        groupProhibited = prohibited;
+                    }
+                }
+            }
+        }
+
+        if (groupProhibited == null) {
+            subject.sendMessage("没有找到你要删除的违禁词");
+            return;
+        }
+
+        try {
+            GroupProhibited finalGroupProhibited = groupProhibited;
+            HibernateUtil.factory.fromTransaction(session -> {
+                session.remove(finalGroupProhibited);
+                return 0;
+            });
+        } catch (Exception e) {
+            l.error("出错啦~", e);
+            subject.sendMessage("违禁词 " + MiraiCode.deserializeMiraiCode(groupProhibited.getTrigger()) + " 删除失败");
+            return;
+        }
+
+        subject.sendMessage("违禁词 " + MiraiCode.deserializeMiraiCode(groupProhibited.getTrigger()) + " 删除成功");
+
+        init(false);
 
     }
 
@@ -308,14 +357,11 @@ public class GroupProhibitedUtil {
      */
     private static MessageEvent getNextMessageEventFromUser(User user) throws ExecutionException, InterruptedException {
 
-        EventChannel<MessageEvent> channel = GlobalEventChannel.INSTANCE.parentScope(HuYanSession.INSTANCE)
-                .filterIsInstance(MessageEvent.class)
-                .filter(event -> event.getSender().getId() == user.getId());
+        EventChannel<MessageEvent> channel = GlobalEventChannel.INSTANCE.parentScope(HuYanSession.INSTANCE).filterIsInstance(MessageEvent.class).filter(event -> event.getSender().getId() == user.getId());
 
         CompletableFuture<MessageEvent> future = new CompletableFuture<>();
 
-        channel.subscribeOnce(MessageEvent.class, EmptyCoroutineContext.INSTANCE,
-                ConcurrencyKind.LOCKED, EventPriority.HIGH, future::complete);
+        channel.subscribeOnce(MessageEvent.class, EmptyCoroutineContext.INSTANCE, ConcurrencyKind.LOCKED, EventPriority.HIGH, future::complete);
         MessageEvent event = future.get();
         event.intercept();
         return event;

@@ -113,7 +113,7 @@ public class ShareUtils {
 
         if (map.containsKey(mark)) {
             Integer integer = map.get(mark);
-            l.info("integer-"+integer);
+            l.info("integer-" + integer);
             if (integer > 0) {
                 map.put(mark, integer - 1);
                 return true;
@@ -126,9 +126,9 @@ public class ShareUtils {
     /**
      * 解析消息中的变量，并识别为 [ MessageChain ]
      *
-     * @param event 消息事件
+     * @param event   消息事件
      * @param message 解析的消息
-     * @param object 附加的参数
+     * @param object  附加的参数
      * @return net.mamoe.mirai.message.data.MessageChain
      * @author Moyuyanli
      * @date 2022/8/17 14:23
@@ -153,7 +153,7 @@ public class ShareUtils {
             builder.append(MiraiCode.deserializeMiraiCode(message.substring(index, start)))
                     .append(messages);
             if (ConfigData.INSTANCE.getDebugSwitch()) {
-                l.info("动态消息-" + group +"->"+messages);
+                l.info("动态消息-" + group + "->" + messages);
             }
             index = end;
         }
@@ -166,10 +166,10 @@ public class ShareUtils {
     /**
      * 识别动态变量，并转换为消息 [ Message ]
      *
-     * @param event 消息事件
-     * @param value 变量值
+     * @param event     消息事件
+     * @param value     变量值
      * @param valueType 变量类型
-     * @param object 附加值
+     * @param object    附加值
      * @return net.mamoe.mirai.message.data.MessageChain
      * @author Moyuyanli
      * @date 2022/8/17 14:22
@@ -239,7 +239,7 @@ public class ShareUtils {
                 }
         }
 
-        return MessageUtils.newChain().plus("未识别动态消息:" + "$" + valueType + "(" + value + ")");
+        return new PlainText("未识别动态消息:" + "$" + valueType + "(" + value + ")");
     }
 
 

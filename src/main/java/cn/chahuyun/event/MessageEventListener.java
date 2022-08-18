@@ -241,6 +241,7 @@ public class MessageEventListener extends SimpleListenerHost {
 
         //+wjc:body [3h|gr1|%(重设回复消息)|ch|jy|hmd3|0|全局]
         String addProhibitedPattern = "^\\+wjc\\\\?[:：]\\S+( +\\S+){0,6}|^添加违禁词\\\\?[:：]\\S+( +\\S+){0,6}";
+        String deleteProhibitedPattern = "^\\-wjc\\\\?[:：]\\d+|^删除违禁词\\\\?[:：]\\d+";
         String queryProhibitedPattern = "^\\wjc\\\\?[:：]|^查询违禁词";
 
         if (owner || power.isGroupManage() || power.isGroupWjc()) {
@@ -248,12 +249,15 @@ public class MessageEventListener extends SimpleListenerHost {
                 l.info("添加违禁词指令");
                 GroupProhibitedUtil.addProhibited(event);
                 return;
+            } else if (Pattern.matches(deleteProhibitedPattern, code)) {
+                l.info("删除违禁词指令");
+                GroupProhibitedUtil.deleteProhibited(event);
+                return;
             } else if (Pattern.matches(queryProhibitedPattern, code)) {
                 l.info("查询违禁词指令");
                 GroupProhibitedUtil.queryGroupProhibited(event);
+                return;
             }
-
-
         }
 
         isSessionMessage(event);
