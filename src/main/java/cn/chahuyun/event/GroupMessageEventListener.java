@@ -225,7 +225,7 @@ public class GroupMessageEventListener extends SimpleListenerHost {
         撤回正则
          */
 
-        String groupRecallPattern = "^[!！]recall( +\\d+)?(-\\d+)?|^撤回( +\\d+)?(-\\d+)?";
+        String groupRecallPattern = "^[!！]recall( +\\d+)?([-~]\\d+)?|^撤回( +\\d+)?(-\\d+)?";
 
         if (owner || power.isGroupManage() || power.isGroupCh()) {
             if (Pattern.matches(groupRecallPattern, code)) {

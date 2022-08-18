@@ -16,6 +16,7 @@ import net.mamoe.mirai.utils.MiraiLogger;
 import xyz.cssxsh.mirai.hibernate.MiraiHibernateRecorder;
 import xyz.cssxsh.mirai.hibernate.entry.MessageRecord;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -152,8 +153,8 @@ public class GroupManager {
             records = records.subList(1, 2);
         } else if (split.length == 2) {
             String string = split[1];
-            if (string.contains("-")) {
-                String[] strings = string.split("-");
+            if (string.contains("-") || string.contains("~")) {
+                String[] strings = string.split("[~-]");
                 int start = Integer.parseInt(strings[0]);
                 int end = Integer.parseInt(strings[1]);
                 l.info("s-" + start + " e-" + end);
@@ -186,7 +187,7 @@ public class GroupManager {
      * @author Moyuyanli
      * @date 2022/8/16 17:26
      */
-    public static boolean isProhibited(MessageEvent event) {
+    public static boolean isProhibited(MessageEvent event) throws IOException {
         String code = event.getMessage().serializeToMiraiCode();
         Contact subject = event.getSubject();
         User sender = event.getSender();

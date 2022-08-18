@@ -13,10 +13,12 @@ import net.mamoe.mirai.message.code.MiraiCode;
 import net.mamoe.mirai.message.data.*;
 import net.mamoe.mirai.utils.MiraiLogger;
 
-import java.util.Arrays;
+import java.io.IOException;
+import java.net.URL;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -105,7 +107,7 @@ public class ShareUtils {
 
         if (map.containsKey(mark)) {
             Integer integer = map.get(mark);
-            l.info("integer-"+integer);
+            l.info("integer-" + integer);
             if (integer > 0) {
                 map.put(mark, integer - 1);
                 return true;
@@ -118,14 +120,14 @@ public class ShareUtils {
     /**
      * 解析消息中的变量，并识别为 [ MessageChain ]
      *
-     * @param event 消息事件
+     * @param event   消息事件
      * @param message 解析的消息
-     * @param object 附加的参数
+     * @param object  附加的参数
      * @return net.mamoe.mirai.message.data.MessageChain
      * @author Moyuyanli
      * @date 2022/8/17 14:23
      */
-    public static MessageChain parseMessageParameter(MessageEvent event, String message, Object ...object) {
+    public static MessageChain parseMessageParameter(MessageEvent event, String message, Object... object) throws IOException {
         if (message.contains("$message(null)")) {
             return null;
         }
@@ -140,12 +142,12 @@ public class ShareUtils {
             String group = matcher.group();
             String[] split = group.split("\\(");
             String valueType = split[0].substring(1);
-            String value = split[1].substring(0,split[1].length() - 1);
-            MessageChain messages = parseMessage(event, value, valueType, object);
+            String value = split[1].substring(0, split[1].length() - 1);
+            Message messages = parseMessage(event, value, valueType, object);
             builder.append(MiraiCode.deserializeMiraiCode(message.substring(index, start)))
                     .append(messages);
             if (ConfigData.INSTANCE.getDebugSwitch()) {
-                l.info("动态消息-" + group +"->"+messages);
+                l.info("动态消息-" + group + "->" + messages);
             }
             index = end;
         }
@@ -158,49 +160,78 @@ public class ShareUtils {
     /**
      * 识别动态变量，并转换为消息 [ Message ]
      *
-     * @param event 消息事件
-     * @param value 变量值
+     * @param event     消息事件
+     * @param value     变量值
      * @param valueType 变量类型
-     * @param object 附加值
+     * @param object    附加值
      * @return net.mamoe.mirai.message.data.MessageChain
      * @author Moyuyanli
      * @date 2022/8/17 14:22
      */
-    private static MessageChain parseMessage(MessageEvent event ,String value, String valueType,Object ...object) {
+    private static Message parseMessage(MessageEvent event, String value, String valueType, Object... object) throws IOException {
         switch (valueType) {
             //at this qq
             case "at":
-            case "AT":
-            case "At":
                 if (value.equals("this")) {
-                    return MessageUtils.newChain(new At(event.getSender().getId()));
+                    return new At(event.getSender().getId());
                 } else if (Pattern.matches("\\d+", value)) {
                     Contact subject = event.getSubject();
                     if (subject instanceof Group) {
                         NormalMember member = ((Group) subject).get(Long.parseLong(value));
                         if (member != null) {
-                            return MessageUtils.newChain(new At(member.getId()));
+                            return new At(member.getId());
                         }
                     }
                 }
-                return MessageUtils.newChain().plus("未识别动态消息:"+"$"+valueType+"("+value+")");
+                return new PlainText("未识别动态消息:" + "$" + valueType + "(" + value + ")");
             case "message":
                 switch (value) {
                     case "prohibitString":
                     case "jyString":
                         for (Object o : object) {
                             if (o instanceof GroupProhibited) {
-                                return MessageUtils.newChain().plus(((GroupProhibited) o).getProhibitString());
+                                return new PlainText(((GroupProhibited) o).getProhibitString());
                             }
                         }
                     case "this":
                         return event.getMessage();
+                    default:
+                        return new PlainText("未识别动态消息:" + "$" + valueType + "(" + value + ")");
                 }
-
-
+            case "user":
+                switch (value) {
+                    case "name":
+                        return new PlainText(event.getSender().getNick());
+                    case "id":
+                        return new PlainText(event.getSender().getId() + "");
+                    case "avatar":
+                        return Contact.uploadImage(event.getSubject(), new URL(event.getSender().getAvatarUrl()).openConnection().getInputStream());
+                    case "title":
+                        return new PlainText(((NormalMember) event.getSender()).getSpecialTitle());
+                    default:
+                        return new PlainText("未识别动态消息:" + "$" + valueType + "(" + value + ")");
+                }
+            case "time":
+                switch (value) {
+                    case "now":
+                        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                        String format = simpleDateFormat.format(new Date());
+                        return new PlainText(format);
+                    default:
+                        String userFormat;
+                        try {
+                            SimpleDateFormat userSimpleDateFormat = new SimpleDateFormat(value);
+                            userFormat = userSimpleDateFormat.format(new Date());
+                        } catch (Exception e) {
+                            l.warning("动态消息-时间格式化出错!", e);
+                            return new PlainText("未识别动态消息:" + "$" + valueType + "(" + value + ")");
+                        }
+                        String trim = userFormat.replace("\\", "").trim();
+                        return new PlainText(trim);
+                }
         }
 
-        return MessageUtils.newChain().plus("未识别动态消息:"+"$"+valueType+"("+value+")");
+        return MessageUtils.newChain().plus("未识别动态消息:" + "$" + valueType + "(" + value + ")");
     }
 
 
