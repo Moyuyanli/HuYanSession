@@ -3,8 +3,8 @@ package cn.chahuyun.event;
 import cn.chahuyun.HuYanSession;
 import cn.chahuyun.data.StaticData;
 import cn.chahuyun.dialogue.Dialogue;
-import cn.chahuyun.entity.*;
-import cn.chahuyun.enums.Mate;
+import cn.chahuyun.entity.Power;
+import cn.chahuyun.entity.Session;
 import cn.chahuyun.files.ConfigData;
 import cn.chahuyun.manage.GroupManager;
 import cn.chahuyun.utils.*;
@@ -27,21 +27,21 @@ import java.util.regex.Pattern;
  * 说明
  *
  * @author Moyuyanli
- * @Description :群消息检测
+ * @Description :消息检测
  * @Date 2022/7/9 18:11
  */
-public class GroupMessageEventListener extends SimpleListenerHost {
+public class MessageEventListener extends SimpleListenerHost {
 
     private static final MiraiLogger l = HuYanSession.INSTANCE.getLogger();
 
     @Override
-    public void handleException(@NotNull CoroutineContext context, @NotNull Throwable exception){
+    public void handleException(@NotNull CoroutineContext context, @NotNull Throwable exception) {
         if (exception instanceof BotIsBeingMutedException) {
             l.warning("机器人已被禁言");
         }
 
         // 处理事件处理时抛出的异常
-        l.error("插件异常:",exception);
+        l.error("插件异常:", exception);
     }
 
 
@@ -61,7 +61,7 @@ public class GroupMessageEventListener extends SimpleListenerHost {
         }
 
         if (ConfigData.INSTANCE.getDebugSwitch()) {
-            l.info("MiraiCode-> "+code);
+            l.info("MiraiCode-> " + code);
         }
 
         //主人
@@ -72,7 +72,7 @@ public class GroupMessageEventListener extends SimpleListenerHost {
 
         Map<String, Power> powerMap = StaticData.getPowerMap(bot);
         if (ConfigData.INSTANCE.getDebugSwitch()) {
-            l.info("owner-"+owner+" power-"+powerMap.containsKey(powerString));
+            l.info("owner-" + owner + " power-" + powerMap.containsKey(powerString));
         }
         //是否是有权限的用户 true 是有权限的用户
         boolean powerUser = powerMap.containsKey(powerString);
@@ -203,7 +203,7 @@ public class GroupMessageEventListener extends SimpleListenerHost {
                 return;
             } else if (Pattern.matches(queryPowerPattern, code)) {
                 l.info("查询权限指令");
-                PowerUtil.inquirePower(event);
+                PowerUtil.queryPower(event);
                 return;
             }
         }
@@ -211,9 +211,9 @@ public class GroupMessageEventListener extends SimpleListenerHost {
         /*
         禁言正则
          */
-        String groupProhibitPattern = "\\[mirai:at:\\d+\\] \\d+[s|d|h|m]";
+        String groupProhibitPattern = "^\\[mirai:at:\\d+\\] \\d+[s|d|h|m]";
 
-        if (owner || power.isGroupManage() || power.isGroupJy() ) {
+        if (owner || power.isGroupManage() || power.isGroupJy()) {
             if (Pattern.matches(groupProhibitPattern, code)) {
                 l.info("禁言指令");
                 GroupManager.prohibit(event);
@@ -240,14 +240,17 @@ public class GroupMessageEventListener extends SimpleListenerHost {
          */
 
         //+wjc:body [3h|gr1|%(重设回复消息)|ch|jy|hmd3|0|全局]
-        String addProhibitedPattern = "\\+wjc\\\\?[:：]\\S+( +\\S+){0,6}|添加违禁词\\\\?[:：]\\S+( +\\S+){0,6}";
-
+        String addProhibitedPattern = "^\\+wjc\\\\?[:：]\\S+( +\\S+){0,6}|^添加违禁词\\\\?[:：]\\S+( +\\S+){0,6}";
+        String queryProhibitedPattern = "^\\wjc\\\\?[:：]|^查询违禁词";
 
         if (owner || power.isGroupManage() || power.isGroupWjc()) {
             if (Pattern.matches(addProhibitedPattern, code)) {
                 l.info("添加违禁词指令");
                 GroupProhibitedUtil.addProhibited(event);
                 return;
+            } else if (Pattern.matches(queryProhibitedPattern, code)) {
+                l.info("查询违禁词指令");
+                GroupProhibitedUtil.queryGroupProhibited(event);
             }
 
 
@@ -259,8 +262,9 @@ public class GroupMessageEventListener extends SimpleListenerHost {
 
     /**
      * 匹配会话消息
-     * @author Moyuyanli
+     *
      * @param event 消息事件
+     * @author Moyuyanli
      * @date 2022/7/13 21:30
      */
     private void isSessionMessage(MessageEvent event) {
@@ -270,7 +274,7 @@ public class GroupMessageEventListener extends SimpleListenerHost {
         Map<String, Session> sessionMap = StaticData.getSessionMap(bot);
         for (Map.Entry<String, Session> entry : sessionMap.entrySet()) {
             if (ConfigData.INSTANCE.getDebugSwitch()) {
-                l.info("Session-> "+entry.getKey());
+                l.info("Session-> " + entry.getKey());
             }
             //先做模糊查询判断存在不存在
             if (code.contains(entry.getKey())) {
@@ -279,12 +283,12 @@ public class GroupMessageEventListener extends SimpleListenerHost {
                 }
                 //存在则尝试匹配作用域
                 Session session = entry.getValue();
-                if (mateScope(event, session.getScopeInfo())) {
+                if (ShareUtils.mateScope(event, session.getScopeInfo())) {
                     if (ConfigData.INSTANCE.getDebugSwitch()) {
                         l.info("匹配作用域->存在");
                     }
                     //尝试匹配匹配方式
-                    if (mateMate(code, session.getMate(), session.getTerm())) {
+                    if (ShareUtils.mateMate(code, session.getMate(), session.getTerm())) {
                         if (ConfigData.INSTANCE.getDebugSwitch()) {
                             l.info("匹配匹配方式->成功");
                         }
@@ -293,73 +297,6 @@ public class GroupMessageEventListener extends SimpleListenerHost {
                 }
             }
         }
-    }
-
-    /**
-     * 匹配作用域
-     * @author Moyuyanli
-     * @param event 消息事件
-     * @param scope 作用域
-     * @date 2022/7/13 21:34
-     * @return boolean true 匹配成功! false 匹配失败！
-     */
-    private boolean mateScope(MessageEvent event, Scope scope) {
-        Bot bot = event.getBot();
-        long group = event.getSubject().getId();
-
-        Map<Integer, GroupList> groupListMap = StaticData.getGroupListMap(bot);
-
-        if (scope.getGroupInfo()) {
-            GroupList groupList = groupListMap.get(scope.getListId());
-            List<GroupInfo> groupNumbers = groupList.getGroups();
-            for (GroupInfo aLong : groupNumbers) {
-                if (group == aLong.getGroupId()) {
-                    return true;
-                }
-            }
-        } else if (scope.getGlobal()) {
-            return true;
-        } else {
-            long l = scope.getGroupNumber();
-            return l == group;
-        }
-        return false;
-    }
-
-    /**
-     * 匹配匹配方式
-     * @author Moyuyanli
-     * @param code 消息
-     * @param mate 匹配方式
-     * @param key 匹配内容
-     * @date 2022/7/13 21:40
-     * @return boolean true 匹配成功! false 匹配失败！
-     */
-    private boolean mateMate(String code, Mate mate,String key) {
-        switch (mate) {
-            case ACCURATE:
-                if (code.equals(key)) {
-                    return true;
-                }
-                break;
-            case VAGUE:
-                if (code.contains(key)) {
-                    return true;
-                }
-                break;
-            case START:
-                if (code.startsWith(key)) {
-                    return true;
-                }
-                break;
-            case END:
-                if (code.endsWith(key)) {
-                    return true;
-                }
-                break;
-            default:break;
-        }
-        return false;
     }
 
 

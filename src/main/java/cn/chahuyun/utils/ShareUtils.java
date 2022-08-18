@@ -1,7 +1,12 @@
 package cn.chahuyun.utils;
 
 import cn.chahuyun.HuYanSession;
+import cn.chahuyun.data.StaticData;
+import cn.chahuyun.entity.GroupInfo;
+import cn.chahuyun.entity.GroupList;
 import cn.chahuyun.entity.GroupProhibited;
+import cn.chahuyun.entity.Scope;
+import cn.chahuyun.enums.Mate;
 import cn.chahuyun.files.ConfigData;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.Contact;
@@ -18,6 +23,7 @@ import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -107,7 +113,7 @@ public class ShareUtils {
 
         if (map.containsKey(mark)) {
             Integer integer = map.get(mark);
-            l.info("integer-" + integer);
+            l.info("integer-"+integer);
             if (integer > 0) {
                 map.put(mark, integer - 1);
                 return true;
@@ -120,9 +126,9 @@ public class ShareUtils {
     /**
      * 解析消息中的变量，并识别为 [ MessageChain ]
      *
-     * @param event   消息事件
+     * @param event 消息事件
      * @param message 解析的消息
-     * @param object  附加的参数
+     * @param object 附加的参数
      * @return net.mamoe.mirai.message.data.MessageChain
      * @author Moyuyanli
      * @date 2022/8/17 14:23
@@ -147,7 +153,7 @@ public class ShareUtils {
             builder.append(MiraiCode.deserializeMiraiCode(message.substring(index, start)))
                     .append(messages);
             if (ConfigData.INSTANCE.getDebugSwitch()) {
-                l.info("动态消息-" + group + "->" + messages);
+                l.info("动态消息-" + group +"->"+messages);
             }
             index = end;
         }
@@ -160,10 +166,10 @@ public class ShareUtils {
     /**
      * 识别动态变量，并转换为消息 [ Message ]
      *
-     * @param event     消息事件
-     * @param value     变量值
+     * @param event 消息事件
+     * @param value 变量值
      * @param valueType 变量类型
-     * @param object    附加值
+     * @param object 附加值
      * @return net.mamoe.mirai.message.data.MessageChain
      * @author Moyuyanli
      * @date 2022/8/17 14:22
@@ -172,6 +178,8 @@ public class ShareUtils {
         switch (valueType) {
             //at this qq
             case "at":
+            case "AT":
+            case "At":
                 if (value.equals("this")) {
                     return new At(event.getSender().getId());
                 } else if (Pattern.matches("\\d+", value)) {
@@ -234,5 +242,75 @@ public class ShareUtils {
         return MessageUtils.newChain().plus("未识别动态消息:" + "$" + valueType + "(" + value + ")");
     }
 
+
+    /**
+     * 匹配作用域
+     *
+     * @param event 消息事件
+     * @param scope 作用域
+     * @return boolean true 匹配成功! false 匹配失败！
+     * @author Moyuyanli
+     * @date 2022/7/13 21:34
+     */
+    public static boolean mateScope(MessageEvent event, Scope scope) {
+        Bot bot = event.getBot();
+        long group = event.getSubject().getId();
+
+        Map<Integer, GroupList> groupListMap = StaticData.getGroupListMap(bot);
+
+        if (scope.getGroupInfo()) {
+            GroupList groupList = groupListMap.get(scope.getListId());
+            List<GroupInfo> groupNumbers = groupList.getGroups();
+            for (GroupInfo aLong : groupNumbers) {
+                if (group == aLong.getGroupId()) {
+                    return true;
+                }
+            }
+        } else if (scope.getGlobal()) {
+            return true;
+        } else {
+            long l = scope.getGroupNumber();
+            return l == group;
+        }
+        return false;
+    }
+
+    /**
+     * 匹配匹配方式
+     *
+     * @param code 消息
+     * @param mate 匹配方式
+     * @param key  匹配内容
+     * @return boolean true 匹配成功! false 匹配失败！
+     * @author Moyuyanli
+     * @date 2022/7/13 21:40
+     */
+    public static boolean mateMate(String code, Mate mate, String key) {
+        switch (mate) {
+            case ACCURATE:
+                if (code.equals(key)) {
+                    return true;
+                }
+                break;
+            case VAGUE:
+                if (code.contains(key)) {
+                    return true;
+                }
+                break;
+            case START:
+                if (code.startsWith(key)) {
+                    return true;
+                }
+                break;
+            case END:
+                if (code.endsWith(key)) {
+                    return true;
+                }
+                break;
+            default:
+                break;
+        }
+        return false;
+    }
 
 }

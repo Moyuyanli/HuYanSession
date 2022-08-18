@@ -26,10 +26,6 @@ public class GroupInfo {
     private long groupId;
 
 
-//    @ManyToOne(fetch = FetchType.LAZY,targetEntity = GroupList.class)
-//    @JoinColumn(name = "groupList_mark")
-    @Transient
-    private GroupList groupList;
 
     public GroupInfo() {
     }
@@ -86,7 +82,6 @@ public class GroupInfo {
     public String toString() {
         return "GroupNumber{" +
                 "id=" + id +
-//                ", mark='" + mark + '\'' +
                 ", bot=" + bot +
                 ", listId=" + listId +
                 ", groupId=" + groupId +

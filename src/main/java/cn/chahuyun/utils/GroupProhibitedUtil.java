@@ -15,7 +15,7 @@ import net.mamoe.mirai.event.EventPriority;
 import net.mamoe.mirai.event.GlobalEventChannel;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.code.MiraiCode;
-import net.mamoe.mirai.message.data.MessageUtils;
+import net.mamoe.mirai.message.data.*;
 import net.mamoe.mirai.utils.MiraiLogger;
 import org.hibernate.query.criteria.HibernateCriteriaBuilder;
 import org.hibernate.query.criteria.JpaCriteriaQuery;
@@ -80,6 +80,13 @@ public class GroupProhibitedUtil {
 
     }
 
+    /**
+     * 添加违禁词
+     *
+     * @param event 消息事件
+     * @author Moyuyanli
+     * @date 2022/8/17 19:12
+     */
     public static void addProhibited(MessageEvent event) throws ExecutionException, InterruptedException {
         //+wjc:body [3h|gr1|%(重设回复消息)|ch|jy|hmd3|0|全局|1|2|3|4]
         String code = event.getMessage().serializeToMiraiCode();
@@ -206,6 +213,51 @@ public class GroupProhibitedUtil {
     }
 
 
+    /**
+     * 查询违禁词
+     *
+     * @param event 消息事件
+     * @author Moyuyanli
+     * @date 2022/8/17 19:14
+     */
+    public static void queryGroupProhibited(MessageEvent event) {
+        //wjc：
+        String code = event.getMessage().serializeToMiraiCode();
+        Contact subject = event.getSubject();
+        Bot bot = event.getBot();
+        User user = event.getSender();
+
+        ForwardMessageBuilder builder = new ForwardMessageBuilder(subject);
+        builder.add(bot, new PlainText("以下是本群触发的所有违禁词↓"));
+
+        Map<Scope, List<GroupProhibited>> prohibitedMap = StaticData.getProhibitedMap(bot);
+        for (Scope scope : prohibitedMap.keySet()) {
+            if (ShareUtils.mateScope(event, scope)) {
+                List<GroupProhibited> prohibitedList = prohibitedMap.get(scope);
+                for (GroupProhibited prohibited : prohibitedList) {
+                    builder.add(bot, singleMessages -> {
+                        singleMessages.add(
+                                "违禁词编号:" + prohibited.getId() + "\n" +
+                                        "违禁词触发词:" + prohibited.getTrigger() + "\n" +
+                                        "违禁词回复词:" + prohibited.getReply() + "\n" +
+                                        "是否撤回:" + (prohibited.isWithdraw() ? "是" : "否") + "\n" +
+                                        "是否禁言:" + (prohibited.isProhibit() ? "是" : "否") + "\n" +
+                                        "是否累计黑名单次数:" + (prohibited.isAccumulate() ? "是" : "否")
+                        );
+                        if (prohibited.isAccumulate()) {
+                            singleMessages.add("\n次数上限:"+prohibited.getAccumulateNumber());
+                        }
+                        return null;
+                    });
+                }
+            }
+        }
+
+        subject.sendMessage(builder.build());
+
+    }
+
+
     //==========================================================================================
 
 
@@ -228,7 +280,7 @@ public class GroupProhibitedUtil {
             Scope scope = entity.getScopeInfo();
 
             if (!listMap.containsKey(bot)) {
-                listMap.put(bot, new HashMap<Scope,List<GroupProhibited>>() {{
+                listMap.put(bot, new HashMap<Scope, List<GroupProhibited>>() {{
                     put(scope, new ArrayList<>() {{
                         add(entity);
                     }});
@@ -236,7 +288,7 @@ public class GroupProhibitedUtil {
                 continue;
             }
             if (!listMap.get(bot).containsKey(scope)) {
-                listMap.get(bot).put(scope,new ArrayList<>(){{
+                listMap.get(bot).put(scope, new ArrayList<>() {{
                     add(entity);
                 }});
                 continue;
