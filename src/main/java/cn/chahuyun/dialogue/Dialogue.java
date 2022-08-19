@@ -8,14 +8,12 @@ import net.mamoe.mirai.contact.Contact;
 import net.mamoe.mirai.contact.MessageTooLargeException;
 import net.mamoe.mirai.event.events.EventCancelledException;
 import net.mamoe.mirai.event.events.MessageEvent;
-import net.mamoe.mirai.message.code.MiraiCode;
 import net.mamoe.mirai.message.data.Image;
 import net.mamoe.mirai.message.data.MessageChain;
 import net.mamoe.mirai.utils.MiraiLogger;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.Objects;
 
 /**
  * 说明
@@ -34,7 +32,7 @@ public class Dialogue {
     }
 
     private void test(MessageEvent event) {
-        Image image = null;
+        Image image ;
         try {
             image = Contact.uploadImage(event.getSubject(), new URL("").openStream());
         } catch (IOException e) {
@@ -46,9 +44,10 @@ public class Dialogue {
 
     /**
      * 会话消息
-     * @author Moyuyanli
-     * @param event 消息事件
+     *
+     * @param event   消息事件
      * @param session 会话消息
+     * @author Moyuyanli
      * @date 2022/7/13 21:46
      */
     public void dialogueSession(MessageEvent event, Session session) {

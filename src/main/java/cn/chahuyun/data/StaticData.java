@@ -1,9 +1,7 @@
 package cn.chahuyun.data;
 
-import cn.chahuyun.HuYanSession;
 import cn.chahuyun.entity.*;
 import net.mamoe.mirai.Bot;
-import net.mamoe.mirai.utils.MiraiLogger;
 
 import java.util.HashMap;
 import java.util.List;
@@ -17,9 +15,6 @@ import java.util.Map;
  * @Date 2022/7/10 14:56
  */
 public class StaticData {
-
-
-    private final static MiraiLogger l = HuYanSession.INSTANCE.getLogger();
 
 
     /**
@@ -96,7 +91,7 @@ public class StaticData {
         return new HashMap<>();
     }
 
-    public static void setProhibitedMap(Map<Long ,Map<Scope, List<GroupProhibited>>> prohibitedMap) {
+    public static void setProhibitedMap(Map<Long, Map<Scope, List<GroupProhibited>>> prohibitedMap) {
         StaticData.prohibitedMap = prohibitedMap;
     }
 

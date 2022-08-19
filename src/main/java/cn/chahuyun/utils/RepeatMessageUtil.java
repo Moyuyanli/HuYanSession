@@ -3,19 +3,17 @@ package cn.chahuyun.utils;
 import cn.chahuyun.HuYanSession;
 import cn.chahuyun.data.RepeatMessage;
 import cn.chahuyun.files.ConfigData;
-import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.Contact;
 import net.mamoe.mirai.contact.Group;
-import net.mamoe.mirai.contact.GroupSettings;
+import net.mamoe.mirai.contact.User;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.data.At;
-import net.mamoe.mirai.message.data.MessageChain;
 import net.mamoe.mirai.message.data.MessageUtils;
 import net.mamoe.mirai.message.data.PlainText;
 import net.mamoe.mirai.utils.MiraiLogger;
 
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -28,8 +26,19 @@ import java.util.Map;
 public class RepeatMessageUtil {
 
     private final static MiraiLogger l = HuYanSession.INSTANCE.getLogger();
-
-    private static final Map<Long, RepeatMessage> repeatMessageMap = new HashMap<>();
+    /**
+     * 重写linkedHashMp的清除实体机制
+     * 当上一条消息的时间
+     * 跟这条消息的时间
+     * 相差 config 设定的值时，就会自动清除已保证内存
+     */
+    private static final Map<String, RepeatMessage> repeatMessageMap = new LinkedHashMap<>(2000, 0.75f, true) {
+        @Override
+        protected boolean removeEldestEntry(Map.Entry<String, RepeatMessage> eldest) {
+            RepeatMessage value = eldest.getValue();
+            return new Date().getTime() - value.getOldDate().getTime() > 1000L * ConfigData.INSTANCE.getMatchingNumber();
+        }
+    };
 
     /**
      * 检测刷屏和机器人冲突
@@ -40,62 +49,43 @@ public class RepeatMessageUtil {
      * @date 2022/8/18 16:21
      */
     public static boolean isScreen(MessageEvent event) {
-        String code = event.getMessage().serializeToMiraiCode();
+        User sender = event.getSender();
         Contact subject = event.getSubject();
+        Group group = (Group) subject;
 
-        if (!(subject instanceof Group)) {
+        String mark = group.getId() + "." + sender.getId();
+        RepeatMessage repeatMessage;
+        if (repeatMessageMap.containsKey(mark)) {
+            repeatMessage = repeatMessageMap.get(mark);
+        } else {
+            repeatMessage = new RepeatMessage(new Date(), 1);
+            repeatMessageMap.put(mark, repeatMessage);
             return false;
         }
-        long group = subject.getId();
 
-        if (!repeatMessageMap.containsKey(group)) {
-            repeatMessageMap.put(group, new RepeatMessage(group, code, 1));
+        long timeThreshold = 1000L * ConfigData.INSTANCE.getMatchingNumber();
+
+        long time = new Date().getTime();
+        if (time - repeatMessage.getOldDate().getTime() > timeThreshold) {
+            return false;
         }
 
-        RepeatMessage repeatMessage = repeatMessageMap.get(group);
-        if (repeatMessage.getNumberOf() >= ConfigData.INSTANCE.getScreen()*10) {
-            event.intercept();
-            Bot bot = event.getBot();
-            bot.getGroup(group).getSettings().setMuteAll(true);
-            MessageChain messages = MessageUtils.newChain().plus(new PlainText("检测到机器人刷屏或人为冲突，阻止失败，请求援助"))
-                    .plus(new At(ConfigData.INSTANCE.getOwner()));
-            subject.sendMessage(messages);
+        repeatMessage.setNumberOf(repeatMessage.getNumberOf() + 1);
+
+        //刷屏判定次数
+        int screen = ConfigData.INSTANCE.getScreen();
+
+        if (repeatMessage.getNumberOf() == screen) {
+            subject.sendMessage("检测到刷屏,已阻止!");
+            group.get(sender.getId()).mute(60);
             return true;
-        }else if (repeatMessage.getNumberOf() >= ConfigData.INSTANCE.getScreen()*5) {
-            event.intercept();
-            Bot bot = event.getBot();
-            bot.getGroup(group).get(event.getSender().getId()).mute(7200);
-            subject.sendMessage("检测到机器人冲突，已阻止！");
+        } else if (repeatMessage.getNumberOf() == screen * 1.5) {
+            subject.sendMessage(MessageUtils.newChain().plus(new At(ConfigData.INSTANCE.getOwner()))
+                    .plus(new PlainText("有机器人冲突，已阻止!")));
+            group.get(sender.getId()).mute(1200);
             return true;
-        } else if (repeatMessage.getNumberOf() >= ConfigData.INSTANCE.getScreen()) {
-            event.intercept();
-            Bot bot = event.getBot();
-            bot.getGroup(group).get(event.getSender().getId()).mute(60);
-            subject.sendMessage("检测到刷屏，已阻止！");
         }
-        String key = repeatMessage.getKey();
-        HashSet<Character> thisMessageChars = new HashSet<Character>();
-        for (int i = 0; i < code.length(); i++) {
-            thisMessageChars.add(code.charAt(i));
-        }
-        int matchingNumber = 0;
-        for (Character aChar : thisMessageChars) {
-            if (key.contains(aChar.toString())) {
-                matchingNumber++;
-            }
-        }
-
-        if (matchingNumber>ConfigData.INSTANCE.getMatchingNumber()) {
-            repeatMessage.setNumberOf(repeatMessage.getNumberOf() + 1);
-        } else {
-            HashSet<Character> setChar = new HashSet<Character>();
-            for (int i = 0; i < code.length(); i++) {
-                setChar.add(code.charAt(i));
-            }
-            repeatMessage.setKey(setChar.toString());
-            repeatMessage.setNumberOf(1);
-        }
-        repeatMessageMap.put(group, repeatMessage);
+        repeatMessageMap.put(mark, repeatMessage);
         return false;
     }
 

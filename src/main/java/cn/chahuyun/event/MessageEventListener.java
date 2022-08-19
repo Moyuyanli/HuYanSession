@@ -10,10 +10,7 @@ import cn.chahuyun.manage.GroupManager;
 import cn.chahuyun.utils.*;
 import kotlin.coroutines.CoroutineContext;
 import net.mamoe.mirai.Bot;
-import net.mamoe.mirai.contact.BotIsBeingMutedException;
-import net.mamoe.mirai.contact.Contact;
-import net.mamoe.mirai.contact.MessageTooLargeException;
-import net.mamoe.mirai.contact.User;
+import net.mamoe.mirai.contact.*;
 import net.mamoe.mirai.event.EventHandler;
 import net.mamoe.mirai.event.SimpleListenerHost;
 import net.mamoe.mirai.event.events.EventCancelledException;
@@ -103,9 +100,13 @@ public class MessageEventListener extends SimpleListenerHost {
             }
         }
 
-
-        if (RepeatMessageUtil.isScreen(event)) {
-            return;
+        if (subject instanceof Group) {
+            Group group = (Group) subject;
+            if (group.getBotPermission() != MemberPermission.MEMBER) {
+                if (RepeatMessageUtil.isScreen(event)) {
+                    return;
+                }
+            }
         }
 
         /*

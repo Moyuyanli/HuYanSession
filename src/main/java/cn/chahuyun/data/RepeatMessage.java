@@ -1,5 +1,7 @@
 package cn.chahuyun.data;
 
+import java.util.Date;
+
 /**
  * RepeatMessage
  * 重复消息判断
@@ -9,32 +11,22 @@ package cn.chahuyun.data;
  */
 public class RepeatMessage {
 
-    private long groupId;
 
-    private String key;
+    private Date oldDate;
 
     private int numberOf;
 
-    public RepeatMessage(long groupId, String key, int numberOf) {
-        this.groupId = groupId;
-        this.key = key;
+    public RepeatMessage(Date oldDate, int numberOf) {
+        this.oldDate = oldDate;
         this.numberOf = numberOf;
     }
 
-    public long getGroupId() {
-        return groupId;
+    public Date getOldDate() {
+        return oldDate;
     }
 
-    public void setGroupId(long groupId) {
-        this.groupId = groupId;
-    }
-
-    public String getKey() {
-        return key;
-    }
-
-    public void setKey(String key) {
-        this.key = key;
+    public void setOldDate(Date oldDate) {
+        this.oldDate = oldDate;
     }
 
     public int getNumberOf() {

@@ -50,9 +50,9 @@ public class GroupProhibitedUtil {
      * @date 2022/8/16 15:20
      */
     public static void init(boolean type) {
-        List<GroupProhibited> groupProhibiteds = null;
+        List<GroupProhibited> groupProhibits = null;
         try {
-            groupProhibiteds = HibernateUtil.factory.fromTransaction(session -> {
+            groupProhibits = HibernateUtil.factory.fromTransaction(session -> {
                 HibernateCriteriaBuilder builder = session.getCriteriaBuilder();
                 JpaCriteriaQuery<GroupProhibited> query = builder.createQuery(GroupProhibited.class);
                 JpaRoot<GroupProhibited> from = query.from(GroupProhibited.class);
@@ -61,6 +61,7 @@ public class GroupProhibitedUtil {
                 for (GroupProhibited groupProhibited : list) {
                     if (groupProhibited.getScopeInfo() == null) {
                         Scope scope = ScopeUtil.getScope(groupProhibited.getScopeMark());
+                        assert scope != null;
                         groupProhibited.setScopeInfo(scope);
                     }
                 }
@@ -70,7 +71,7 @@ public class GroupProhibitedUtil {
             l.error("出错啦~", e);
         }
 
-        StaticData.setProhibitedMap(parseList(groupProhibiteds));
+        StaticData.setProhibitedMap(parseList(groupProhibits));
 
         if (ConfigData.INSTANCE.getDebugSwitch() && type) {
             l.info("数据库违禁词信息初始化成功!");
@@ -145,7 +146,7 @@ public class GroupProhibitedUtil {
                         if (Pattern.matches("\\d+[smhd]", string)) {
                             int timeParam = Integer.parseInt(string.substring(0, string.length() - 1));
                             String type = string.substring(string.length() - 1);
-                            int time = 0;
+                            int time;
                             String messages = "";
                             switch (type) {
                                 case "s":
@@ -226,10 +227,8 @@ public class GroupProhibitedUtil {
      */
     public static void queryGroupProhibited(MessageEvent event) {
         //wjc：
-        String code = event.getMessage().serializeToMiraiCode();
         Contact subject = event.getSubject();
         Bot bot = event.getBot();
-        User user = event.getSender();
 
         ForwardMessageBuilder builder = new ForwardMessageBuilder(subject);
         builder.add(bot, new PlainText("以下是本群触发的所有违禁词↓"));
@@ -272,7 +271,6 @@ public class GroupProhibitedUtil {
         String code = event.getMessage().serializeToMiraiCode();
         Contact subject = event.getSubject();
         Bot bot = event.getBot();
-        User user = event.getSender();
 
         int key = Integer.parseInt(code.split("[:：]")[1]);
         Map<Scope, List<GroupProhibited>> prohibitedMap = StaticData.getProhibitedMap(bot);
@@ -336,7 +334,7 @@ public class GroupProhibitedUtil {
             Scope scope = entity.getScopeInfo();
 
             if (!listMap.containsKey(bot)) {
-                listMap.put(bot, new HashMap<Scope, List<GroupProhibited>>() {{
+                listMap.put(bot, new HashMap<>() {{
                     put(scope, new ArrayList<>() {{
                         add(entity);
                     }});
