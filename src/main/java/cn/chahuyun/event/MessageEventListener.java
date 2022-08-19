@@ -1,11 +1,11 @@
 package cn.chahuyun.event;
 
 import cn.chahuyun.HuYanSession;
+import cn.chahuyun.config.ConfigData;
 import cn.chahuyun.data.StaticData;
 import cn.chahuyun.dialogue.Dialogue;
 import cn.chahuyun.entity.Power;
 import cn.chahuyun.entity.Session;
-import cn.chahuyun.config.ConfigData;
 import cn.chahuyun.manage.GroupManager;
 import cn.chahuyun.utils.*;
 import kotlin.coroutines.CoroutineContext;
@@ -35,14 +35,14 @@ public class MessageEventListener extends SimpleListenerHost {
 
     @Override
     public void handleException(@NotNull CoroutineContext context, @NotNull Throwable exception) {
-        if (exception instanceof EventCancelledException ) {
-            l.error("发送消息被取消:" ,exception);
-        } else if (exception instanceof BotIsBeingMutedException ) {
-            l.error("你的机器人被禁言:" ,exception);
-        } else if (exception instanceof MessageTooLargeException ) {
-            l.error("发送消息过长:" ,exception);
-        } else if (exception instanceof IllegalArgumentException ) {
-            l.error("发送消息为空:" ,exception);
+        if (exception instanceof EventCancelledException) {
+            l.error("发送消息被取消:", exception);
+        } else if (exception instanceof BotIsBeingMutedException) {
+            l.error("你的机器人被禁言:", exception);
+        } else if (exception instanceof MessageTooLargeException) {
+            l.error("发送消息过长:", exception);
+        } else if (exception instanceof IllegalArgumentException) {
+            l.error("发送消息为空:", exception);
         }
 
         // 处理事件处理时抛出的异常
@@ -101,11 +101,8 @@ public class MessageEventListener extends SimpleListenerHost {
         }
 
         if (subject instanceof Group) {
-            Group group = (Group) subject;
-            if (group.getBotPermission() != MemberPermission.MEMBER) {
-                if (RepeatMessageUtil.isScreen(event)) {
-                    return;
-                }
+            if (RepeatMessageUtil.isScreen(event)) {
+                return;
             }
         }
 

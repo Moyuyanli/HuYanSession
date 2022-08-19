@@ -47,4 +47,13 @@ public class RepeatMessage {
     public void setReplyTo(boolean replyTo) {
         this.replyTo = replyTo;
     }
+
+    @Override
+    public String toString() {
+        return "RepeatMessage{" +
+                "上一次发言时间=" + oldDate +
+                ", 触发次数=" + numberOf +
+                ", 是否回复消息=" + replyTo +
+                '}';
+    }
 }

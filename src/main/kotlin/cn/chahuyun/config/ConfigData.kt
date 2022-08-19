@@ -30,7 +30,7 @@ object ConfigData : AutoSavePluginConfig("config") {
     val debugSwitch:Boolean by value()
 
     @ValueDescription("刷屏消息的时间间隔(单位:秒)")
-    val matchingNumber: Int by value(2)
+    val matchingNumber: Int by value(3)
     @ValueDescription("最大刷屏次数")
     val screen:Int by value(10)
 

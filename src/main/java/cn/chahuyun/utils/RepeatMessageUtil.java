@@ -5,6 +5,7 @@ import cn.chahuyun.config.ConfigData;
 import cn.chahuyun.data.RepeatMessage;
 import net.mamoe.mirai.contact.Contact;
 import net.mamoe.mirai.contact.Group;
+import net.mamoe.mirai.contact.MemberPermission;
 import net.mamoe.mirai.contact.User;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.data.At;
@@ -15,6 +16,10 @@ import net.mamoe.mirai.utils.MiraiLogger;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Timer;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * RepeatMessage
@@ -70,25 +75,45 @@ public class RepeatMessageUtil {
             return false;
         }
 
+        repeatMessage.setOldDate(new Date());
         repeatMessage.setNumberOf(repeatMessage.getNumberOf() + 1);
 
         //刷屏判定次数
         int screen = ConfigData.INSTANCE.getScreen();
 
-        if (repeatMessage.getNumberOf() > screen * 1.5) {
-            if (repeatMessage.isReplyTo()) {
-                subject.sendMessage(MessageUtils.newChain().plus(new At(ConfigData.INSTANCE.getOwner()))
-                        .plus(new PlainText("有机器人冲突，已阻止!")));
+        //突破3次
+        if (repeatMessage.getNumberOf() >= screen + 3) {
+            group.getSettings().setMuteAll(true);
+            subject.sendMessage(MessageUtils.newChain().plus(new At(ConfigData.INSTANCE.getOwner()))
+                    .plus(new PlainText("检测到有机器人冲突，已开启全体禁言，5秒后将会自动解除！")));
+
+            //延时任务解除禁言
+            ScheduledExecutorService botScheduledExecutorService = new ScheduledThreadPoolExecutor(5);
+            botScheduledExecutorService.schedule(() -> {
+                subject.sendMessage(MessageUtils.newChain()
+                        .plus(new At(ConfigData.INSTANCE.getOwner()))
+                        .plus(new PlainText("机器人冲突已处理，全体禁言解除！")));
+                group.getSettings().setMuteAll(false);
                 repeatMessage.setReplyTo(true);
-            }
-            group.get(sender.getId()).mute(1200);
+            }, 5, TimeUnit.SECONDS);//线程实现，2、延迟时间 3.单位
+
+            repeatMessageMap.put(mark, repeatMessage);
             return true;
         } else if (repeatMessage.getNumberOf() >= screen) {
-            if (repeatMessage.isReplyTo()) {
+            if (!repeatMessage.isReplyTo()) {
                 subject.sendMessage("检测到刷屏,已阻止!");
                 repeatMessage.setReplyTo(true);
             }
-            group.get(sender.getId()).mute(60);
+            if (group.getBotPermission() == MemberPermission.MEMBER) {
+                return true;
+            }
+            try {
+                group.get(sender.getId()).mute(60);
+            } catch (Exception e) {
+                l.error("刷屏处理失败!");
+                subject.sendMessage("检测到刷屏,阻止失败!");
+            }
+            repeatMessageMap.put(mark, repeatMessage);
             return true;
         }
         repeatMessageMap.put(mark, repeatMessage);
