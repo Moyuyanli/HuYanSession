@@ -245,23 +245,28 @@ public class GroupManager {
                 member.mute(groupProhibited.getProhibitTime());
             }
         }
-        //回复消息
-        MessageChain messages = ShareUtils.parseMessageParameter(event, groupProhibited.getReply(), groupProhibited);
-        if (messages != null) {
-            subject.sendMessage(messages);
-        }
 
         if (groupProhibited.isAccumulate()) {
             BlackHouse blackHouse = BlackHouseUtil.getBlackHouse(bot, sender.getId());
             if (blackHouse == null) {
-                blackHouse = new BlackHouse(bot.getId(), sender.getId(), groupProhibited.getId(), 0);
+                blackHouse = new BlackHouse(bot.getId(), sender.getId(), groupProhibited.getId(), 1);
+            } else {
+                blackHouse.setNumber(blackHouse.getNumber()+1);
             }
             if (blackHouse.getNumber() >= groupProhibited.getAccumulateNumber()) {
+                subject.sendMessage(sender.getNick() + "已经到达违禁词触发次数，将被踢出本群!");
                 bot.getGroup(subject.getId()).get(sender.getId()).kick(sender.getNick()+"已经到达违禁词触发次数，将被踢出本群！");
                 return true;
             }
-            blackHouse.setNumber(blackHouse.getNumber()+1);
+            subject.sendMessage(MessageUtils.newChain()
+                    .plus(new At(sender.getId()))
+                    .plus(new PlainText("你已经违规 " + blackHouse.getNumber() + " 次，当违规 " + groupProhibited.getAccumulateNumber() + " 次就会被踢出!")));
             BlackHouseUtil.saveOrUpdate(blackHouse);
+        }
+        //回复消息
+        MessageChain messages = ShareUtils.parseMessageParameter(event, groupProhibited.getReply(), groupProhibited);
+        if (messages != null) {
+            subject.sendMessage(messages);
         }
 
         return true;

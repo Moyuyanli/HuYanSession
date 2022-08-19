@@ -130,8 +130,9 @@ public class SessionUtil {
         }
         //判断是否存在动态消息
         boolean dynamic = false;
-        String dynamicPattern = "\\$\\w+\\(*?\\)";
-        if (Pattern.matches(dynamicPattern, key) || Pattern.matches(dynamicPattern, value)) {
+        String dynamicPattern = "\\$\\w+\\(\\S+?\\)";
+        Pattern compile = Pattern.compile(dynamicPattern);
+        if (compile.matcher(key).find() || compile.matcher(value).find()) {
             dynamic = true;
         }
 
@@ -252,7 +253,7 @@ public class SessionUtil {
         User user = event.getSender();
         Bot bot = event.getBot();
 
-        subject.sendMessage("开始添加对话，请输入触发类容:");
+        subject.sendMessage("开始添加对话，请输入触发内容:");
         event.intercept();
         MessageEvent nextMessageEventFromUser = getNextMessageEventFromUser(user);
         if (ShareUtils.isQuit(nextMessageEventFromUser)) {
@@ -326,8 +327,9 @@ public class SessionUtil {
         }
         //判断是否存在动态消息
         boolean dynamic = false;
-        String dynamicPattern = "\\$\\w+\\(*?\\)";
-        if (Pattern.matches(dynamicPattern, key) || Pattern.matches(dynamicPattern, value)) {
+        String dynamicPattern = "\\$\\w+\\(\\S+?\\)";
+        Pattern compile = Pattern.compile(dynamicPattern);
+        if (compile.matcher(key).find() || compile.matcher(value).find()) {
             dynamic = true;
         }
         //判断消息是否是转发消息或音频消息

@@ -176,7 +176,7 @@ public class GroupProhibitedUtil {
                             scope.setListId(Integer.parseInt(string.substring(1)));
                             groupProhibited.setScopeInfo(scope);
                         } else if (Pattern.matches("hmd\\d+", string)) {
-                            int number = Integer.parseInt(string.substring(2));
+                            int number = Integer.parseInt(string.substring(3));
                             groupProhibited.setAccumulate(true);
                             groupProhibited.setAccumulateNumber(number);
                         }
@@ -240,7 +240,12 @@ public class GroupProhibitedUtil {
                 List<GroupProhibited> prohibitedList = prohibitedMap.get(scope);
                 for (GroupProhibited prohibited : prohibitedList) {
                     builder.add(bot, singleMessages -> {
-                        singleMessages.add("违禁词编号:" + prohibited.getId() + "\n" + "违禁词触发词:" + prohibited.getTrigger() + "\n" + "违禁词回复词:" + prohibited.getReply() + "\n" + "是否撤回:" + (prohibited.isWithdraw() ? "是" : "否") + "\n" + "是否禁言:" + (prohibited.isProhibit() ? "是" : "否") + "\n" + "是否累计黑名单次数:" + (prohibited.isAccumulate() ? "是" : "否"));
+                        singleMessages.add("违禁词编号:" + prohibited.getId() + "\n" +
+                                "违禁词触发词:" + prohibited.getTrigger() + "\n" +
+                                "违禁词回复词:" + prohibited.getReply() + "\n" +
+                                "是否撤回:" + (prohibited.isWithdraw() ? "是" : "否") + "\n" +
+                                "是否禁言:" + (prohibited.isProhibit() ? "是" : "否") + "\n" +
+                                "是否累计黑名单次数:" + (prohibited.isAccumulate() ? "是" : "否"));
                         if (prohibited.isAccumulate()) {
                             singleMessages.add("\n次数上限:" + prohibited.getAccumulateNumber());
                         }

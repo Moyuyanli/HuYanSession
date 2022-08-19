@@ -39,6 +39,9 @@ public class BlackHouseUtil {
                 query.where(builder.equal(from.get("qq"), qq));
                 return session.createQuery(query).list().get(0);
             });
+        } catch (IndexOutOfBoundsException e) {
+            l.warning("暂时没有小黑屋成员!");
+            return null;
         } catch (Exception e) {
             l.error("小黑屋查询失败~", e);
         }
