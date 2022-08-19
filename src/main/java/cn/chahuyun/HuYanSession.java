@@ -27,7 +27,7 @@ public final class HuYanSession extends JavaPlugin {
     private EventChannel channel;
 
     private HuYanSession() {
-        super(new JvmPluginDescriptionBuilder("cn.chahuyun.HuYanSession", "2.0.0")
+        super(new JvmPluginDescriptionBuilder("cn.chahuyun.HuYanSession", "2.0")
                 .name("HuYanSession")
                 .info("壶言会话-服务于你的群聊!")
                 .author("Moyuyanli")
@@ -38,7 +38,7 @@ public final class HuYanSession extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        getLogger().info("HuYanSession2 当前版本: 2.0.0");
+        getLogger().info("HuYanSession2 当前版本: 2.0.0-alpha");
 
         getLogger().info("===================HuYanSession2===================");
         MiraiHibernateConfiguration configuration = new MiraiHibernateConfiguration(this);

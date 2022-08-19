@@ -2,9 +2,11 @@ package cn.chahuyun.manage;
 
 import cn.chahuyun.HuYanSession;
 import cn.chahuyun.data.StaticData;
+import cn.chahuyun.entity.BlackHouse;
 import cn.chahuyun.entity.GroupProhibited;
 import cn.chahuyun.entity.Scope;
 import cn.chahuyun.enums.Mate;
+import cn.chahuyun.utils.BlackHouseUtil;
 import cn.chahuyun.utils.ShareUtils;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.*;
@@ -250,7 +252,16 @@ public class GroupManager {
         }
 
         if (groupProhibited.isAccumulate()) {
-
+            BlackHouse blackHouse = BlackHouseUtil.getBlackHouse(bot, sender.getId());
+            if (blackHouse == null) {
+                blackHouse = new BlackHouse(bot.getId(), sender.getId(), groupProhibited.getId(), 0);
+            }
+            if (blackHouse.getNumber() >= groupProhibited.getAccumulateNumber()) {
+                bot.getGroup(subject.getId()).get(sender.getId()).kick(sender.getNick()+"已经到达违禁词触发次数，将被踢出本群！");
+                return true;
+            }
+            blackHouse.setNumber(blackHouse.getNumber()+1);
+            BlackHouseUtil.saveOrUpdate(blackHouse);
         }
 
         return true;
