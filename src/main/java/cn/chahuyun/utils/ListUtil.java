@@ -4,7 +4,7 @@ import cn.chahuyun.HuYanSession;
 import cn.chahuyun.data.StaticData;
 import cn.chahuyun.entity.GroupInfo;
 import cn.chahuyun.entity.GroupList;
-import cn.chahuyun.files.ConfigData;
+import cn.chahuyun.config.ConfigData;
 import jakarta.persistence.PersistenceException;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.Contact;

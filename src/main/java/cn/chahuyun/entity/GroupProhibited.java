@@ -7,7 +7,7 @@ import jakarta.persistence.*;
  * GroupProhibited
  * 群违禁词
  *
- * @author Zhangjiaxing
+ * @author Moyuyanli
  * @date 2022/8/16 10:33
  */
 @Entity

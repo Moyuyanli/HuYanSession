@@ -1,12 +1,10 @@
-package cn.chahuyun.files
+package cn.chahuyun.config
 
 
 import net.mamoe.mirai.console.data.AutoSavePluginConfig
 import net.mamoe.mirai.console.data.ValueDescription
 import net.mamoe.mirai.console.data.value
 import net.mamoe.mirai.message.data.Message
-import net.mamoe.mirai.message.data.MessageChain
-import net.mamoe.mirai.message.data.MessageChainBuilder
 import net.mamoe.mirai.message.data.PlainText
 
 
@@ -45,7 +43,7 @@ object ConfigData : AutoSavePluginConfig("config") {
 
     /**
      * 添加检测群
-     * @author zhangjiaxing
+     * @author Moyuyanli
      * @param operate true为+ f -
      * @param group 群号
      * @date 2022/6/30 19:23

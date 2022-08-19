@@ -14,7 +14,7 @@ import java.util.List;
 /**
  * ScopeUtil
  *
- * @author Zhangjiaxing
+ * @author Moyuyanli
  * @description 作用域Util
  * @date 2022/7/11 12:16
  */

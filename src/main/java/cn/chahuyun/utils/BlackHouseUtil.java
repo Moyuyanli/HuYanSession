@@ -12,7 +12,7 @@ import org.hibernate.query.criteria.JpaRoot;
  * BlackHouseUtil
  * 小黑屋工具类
  *
- * @author Zhangjiaxing
+ * @author Moyuyanli
  * @date 2022/8/19 10:48
  */
 public class BlackHouseUtil {

@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
  * GroupManager
  * 群管理类
  *
- * @author Zhangjiaxing
+ * @author Moyuyanli
  * @date 2022/8/15 12:52
  */
 public class GroupManager {
@@ -38,7 +38,7 @@ public class GroupManager {
     /**
      * @param event 消息事件
      * @description 解禁言
-     * @author zhangjiaxing
+     * @author Moyuyanli
      * @date 2022/6/21 16:44
      */
     public static void prohibit(MessageEvent event) {

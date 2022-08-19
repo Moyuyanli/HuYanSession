@@ -3,7 +3,7 @@ package cn.chahuyun.utils;
 import cn.chahuyun.HuYanSession;
 import cn.chahuyun.data.StaticData;
 import cn.chahuyun.entity.Power;
-import cn.chahuyun.files.ConfigData;
+import cn.chahuyun.config.ConfigData;
 import kotlin.coroutines.EmptyCoroutineContext;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.*;

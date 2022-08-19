@@ -12,7 +12,7 @@ import java.util.Arrays;
 /**
  * BeanUtil
  *
- * @author Zhangjiaxing
+ * @author Moyuyanli
  * @description 实体对象的操作工具类
  * @date 2022/7/12 9:30
  */

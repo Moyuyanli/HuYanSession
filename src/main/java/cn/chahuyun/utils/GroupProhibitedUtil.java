@@ -4,7 +4,7 @@ import cn.chahuyun.HuYanSession;
 import cn.chahuyun.data.StaticData;
 import cn.chahuyun.entity.GroupProhibited;
 import cn.chahuyun.entity.Scope;
-import cn.chahuyun.files.ConfigData;
+import cn.chahuyun.config.ConfigData;
 import kotlin.coroutines.EmptyCoroutineContext;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.Contact;
@@ -35,7 +35,7 @@ import java.util.regex.Pattern;
  * GroupProhibitedUtil
  * 违禁词工具
  *
- * @author Zhangjiaxing
+ * @author Moyuyanli
  * @date 2022/8/16 14:19
  */
 public class GroupProhibitedUtil {

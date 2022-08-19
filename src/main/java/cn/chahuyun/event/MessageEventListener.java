@@ -5,7 +5,7 @@ import cn.chahuyun.data.StaticData;
 import cn.chahuyun.dialogue.Dialogue;
 import cn.chahuyun.entity.Power;
 import cn.chahuyun.entity.Session;
-import cn.chahuyun.files.ConfigData;
+import cn.chahuyun.config.ConfigData;
 import cn.chahuyun.manage.GroupManager;
 import cn.chahuyun.utils.*;
 import kotlin.coroutines.CoroutineContext;

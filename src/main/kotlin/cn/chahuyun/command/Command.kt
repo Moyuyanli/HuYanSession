@@ -1,7 +1,7 @@
 package cn.chahuyun.command
 
 import cn.chahuyun.HuYanSession
-import cn.chahuyun.files.ConfigData
+import cn.chahuyun.config.ConfigData
 import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.console.command.CompositeCommand
 

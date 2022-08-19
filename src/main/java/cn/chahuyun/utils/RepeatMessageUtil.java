@@ -1,8 +1,8 @@
 package cn.chahuyun.utils;
 
 import cn.chahuyun.HuYanSession;
+import cn.chahuyun.config.ConfigData;
 import cn.chahuyun.data.RepeatMessage;
-import cn.chahuyun.files.ConfigData;
 import net.mamoe.mirai.contact.Contact;
 import net.mamoe.mirai.contact.Group;
 import net.mamoe.mirai.contact.User;
@@ -20,7 +20,7 @@ import java.util.Map;
  * RepeatMessage
  * 重复消息判断
  *
- * @author Zhangjiaxing
+ * @author Moyuyanli
  * @date 2022/8/18 16:03
  */
 public class RepeatMessageUtil {
@@ -75,14 +75,20 @@ public class RepeatMessageUtil {
         //刷屏判定次数
         int screen = ConfigData.INSTANCE.getScreen();
 
-        if (repeatMessage.getNumberOf() == screen) {
-            subject.sendMessage("检测到刷屏,已阻止!");
-            group.get(sender.getId()).mute(60);
-            return true;
-        } else if (repeatMessage.getNumberOf() == screen * 1.5) {
-            subject.sendMessage(MessageUtils.newChain().plus(new At(ConfigData.INSTANCE.getOwner()))
-                    .plus(new PlainText("有机器人冲突，已阻止!")));
+        if (repeatMessage.getNumberOf() > screen * 1.5) {
+            if (repeatMessage.isReplyTo()) {
+                subject.sendMessage(MessageUtils.newChain().plus(new At(ConfigData.INSTANCE.getOwner()))
+                        .plus(new PlainText("有机器人冲突，已阻止!")));
+                repeatMessage.setReplyTo(true);
+            }
             group.get(sender.getId()).mute(1200);
+            return true;
+        } else if (repeatMessage.getNumberOf() >= screen) {
+            if (repeatMessage.isReplyTo()) {
+                subject.sendMessage("检测到刷屏,已阻止!");
+                repeatMessage.setReplyTo(true);
+            }
+            group.get(sender.getId()).mute(60);
             return true;
         }
         repeatMessageMap.put(mark, repeatMessage);

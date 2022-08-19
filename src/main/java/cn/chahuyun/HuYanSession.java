@@ -2,7 +2,7 @@ package cn.chahuyun;
 
 import cn.chahuyun.command.Command;
 import cn.chahuyun.event.MessageEventListener;
-import cn.chahuyun.files.ConfigData;
+import cn.chahuyun.config.ConfigData;
 import cn.chahuyun.utils.*;
 import net.mamoe.mirai.console.command.CommandManager;
 import net.mamoe.mirai.console.plugin.jvm.JavaPlugin;

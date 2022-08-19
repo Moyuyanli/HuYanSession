@@ -6,7 +6,7 @@ import java.util.Date;
  * RepeatMessage
  * 重复消息判断
  *
- * @author Zhangjiaxing
+ * @author Moyuyanli
  * @date 2022/8/18 16:03
  */
 public class RepeatMessage {
@@ -16,9 +16,12 @@ public class RepeatMessage {
 
     private int numberOf;
 
+    private boolean replyTo;
+
     public RepeatMessage(Date oldDate, int numberOf) {
         this.oldDate = oldDate;
         this.numberOf = numberOf;
+        this.replyTo = false;
     }
 
     public Date getOldDate() {
@@ -35,5 +38,13 @@ public class RepeatMessage {
 
     public void setNumberOf(int numberOf) {
         this.numberOf = numberOf;
+    }
+
+    public boolean isReplyTo() {
+        return replyTo;
+    }
+
+    public void setReplyTo(boolean replyTo) {
+        this.replyTo = replyTo;
     }
 }

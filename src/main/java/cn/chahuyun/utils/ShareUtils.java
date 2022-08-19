@@ -7,7 +7,7 @@ import cn.chahuyun.entity.GroupList;
 import cn.chahuyun.entity.GroupProhibited;
 import cn.chahuyun.entity.Scope;
 import cn.chahuyun.enums.Mate;
-import cn.chahuyun.files.ConfigData;
+import cn.chahuyun.config.ConfigData;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.Contact;
 import net.mamoe.mirai.contact.Group;
@@ -31,7 +31,7 @@ import java.util.regex.Pattern;
 /**
  * ShareUtils
  *
- * @author Zhangjiaxing
+ * @author Moyuyanli
  * @description 公共工具包
  * @date 2022/7/29 12:40
  */
