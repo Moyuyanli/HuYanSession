@@ -131,6 +131,7 @@ public class GroupProhibitedUtil {
                         break;
                     case "0":
                     case "全局":
+                        scope.setScopeName("全局");
                         scope.setGlobal(true);
                         groupProhibited.setScopeInfo(scope);
                         break;
@@ -170,6 +171,7 @@ public class GroupProhibitedUtil {
                             groupProhibited.setProhibitTime(time);
                             groupProhibited.setProhibitString(messages);
                         } else if (Pattern.matches("gr\\d+", string)) {
+                            scope.setScopeName("群组"+string.substring(1));
                             scope.setGroupInfo(true);
                             scope.setListId(Integer.parseInt(string.substring(1)));
                             groupProhibited.setScopeInfo(scope);

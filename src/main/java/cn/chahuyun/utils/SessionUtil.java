@@ -16,10 +16,7 @@ import net.mamoe.mirai.event.EventPriority;
 import net.mamoe.mirai.event.GlobalEventChannel;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.code.MiraiCode;
-import net.mamoe.mirai.message.data.ForwardMessage;
-import net.mamoe.mirai.message.data.ForwardMessageBuilder;
-import net.mamoe.mirai.message.data.MessageChain;
-import net.mamoe.mirai.message.data.MessageChainBuilder;
+import net.mamoe.mirai.message.data.*;
 import net.mamoe.mirai.utils.MiraiLogger;
 import org.hibernate.query.criteria.HibernateCriteriaBuilder;
 import org.hibernate.query.criteria.JpaCriteriaQuery;
@@ -65,7 +62,7 @@ public class SessionUtil {
                 return session.createQuery(query).list();
             });
         } catch (Exception e) {
-            l.error("会话数据加载失败:" , e);
+            l.error("会话数据加载失败:", e);
             return;
         }
 
@@ -89,7 +86,7 @@ public class SessionUtil {
                 }
             }
             StaticData.setSessionMap(sessionAll);
-        }else {
+        } else {
             StaticData.setSessionMap(sessionAll);
         }
         if (ConfigData.INSTANCE.getDebugSwitch() && type) {
@@ -118,7 +115,6 @@ public class SessionUtil {
 
         //解析消息，获取参数
         String[] split = code.split("\\s+");
-        int type = 0;
         String key = split[1];
         String value = split[2];
         //验证是否存在
@@ -127,9 +123,16 @@ public class SessionUtil {
             return;
         }
         //判断消息是否含有图片
+        int type = 0;
         String typePattern = "\\[mirai:image\\S+]";
         if (Pattern.matches(typePattern, key) || Pattern.matches(typePattern, value)) {
             type = 1;
+        }
+        //判断是否存在动态消息
+        boolean dynamic = false;
+        String dynamicPattern = "\\$\\w+\\(*?\\)";
+        if (Pattern.matches(dynamicPattern, key) || Pattern.matches(dynamicPattern, value)) {
+            dynamic = true;
         }
 
         Mate mate = Mate.ACCURATE;
@@ -179,7 +182,7 @@ public class SessionUtil {
             return;
         }
         //保存
-        saveSession(subject, bot, key, value, mate, scope, type);
+        saveSession(subject, bot, key, value, mate, scope, type, dynamic);
     }
 
     /**
@@ -263,7 +266,8 @@ public class SessionUtil {
         if (ShareUtils.isQuit(nextMessageEventFromUser)) {
             return;
         }
-        String value = MessageChain.serializeToJsonString(nextMessageEventFromUser.getMessage());
+        MessageChain valueChain = nextMessageEventFromUser.getMessage();
+
 
         subject.sendMessage("请发送参数(一次发送，多参数中间隔开):");
         nextMessageEventFromUser = getNextMessageEventFromUser(user);
@@ -313,9 +317,26 @@ public class SessionUtil {
             return;
         }
 
-
-        int type = 5;
-        saveSession(subject, bot, key, value, mate, scope, type);
+        String value = valueChain.serializeToMiraiCode();
+        //判断消息是否含有图片
+        int type = 0;
+        String typePattern = "\\[mirai:image\\S+]";
+        if (Pattern.matches(typePattern, key) || Pattern.matches(typePattern, value)) {
+            type = 1;
+        }
+        //判断是否存在动态消息
+        boolean dynamic = false;
+        String dynamicPattern = "\\$\\w+\\(*?\\)";
+        if (Pattern.matches(dynamicPattern, key) || Pattern.matches(dynamicPattern, value)) {
+            dynamic = true;
+        }
+        //判断消息是否是转发消息或音频消息
+        if (valueChain.contains(ForwardMessage.Key) || valueChain.contains(Audio.Key)) {
+            type = 5;
+            dynamic = false;
+            value = MessageChain.serializeToJsonString(valueChain);
+        }
+        saveSession(subject, bot, key, value, mate, scope, type,dynamic);
 
     }
 
@@ -378,10 +399,10 @@ public class SessionUtil {
      * @author Moyuyanli
      * @date 2022/7/29 15:03
      */
-    private static void saveSession(Contact subject, Bot bot, String key, String value, Mate mate, Scope scope, int type) {
+    private static void saveSession(Contact subject, Bot bot, String key, String value, Mate mate, Scope scope, int type, boolean dynamic) {
         try {
             HibernateUtil.factory.fromTransaction(session -> {
-                Session sessionEntity = new Session(bot.getId(), type, key, value, mate, scope);
+                Session sessionEntity = new Session(bot.getId(), type, key, value, mate, scope, dynamic);
                 //判断对应作用域是否存在
                 if (!ScopeUtil.isScopeEmpty(scope)) {
                     //不存在则先添加作用域

@@ -56,8 +56,14 @@ public class Dialogue {
         try {
             if (session.getType() == 5) {
                 subject.sendMessage(MessageChain.deserializeFromJsonString(session.getReply()));
+            } else if (session.isDynamic()) {
+                MessageChain messages = ShareUtils.parseMessageParameter(event, session.getReply(), session);
+                if (messages == null) {
+                    return;
+                }
+                subject.sendMessage(messages);
             } else {
-                subject.sendMessage(Objects.requireNonNull(ShareUtils.parseMessageParameter(event, session.getReply(), (Object[]) null)));
+                subject.sendMessage(session.getReply());
             }
         } catch (EventCancelledException e) {
             l.error("发送消息被取消:" + e.getMessage());

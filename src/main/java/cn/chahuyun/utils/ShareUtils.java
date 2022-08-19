@@ -178,8 +178,6 @@ public class ShareUtils {
         switch (valueType) {
             //at this qq
             case "at":
-            case "AT":
-            case "At":
                 if (value.equals("this")) {
                     return new At(event.getSender().getId());
                 } else if (Pattern.matches("\\d+", value)) {

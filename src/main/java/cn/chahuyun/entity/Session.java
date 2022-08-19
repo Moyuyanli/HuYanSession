@@ -29,6 +29,10 @@ public class Session {
      */
     private int type;
     /**
+     * 是否包含动态消息参数
+     */
+    private boolean dynamic;
+    /**
      * 触发词
      */
     private String term;
@@ -53,7 +57,7 @@ public class Session {
     public Session() {
     }
 
-    public Session(long bot, int type, String term, String reply, Mate mate, Scope scopeInfo) {
+    public Session(long bot, int type, String term, String reply, Mate mate, Scope scopeInfo,boolean dynamic) {
         this.bot = bot;
         this.type = type;
         this.term = term;
@@ -61,6 +65,7 @@ public class Session {
         this.mateInter = mate.getMateType();
         this.mate = mate;
         this.scopeInfo = scopeInfo;
+        this.dynamic = dynamic;
         this.scopeMark = bot + "." + scopeInfo.isGlobal() + "." + scopeInfo.isGroupInfo() + "." + scopeInfo.getGroupNumber() + "." + scopeInfo.getListId();
     }
 
@@ -121,6 +126,14 @@ public class Session {
 
     public void setScopeMark(String scopeMark) {
         this.scopeMark = scopeMark;
+    }
+
+    public boolean isDynamic() {
+        return dynamic;
+    }
+
+    public void setDynamic(boolean dynamic) {
+        this.dynamic = dynamic;
     }
 
     public Mate getMate() {

@@ -12,9 +12,11 @@ import kotlin.coroutines.CoroutineContext;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.BotIsBeingMutedException;
 import net.mamoe.mirai.contact.Contact;
+import net.mamoe.mirai.contact.MessageTooLargeException;
 import net.mamoe.mirai.contact.User;
 import net.mamoe.mirai.event.EventHandler;
 import net.mamoe.mirai.event.SimpleListenerHost;
+import net.mamoe.mirai.event.events.EventCancelledException;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.utils.MiraiLogger;
 import org.jetbrains.annotations.NotNull;
@@ -36,12 +38,18 @@ public class MessageEventListener extends SimpleListenerHost {
 
     @Override
     public void handleException(@NotNull CoroutineContext context, @NotNull Throwable exception) {
-        if (exception instanceof BotIsBeingMutedException) {
-            l.warning("机器人已被禁言");
+        if (exception instanceof EventCancelledException ) {
+            l.error("发送消息被取消:" ,exception);
+        } else if (exception instanceof BotIsBeingMutedException ) {
+            l.error("你的机器人被禁言:" ,exception);
+        } else if (exception instanceof MessageTooLargeException ) {
+            l.error("发送消息过长:" ,exception);
+        } else if (exception instanceof IllegalArgumentException ) {
+            l.error("发送消息为空:" ,exception);
         }
 
         // 处理事件处理时抛出的异常
-        l.error("插件异常:", exception);
+        l.error("出错啦~", exception);
     }
 
 
