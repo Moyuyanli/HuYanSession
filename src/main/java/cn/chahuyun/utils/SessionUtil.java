@@ -1,19 +1,14 @@
 package cn.chahuyun.utils;
 
 import cn.chahuyun.HuYanSession;
+import cn.chahuyun.config.ConfigData;
 import cn.chahuyun.data.StaticData;
 import cn.chahuyun.entity.Scope;
 import cn.chahuyun.entity.Session;
 import cn.chahuyun.enums.Mate;
-import cn.chahuyun.config.ConfigData;
-import kotlin.coroutines.EmptyCoroutineContext;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.Contact;
 import net.mamoe.mirai.contact.User;
-import net.mamoe.mirai.event.ConcurrencyKind;
-import net.mamoe.mirai.event.EventChannel;
-import net.mamoe.mirai.event.EventPriority;
-import net.mamoe.mirai.event.GlobalEventChannel;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.code.MiraiCode;
 import net.mamoe.mirai.message.data.*;
@@ -26,7 +21,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.regex.Pattern;
 
@@ -255,7 +249,7 @@ public class SessionUtil {
 
         subject.sendMessage("开始添加对话，请输入触发内容:");
         event.intercept();
-        MessageEvent nextMessageEventFromUser = getNextMessageEventFromUser(user);
+        MessageEvent nextMessageEventFromUser = ShareUtils.getNextMessageEventFromUser(user);
         if (ShareUtils.isQuit(nextMessageEventFromUser)) {
             return;
         }
@@ -263,7 +257,7 @@ public class SessionUtil {
 
 
         subject.sendMessage("请发送回复消息:");
-        nextMessageEventFromUser = getNextMessageEventFromUser(user);
+        nextMessageEventFromUser = ShareUtils.getNextMessageEventFromUser(user);
         if (ShareUtils.isQuit(nextMessageEventFromUser)) {
             return;
         }
@@ -271,7 +265,7 @@ public class SessionUtil {
 
 
         subject.sendMessage("请发送参数(一次发送，多参数中间隔开):");
-        nextMessageEventFromUser = getNextMessageEventFromUser(user);
+        nextMessageEventFromUser = ShareUtils.getNextMessageEventFromUser(user);
         if (ShareUtils.isQuit(nextMessageEventFromUser)) {
             return;
         }
@@ -338,7 +332,7 @@ public class SessionUtil {
             dynamic = false;
             value = MessageChain.serializeToJsonString(valueChain);
         }
-        saveSession(subject, bot, key, value, mate, scope, type,dynamic);
+        saveSession(subject, bot, key, value, mate, scope, type, dynamic);
 
     }
 
@@ -362,6 +356,43 @@ public class SessionUtil {
         }
         String key = split[1];
 
+        deleteMessage(subject, bot, key);
+    }
+
+    /**
+     * 会话形式删除消息
+     *
+     * @param event 消息事件
+     * @author Moyuyanli
+     * @date 2022/8/20 12:31
+     */
+    public static void deleteInformationSession(MessageEvent event) throws ExecutionException, InterruptedException {
+        Contact subject = event.getSubject();
+        Bot bot = event.getBot();
+        User user = event.getSender();
+
+        subject.sendMessage("请发送需要删除的消息");
+        MessageEvent eventFromUser = ShareUtils.getNextMessageEventFromUser(user);
+
+        String key = eventFromUser.getMessage().serializeToMiraiCode();
+
+        deleteMessage(subject, bot, key);
+
+    }
+
+    //================================================================================
+
+
+    /**
+     * 删除消息
+     *
+     * @param subject 消息发送着
+     * @param bot     所属机器人
+     * @param key     键
+     * @author Moyuyanli
+     * @date 2022/8/20 12:31
+     */
+    private static void deleteMessage(Contact subject, Bot bot, String key) {
         Map<String, Session> sessionMap = StaticData.getSessionMap(bot);
         Session sessionInfo;
         if (sessionMap.containsKey(key)) {
@@ -386,7 +417,6 @@ public class SessionUtil {
         init(false);
     }
 
-    //================================================================================
 
     /**
      * 保存会话
@@ -421,30 +451,6 @@ public class SessionUtil {
         }
         subject.sendMessage("学废了!");
         init(false);
-    }
-
-
-    /**
-     * 获取该用户的下一次消息事件
-     *
-     * @param user 用户
-     * @return net.mamoe.mirai.event.events.MessageEvent
-     * @author Moyuyanli
-     * @date 2022/7/29 12:36
-     */
-    private static MessageEvent getNextMessageEventFromUser(User user) throws ExecutionException, InterruptedException {
-
-        EventChannel<MessageEvent> channel = GlobalEventChannel.INSTANCE.parentScope(HuYanSession.INSTANCE)
-                .filterIsInstance(MessageEvent.class)
-                .filter(event -> event.getSender().getId() == user.getId());
-
-        CompletableFuture<MessageEvent> future = new CompletableFuture<>();
-
-        channel.subscribeOnce(MessageEvent.class, EmptyCoroutineContext.INSTANCE,
-                ConcurrencyKind.LOCKED, EventPriority.HIGH, future::complete);
-        MessageEvent event = future.get();
-        event.intercept();
-        return event;
     }
 
 

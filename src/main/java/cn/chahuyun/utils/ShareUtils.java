@@ -1,22 +1,28 @@
 package cn.chahuyun.utils;
 
 import cn.chahuyun.HuYanSession;
+import cn.chahuyun.config.ConfigData;
 import cn.chahuyun.data.StaticData;
 import cn.chahuyun.entity.GroupInfo;
 import cn.chahuyun.entity.GroupList;
 import cn.chahuyun.entity.GroupProhibited;
 import cn.chahuyun.entity.Scope;
 import cn.chahuyun.enums.Mate;
-import cn.chahuyun.config.ConfigData;
+import kotlin.coroutines.EmptyCoroutineContext;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.Contact;
 import net.mamoe.mirai.contact.Group;
 import net.mamoe.mirai.contact.NormalMember;
 import net.mamoe.mirai.contact.User;
+import net.mamoe.mirai.event.ConcurrencyKind;
+import net.mamoe.mirai.event.EventChannel;
+import net.mamoe.mirai.event.EventPriority;
+import net.mamoe.mirai.event.GlobalEventChannel;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.code.MiraiCode;
 import net.mamoe.mirai.message.data.*;
 import net.mamoe.mirai.utils.MiraiLogger;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.net.URL;
@@ -25,6 +31,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -309,6 +317,29 @@ public class ShareUtils {
                 break;
         }
         return false;
+    }
+
+    /**
+     * 获取用户的下一次消息事件
+     *
+     * @param user 用户
+     * @return net.mamoe.mirai.event.events.MessageEvent
+     * @author Moyuyanli
+     * @date 2022/8/20 12:37
+     */
+    @NotNull
+    public static MessageEvent getNextMessageEventFromUser(User user) throws InterruptedException, ExecutionException {
+        EventChannel<MessageEvent> channel = GlobalEventChannel.INSTANCE.parentScope(HuYanSession.INSTANCE)
+                .filterIsInstance(MessageEvent.class)
+                .filter(event -> event.getSender().getId() == user.getId());
+
+        CompletableFuture<MessageEvent> future = new CompletableFuture<>();
+
+        channel.subscribeOnce(MessageEvent.class, EmptyCoroutineContext.INSTANCE,
+                ConcurrencyKind.LOCKED, EventPriority.HIGH, future::complete);
+        MessageEvent event = future.get();
+        event.intercept();
+        return event;
     }
 
 }

@@ -1,18 +1,13 @@
 package cn.chahuyun.utils;
 
 import cn.chahuyun.HuYanSession;
+import cn.chahuyun.config.ConfigData;
 import cn.chahuyun.data.StaticData;
 import cn.chahuyun.entity.GroupProhibited;
 import cn.chahuyun.entity.Scope;
-import cn.chahuyun.config.ConfigData;
-import kotlin.coroutines.EmptyCoroutineContext;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.Contact;
 import net.mamoe.mirai.contact.User;
-import net.mamoe.mirai.event.ConcurrencyKind;
-import net.mamoe.mirai.event.EventChannel;
-import net.mamoe.mirai.event.EventPriority;
-import net.mamoe.mirai.event.GlobalEventChannel;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.code.MiraiCode;
 import net.mamoe.mirai.message.data.ForwardMessageBuilder;
@@ -27,7 +22,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.regex.Pattern;
 
@@ -139,7 +133,7 @@ public class GroupProhibitedUtil {
                     case "%":
                         //获取下一次消息
                         subject.sendMessage("请输入触发违禁词回复内容:");
-                        String reply = getNextMessageEventFromUser(user).getMessage().serializeToMiraiCode();
+                        String reply = ShareUtils.getNextMessageEventFromUser(user).getMessage().serializeToMiraiCode();
                         groupProhibited.setReply(reply);
                         break;
                     default:
@@ -172,7 +166,7 @@ public class GroupProhibitedUtil {
                             groupProhibited.setProhibitTime(time);
                             groupProhibited.setProhibitString(messages);
                         } else if (Pattern.matches("gr\\d+", string)) {
-                            scope.setScopeName("群组"+string.substring(1));
+                            scope.setScopeName("群组" + string.substring(1));
                             scope.setGroupInfo(true);
                             scope.setListId(Integer.parseInt(string.substring(1)));
                             groupProhibited.setScopeInfo(scope);
@@ -350,26 +344,6 @@ public class GroupProhibitedUtil {
             listMap.get(bot).get(scope).add(entity);
         }
         return listMap;
-    }
-
-    /**
-     * 获取该用户的下一次消息事件
-     *
-     * @param user 用户
-     * @return net.mamoe.mirai.event.events.MessageEvent
-     * @author Moyuyanli
-     * @date 2022/7/29 12:36
-     */
-    private static MessageEvent getNextMessageEventFromUser(User user) throws ExecutionException, InterruptedException {
-
-        EventChannel<MessageEvent> channel = GlobalEventChannel.INSTANCE.parentScope(HuYanSession.INSTANCE).filterIsInstance(MessageEvent.class).filter(event -> event.getSender().getId() == user.getId());
-
-        CompletableFuture<MessageEvent> future = new CompletableFuture<>();
-
-        channel.subscribeOnce(MessageEvent.class, EmptyCoroutineContext.INSTANCE, ConcurrencyKind.LOCKED, EventPriority.HIGH, future::complete);
-        MessageEvent event = future.get();
-        event.intercept();
-        return event;
     }
 
 

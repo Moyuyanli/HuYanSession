@@ -8,6 +8,7 @@ import net.mamoe.mirai.contact.Contact;
 import net.mamoe.mirai.contact.MessageTooLargeException;
 import net.mamoe.mirai.event.events.EventCancelledException;
 import net.mamoe.mirai.event.events.MessageEvent;
+import net.mamoe.mirai.message.code.MiraiCode;
 import net.mamoe.mirai.message.data.Image;
 import net.mamoe.mirai.message.data.MessageChain;
 import net.mamoe.mirai.utils.MiraiLogger;
@@ -62,7 +63,7 @@ public class Dialogue {
                 }
                 subject.sendMessage(messages);
             } else {
-                subject.sendMessage(session.getReply());
+                subject.sendMessage(MiraiCode.deserializeMiraiCode(session.getReply()));
             }
         } catch (EventCancelledException e) {
             l.error("发送消息被取消:" + e.getMessage());

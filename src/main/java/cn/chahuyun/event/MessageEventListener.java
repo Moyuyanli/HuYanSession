@@ -175,6 +175,7 @@ public class MessageEventListener extends SimpleListenerHost {
         String queryStudyPattern = "^xx\\\\?[:：](\\S+)?|^查询( +\\S+)?";
         String addsStudyPattern = "^%xx|^学习对话";
         String deleteStudyPattern = "^-xx\\\\?[:：](\\S+)|^删除( +\\S+)";
+        String deleteDialogueStudyPattern = "^-%xx|^删除对话";
 
         if (owner || power.isSession() || power.isSessionX()) {
             if (Pattern.matches(addStudyPattern, code)) {
@@ -193,6 +194,10 @@ public class MessageEventListener extends SimpleListenerHost {
                 l.info("删除会话指令");
                 SessionUtil.deleteSession(event);
                 return;
+            } else if (Pattern.matches(deleteDialogueStudyPattern, code)) {
+                l.info("删除会话指令");
+                SessionUtil.deleteInformationSession(event);
+                return;
             }
         }
 
@@ -200,7 +205,7 @@ public class MessageEventListener extends SimpleListenerHost {
          权限正则
          */
         String addPowerPattern = "^\\+\\[mirai:at:\\d+] +\\S+|^添加\\[mirai:at:\\d+] +\\S+";
-        String deletePowerPattern = "^\\-\\[mirai:at:\\d+] +\\S+|^删除\\[mirai:at:\\d+] +\\S+";
+        String deletePowerPattern = "^-\\[mirai:at:\\d+] +\\S+|^删除\\[mirai:at:\\d+] +\\S+";
         String queryPowerPattern = "^[!！]power( \\S+)?|^权限列表\\\\:( \\S+)?";
 
         if (owner || power.isAdmin()) {
