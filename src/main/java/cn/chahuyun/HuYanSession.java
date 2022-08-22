@@ -1,6 +1,7 @@
 package cn.chahuyun;
 
 import cn.chahuyun.command.Command;
+import cn.chahuyun.event.GroupEventListener;
 import cn.chahuyun.event.MessageEventListener;
 import cn.chahuyun.config.ConfigData;
 import cn.chahuyun.utils.*;
@@ -64,6 +65,8 @@ public final class HuYanSession extends JavaPlugin {
         //注册群消息事件
         channel.registerListenerHost(new MessageEventListener());
         getLogger().info("群消息监听已注册！");
+        channel.registerListenerHost(new GroupEventListener());
+        getLogger().info("群动作监听已注册！");
 
 
         getLogger().info("壶言会话插件加载完成!");

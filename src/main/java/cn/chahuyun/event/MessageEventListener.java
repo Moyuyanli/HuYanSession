@@ -276,6 +276,22 @@ public class MessageEventListener extends SimpleListenerHost {
             }
         }
 
+        String addGroupWelcomeMessagePattern = "%hyc|添加欢迎词";
+
+        if (owner || power.isGroupManage() || power.isGroupHyc()) {
+            if (Pattern.matches(addGroupWelcomeMessagePattern, code)) {
+                l.info("添加欢迎词指令");
+                GroupWelcomeInfoUtil.addGroupWelcomeInfo(event);
+                return;
+            }
+        }
+
+
+
+
+
+
+
         isSessionMessage(event);
 
     }

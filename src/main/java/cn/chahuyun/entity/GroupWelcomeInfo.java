@@ -51,6 +51,9 @@ public class GroupWelcomeInfo {
     @Transient
     private Scope scope;
 
+    public GroupWelcomeInfo() {
+    }
+
     public GroupWelcomeInfo(long bot, boolean random, int pollingNumber, int randomMark, Scope scopeInfo) {
         this.bot = bot;
         this.random = random;

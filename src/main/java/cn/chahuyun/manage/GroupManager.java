@@ -1,22 +1,35 @@
 package cn.chahuyun.manage;
 
 import cn.chahuyun.HuYanSession;
+import cn.chahuyun.data.ApplyClusterInfo;
 import cn.chahuyun.data.StaticData;
+import cn.chahuyun.dialogue.Dialogue;
 import cn.chahuyun.entity.BlackHouse;
 import cn.chahuyun.entity.GroupProhibited;
+import cn.chahuyun.entity.GroupWelcomeInfo;
 import cn.chahuyun.entity.Scope;
 import cn.chahuyun.enums.Mate;
 import cn.chahuyun.utils.BlackHouseUtil;
+import cn.chahuyun.utils.HibernateUtil;
+import cn.chahuyun.utils.ScopeUtil;
 import cn.chahuyun.utils.ShareUtils;
+import kotlin.coroutines.EmptyCoroutineContext;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.*;
-import net.mamoe.mirai.event.events.MessageEvent;
+import net.mamoe.mirai.event.*;
+import net.mamoe.mirai.event.events.*;
 import net.mamoe.mirai.message.data.*;
 import net.mamoe.mirai.utils.MiraiLogger;
+import org.hibernate.query.criteria.HibernateCriteriaBuilder;
+import org.hibernate.query.criteria.JpaCriteriaQuery;
+import org.hibernate.query.criteria.JpaRoot;
 import xyz.cssxsh.mirai.hibernate.MiraiHibernateRecorder;
 import xyz.cssxsh.mirai.hibernate.entry.MessageRecord;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -34,6 +47,7 @@ public class GroupManager {
 
     private final static MiraiLogger l = HuYanSession.INSTANCE.getLogger();
 
+    public final static Map<String, ApplyClusterInfo> map = new HashMap<>();
 
     /**
      * @param event 消息事件
@@ -251,11 +265,11 @@ public class GroupManager {
             if (blackHouse == null) {
                 blackHouse = new BlackHouse(bot.getId(), sender.getId(), groupProhibited.getId(), 1);
             } else {
-                blackHouse.setNumber(blackHouse.getNumber()+1);
+                blackHouse.setNumber(blackHouse.getNumber() + 1);
             }
             if (blackHouse.getNumber() >= groupProhibited.getAccumulateNumber()) {
                 subject.sendMessage(sender.getNick() + "已经到达违禁词触发次数，将被踢出本群!");
-                bot.getGroup(subject.getId()).get(sender.getId()).kick(sender.getNick()+"已经到达违禁词触发次数，将被踢出本群！");
+                bot.getGroup(subject.getId()).get(sender.getId()).kick(sender.getNick() + "已经到达违禁词触发次数，将被踢出本群！");
                 return true;
             }
             subject.sendMessage(MessageUtils.newChain()
@@ -272,5 +286,129 @@ public class GroupManager {
         return true;
     }
 
+    /**
+     * 有人申请入群
+     *
+     * @param event 群事件
+     * @author Moyuyanli
+     * @date 2022/8/22 10:41
+     */
+    public static void userRequestGroup(MemberJoinRequestEvent event) {
+        Group group = event.getGroup();
+        String fromNick = event.getFromNick();
+        long fromId = event.getFromId();
+        String message = event.getMessage();
+        Long invitorId = event.getInvitorId();
+
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String format = simpleDateFormat.format(new Date());
+
+        MessageChainBuilder messageChain = new MessageChainBuilder();
+        messageChain.append(new PlainText("来人啦~!\n" +
+                "时间:" + format + "\n" +
+                "敲门人:" + fromNick + "(" + fromId + ")"));
+        if (message.isEmpty()) {
+            messageChain.append("\n敲门口令:(这个人啥也没说!)");
+        } else {
+            messageChain.append("\n敲门口令:" + message);
+        }
+
+        try {
+            if (invitorId != null) {
+                messageChain.append("\n指路人:" + group.get(invitorId).getNick() + "(" + invitorId + ")");
+            }
+        } catch (Exception e) {
+            l.warning("新人加群申请-欢迎消息构造失败!");
+        }
+        group.sendMessage(messageChain.build());
+
+        EventChannel<GroupMessageEvent> channel = GlobalEventChannel.INSTANCE.parentScope(HuYanSession.INSTANCE)
+                .filterIsInstance(GroupMessageEvent.class)
+                .filter(nextGroup -> nextGroup.getGroup() == group)
+                .filter(nextEvent -> {
+                    String toString = nextEvent.getMessage().contentToString();
+                    return toString.equals("同意") || toString.equals("拒绝");
+                });
+
+
+        map.put(event.getGroupId()+"."+event.getFromId(),new ApplyClusterInfo(){{setJoinRequestEvent(event);}});
+
+        //手动控制监听什么时候结束
+        channel.subscribe(GroupMessageEvent.class, EmptyCoroutineContext.INSTANCE,
+                ConcurrencyKind.LOCKED, EventPriority.HIGH, messageEvent -> AgreeOrRefuseToApply(event, messageEvent));
+
+    }
+
+
+    /**
+     * 有人入群
+     *
+     * @param event 群事件
+     * @author Moyuyanli
+     * @date 2022/8/22 10:39
+     */
+    public static void userJoinGroup(MemberJoinEvent event) {
+        Bot bot = event.getBot();
+        Group group = event.getGroup();
+
+
+        List<GroupWelcomeInfo> welcomeInfoList = null;
+        try {
+            welcomeInfoList = HibernateUtil.factory.fromTransaction(session -> {
+                HibernateCriteriaBuilder builder = session.getCriteriaBuilder();
+                JpaCriteriaQuery<GroupWelcomeInfo> query = builder.createQuery(GroupWelcomeInfo.class);
+                JpaRoot<GroupWelcomeInfo> from = query.from(GroupWelcomeInfo.class);
+
+                query.select(from);
+                query.where(builder.equal(from.get("bot"), bot.getId()));
+
+                return session.createQuery(query).list();
+            });
+        } catch (Exception e) {
+            l.error("出错啦!", e);
+        }
+        GroupWelcomeInfo groupWelcomeInfo = null;
+        boolean next = true;
+        for (GroupWelcomeInfo groupWelcome : welcomeInfoList) {
+            Scope scope = ScopeUtil.getScope(groupWelcome.getScopeMark());
+            assert scope != null;
+            if (ShareUtils.mateScope(bot, group, scope)) {
+                next = false;
+                groupWelcomeInfo = groupWelcome;
+                break;
+            }
+        }
+
+        if (next) {
+            return;
+        }
+
+        map.get(group.getId() + "." + event.getMember().getId()).setJoinEvent(event);
+
+        Dialogue.INSTANCE.dialogueSession(event, groupWelcomeInfo);
+
+    }
+
+    //==============================================================================
+
+    /**
+     * 同意或拒绝这个请求
+     *
+     * @param apply 申请
+     * @param event 消息
+     * @return net.mamoe.mirai.event.ListeningStatus
+     * @author Moyuyanli
+     * @date 2022/8/22 11:10
+     */
+    private static ListeningStatus AgreeOrRefuseToApply(MemberJoinRequestEvent apply, GroupMessageEvent event) {
+        if (event.getMessage().contentToString().equals("同意")) {
+            apply.accept();
+            map.get(apply.getGroupId() + "." + apply.getFromId()).setMessageEvent(event);
+        } else {
+            apply.reject();
+            map.remove(apply.getGroupId() + "." + apply.getFromId());
+        }
+        return ListeningStatus.STOPPED;
+    }
 
 }

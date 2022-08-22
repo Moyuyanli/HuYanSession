@@ -2,11 +2,9 @@ package cn.chahuyun.utils;
 
 import cn.chahuyun.HuYanSession;
 import cn.chahuyun.config.ConfigData;
+import cn.chahuyun.data.ApplyClusterInfo;
 import cn.chahuyun.data.StaticData;
-import cn.chahuyun.entity.GroupInfo;
-import cn.chahuyun.entity.GroupList;
-import cn.chahuyun.entity.GroupProhibited;
-import cn.chahuyun.entity.Scope;
+import cn.chahuyun.entity.*;
 import cn.chahuyun.enums.Mate;
 import kotlin.coroutines.EmptyCoroutineContext;
 import net.mamoe.mirai.Bot;
@@ -18,6 +16,8 @@ import net.mamoe.mirai.event.ConcurrencyKind;
 import net.mamoe.mirai.event.EventChannel;
 import net.mamoe.mirai.event.EventPriority;
 import net.mamoe.mirai.event.GlobalEventChannel;
+import net.mamoe.mirai.event.events.GroupEvent;
+import net.mamoe.mirai.event.events.MemberJoinEvent;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.code.MiraiCode;
 import net.mamoe.mirai.message.data.*;
@@ -171,6 +171,37 @@ public class ShareUtils {
         return builder.build();
     }
 
+    public static MessageChain parseMessageParameter(GroupEvent event, String message, Object... object) throws IOException {
+        if (message.contains("$message(null)")) {
+            return null;
+        }
+        String variablePattern = "\\$\\w+\\((\\S+?)\\)";
+        Pattern pattern = Pattern.compile(variablePattern);
+        Matcher matcher = pattern.matcher(message);
+        MessageChainBuilder builder = new MessageChainBuilder();
+        int index = 0;
+        while (matcher.find()) {
+            int start = matcher.start();
+            int end = matcher.end();
+            String group = matcher.group();
+            String[] split = group.split("\\(");
+            String valueType = split[0].substring(1);
+            String value = split[1].substring(0, split[1].length() - 1);
+            Message messages = parseMessage((MemberJoinEvent) event, value, valueType, object);
+            builder.append(MiraiCode.deserializeMiraiCode(message.substring(index, start)))
+                    .append(messages);
+            if (ConfigData.INSTANCE.getDebugSwitch()) {
+                l.info("动态消息-" + group + "->" + messages);
+            }
+            index = end;
+        }
+        if (index < message.length()) {
+            builder.append(MiraiCode.deserializeMiraiCode(message.substring(index)));
+        }
+        return builder.build();
+    }
+
+
     /**
      * 识别动态变量，并转换为消息 [ Message ]
      *
@@ -248,6 +279,80 @@ public class ShareUtils {
         return new PlainText("未识别动态消息:" + "$" + valueType + "(" + value + ")");
     }
 
+    private static Message parseMessage(MemberJoinEvent event, String value, String valueType, Object... object) throws IOException {
+        WelcomeMessage welcomeMessage = (WelcomeMessage) object[0];
+        ApplyClusterInfo applyClusterInfo = (ApplyClusterInfo) object[1];
+        switch (valueType) {
+            //at this qq
+            case "at":
+                switch (value) {
+                    case "this":
+                        return new At(event.getMember().getId());
+                    case "that":
+                        try {
+                            NormalMember invitor = applyClusterInfo.getJoinRequestEvent().getInvitor();
+                            if (invitor != null) {
+                                return new At(invitor.getId());
+                            } else {
+                                User sender = applyClusterInfo.getMessageEvent().getSender();
+                                return new At(sender.getId());
+                            }
+                        } catch (Exception e) {
+                            return new PlainText("本次动态消息无效!");
+                        }
+                    default:
+                        if (Pattern.matches("\\d+", value)) {
+                            NormalMember member = event.getGroup().get(Long.parseLong(value));
+                            if (member != null) {
+                                return new At(member.getId());
+                            }
+                        }
+                        return new PlainText("未识别动态消息:" + "$" + valueType + "(" + value + ")");
+                }
+            case "message":
+                switch (value) {
+                    case "apply":
+                        String message = applyClusterInfo.getJoinRequestEvent().getMessage();
+                        return new PlainText(message.isEmpty()?"这个人什么都没说...":message);
+                    default:
+                        return new PlainText("未识别动态消息:" + "$" + valueType + "(" + value + ")");
+                }
+            case "user":
+                switch (value) {
+                    case "name":
+                        return new PlainText(event.getMember().getNick());
+                    case "id":
+                        return new PlainText(event.getMember().getId() + "");
+                    case "avatar":
+                        return Contact.uploadImage(event.getMember(), new URL(event.getMember().getAvatarUrl()).openConnection().getInputStream());
+                    case "title":
+                        return new PlainText("群欢迎词不支持的动态消息:" + "$" + valueType + "(" + value + ")");
+                    default:
+                        return new PlainText("未识别动态消息:" + "$" + valueType + "(" + value + ")");
+                }
+            case "time":
+                switch (value) {
+                    case "now":
+                        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                        String format = simpleDateFormat.format(new Date());
+                        return new PlainText(format);
+                    default:
+                        String userFormat;
+                        try {
+                            SimpleDateFormat userSimpleDateFormat = new SimpleDateFormat(value);
+                            userFormat = userSimpleDateFormat.format(new Date());
+                        } catch (Exception e) {
+                            l.warning("动态消息-时间格式化出错!", e);
+                            return new PlainText("未识别动态消息:" + "$" + valueType + "(" + value + ")");
+                        }
+                        String trim = userFormat.replace("\\", "").trim();
+                        return new PlainText(trim);
+                }
+        }
+
+        return new PlainText("未识别动态消息:" + "$" + valueType + "(" + value + ")");
+    }
+
 
     /**
      * 匹配作用域
@@ -277,6 +382,36 @@ public class ShareUtils {
         } else {
             long l = scope.getGroupNumber();
             return l == group;
+        }
+        return false;
+    }
+
+    /**
+     * 匹配作用域
+     *
+     * @param bot   所属机器人
+     * @param group 匹配群
+     * @param scope 作用域
+     * @return boolean true 匹配成功! false 匹配失败！
+     * @author Moyuyanli
+     * @date 2022/7/13 21:34
+     */
+    public static boolean mateScope(Bot bot, Group group, Scope scope) {
+        Map<Integer, GroupList> groupListMap = StaticData.getGroupListMap(bot);
+
+        if (scope.getGroupInfo()) {
+            GroupList groupList = groupListMap.get(scope.getListId());
+            List<GroupInfo> groupNumbers = groupList.getGroups();
+            for (GroupInfo aLong : groupNumbers) {
+                if (group.getId() == aLong.getGroupId()) {
+                    return true;
+                }
+            }
+        } else if (scope.getGlobal()) {
+            return true;
+        } else {
+            long l = scope.getGroupNumber();
+            return l == group.getId();
         }
         return false;
     }
