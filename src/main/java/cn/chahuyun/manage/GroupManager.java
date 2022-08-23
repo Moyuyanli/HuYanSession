@@ -541,7 +541,7 @@ public class GroupManager {
             String format = simpleDateFormat.format(new Date());
             MessageChainBuilder messageChain = new MessageChainBuilder();
             messageChain.append(new PlainText("门外还有人呢!\n" +
-                    "门牌号:" +  doorNumber++ + "\n" +
+                    "门牌号:" +  doorNumber + "\n" +
                     "时间:" + format + "\n" +
                     "敲门人:" + fromNick + "(" + fromId + ")"));
             if (message.isEmpty()) {
