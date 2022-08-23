@@ -16,6 +16,7 @@ import org.hibernate.query.criteria.JpaCriteriaQuery;
 import org.hibernate.query.criteria.JpaRoot;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.regex.Pattern;
@@ -89,7 +90,7 @@ public class GroupWelcomeInfoUtil {
                     String listPattern = "gr\\d+|群组\\d+";
                     if (Pattern.matches(listPattern, s)) {
                         int listId = Integer.parseInt(s.substring(2));
-                        if (!ListUtil.isContainsList(bot, listId)) {
+                        if (ListUtil.isContainsList(bot, listId)) {
                             subject.sendMessage("该群组不存在!");
                             return;
                         }
@@ -165,7 +166,6 @@ public class GroupWelcomeInfoUtil {
      */
     public static void queryGroupWelcomeInfo(MessageEvent event) {
         Contact subject = event.getSubject();
-        String code = event.getMessage().serializeToMiraiCode();
         Bot bot = event.getBot();
 
         List<GroupWelcomeInfo> welcomeInfoList = null;
@@ -180,7 +180,7 @@ public class GroupWelcomeInfoUtil {
                 List<GroupWelcomeInfo> list = session.createQuery(query).list();
                 for (GroupWelcomeInfo info : list) {
                     if (info.getScope() == null) {
-                        info.setScope(ScopeUtil.getScope(info.getScopeMark()));
+                        info.setScope(Objects.requireNonNull(ScopeUtil.getScope(info.getScopeMark())));
                     }
                 }
                 return list;
@@ -189,6 +189,10 @@ public class GroupWelcomeInfoUtil {
             l.error("出错啦!", e);
         }
 
+        if (welcomeInfoList == null || welcomeInfoList.isEmpty()) {
+            subject.sendMessage("欢迎词为空");
+            return;
+        }
 
         ForwardMessageBuilder builder = new ForwardMessageBuilder(subject);
         builder.add(bot, new PlainText("以下本是bot所有群欢迎词↓"));
@@ -245,7 +249,7 @@ public class GroupWelcomeInfoUtil {
                 List<GroupWelcomeInfo> list = session.createQuery(query).list();
                 for (GroupWelcomeInfo info : list) {
                     if (info.getScope() == null) {
-                        info.setScope(ScopeUtil.getScope(info.getScopeMark()));
+                        info.setScope(Objects.requireNonNull(ScopeUtil.getScope(info.getScopeMark())));
                     }
                 }
                 return list;

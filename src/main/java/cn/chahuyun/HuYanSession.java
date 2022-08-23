@@ -25,8 +25,6 @@ public final class HuYanSession extends JavaPlugin {
      */
     public static final HuYanSession INSTANCE = new HuYanSession();
 
-    private EventChannel channel;
-
     private HuYanSession() {
         super(new JvmPluginDescriptionBuilder("cn.chahuyun.HuYanSession", "2.0")
                 .name("HuYanSession")
@@ -45,7 +43,7 @@ public final class HuYanSession extends JavaPlugin {
         MiraiHibernateConfiguration configuration = new MiraiHibernateConfiguration(this);
         HibernateUtil.init(configuration);
 
-        channel = GlobalEventChannel.INSTANCE.parentScope(HuYanSession.INSTANCE);
+        EventChannel channel = GlobalEventChannel.INSTANCE.parentScope(HuYanSession.INSTANCE);
         //加载插件，打印日志
         reloadPluginConfig(ConfigData.INSTANCE);
         getLogger().info("插件配置已加载！");

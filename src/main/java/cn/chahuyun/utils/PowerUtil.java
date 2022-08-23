@@ -293,7 +293,7 @@ public class PowerUtil {
             String key = power.getGroupId() + "." + power.getQq();
 
             if (!listMap.containsKey(bot)) {
-                listMap.put(bot, new HashMap<String, Power>() {{
+                listMap.put(bot, new HashMap<>() {{
                     put(key, power);
                 }});
                 continue;
@@ -322,7 +322,7 @@ public class PowerUtil {
         Bot bot = event.getBot();
         List<Power> powerList = new ArrayList<>(StaticData.getPowerMap(bot).values());
         //排序
-        Collections.sort(powerList, (a, b) -> {
+        powerList.sort((a, b) -> {
             if (a.getGroupId() >= b.getGroupId()) {
                 return -1;
             } else {

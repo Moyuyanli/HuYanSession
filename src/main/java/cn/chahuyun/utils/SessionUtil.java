@@ -34,7 +34,6 @@ import java.util.regex.Pattern;
 public class SessionUtil {
 
     private final static MiraiLogger l = HuYanSession.INSTANCE.getLogger();
-    private static MessageEvent event;
 
 
     /**
@@ -69,7 +68,7 @@ public class SessionUtil {
                     entity.setScopeInfo(scope);
                 }
                 if (!sessionAll.containsKey(entity.getBot())) {
-                    sessionAll.put(entity.getBot(), new HashMap<String, Session>() {{
+                    sessionAll.put(entity.getBot(), new HashMap<>() {{
                         put(entity.getTerm(), entity);
                     }});
                     continue;
@@ -161,7 +160,7 @@ public class SessionUtil {
                         String listPattern = "gr\\d+|群组\\d+";
                         if (Pattern.matches(listPattern, s)) {
                             int listId = Integer.parseInt(s.substring(2));
-                            if (!ListUtil.isContainsList(bot, listId)) {
+                            if (ListUtil.isContainsList(bot, listId)) {
                                 subject.sendMessage("该群组不存在!");
                                 return;
                             }
@@ -297,7 +296,7 @@ public class SessionUtil {
                     String listPattern = "gr\\d+|群组\\d+";
                     if (Pattern.matches(listPattern, s)) {
                         int listId = Integer.parseInt(s.substring(2));
-                        if (!ListUtil.isContainsList(bot, listId)) {
+                        if (ListUtil.isContainsList(bot, listId)) {
                             subject.sendMessage("该群组不存在!");
                             return;
                         }

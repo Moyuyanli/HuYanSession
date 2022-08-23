@@ -48,6 +48,9 @@ public class Blacklist {
     @Transient
     private Scope scope;
 
+    public Blacklist() {
+    }
+
     public Blacklist(long bot, long blackQQ, String reason, Scope scopeInfo) {
         this.bot = bot;
         this.blackQQ = blackQQ;

@@ -31,10 +31,7 @@ import xyz.cssxsh.mirai.hibernate.entry.MessageRecord;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -82,7 +79,7 @@ public class GroupManager {
             return;
         }
 
-        NormalMember member = bot.getGroup(event.getSubject().getId()).get(qq);
+        NormalMember member = Objects.requireNonNull(bot.getGroup(event.getSubject().getId())).get(qq);
         //获取参数
         String[] split = code.split(" ");
         String param = split[1];
@@ -101,19 +98,19 @@ public class GroupManager {
         switch (type) {
             case "s":
                 time = timeParam;
-                messages.append("禁言:" + timeParam + "秒");
+                messages.append("禁言:").append(String.valueOf(timeParam)).append("秒");
                 break;
             case "m":
                 time = timeParam * 60;
-                messages.append("禁言:" + timeParam + "分钟");
+                messages.append("禁言:").append(String.valueOf(timeParam)).append("分钟");
                 break;
             case "h":
                 time = timeParam * 60 * 60;
-                messages.append("禁言:" + timeParam + "小时");
+                messages.append("禁言:").append(String.valueOf(timeParam)).append("小时");
                 break;
             case "d":
                 time = timeParam * 60 * 60 * 24;
-                messages.append("禁言:" + timeParam + "天");
+                messages.append("禁言:").append(String.valueOf(timeParam)).append("天");
                 break;
             default:
                 break;
@@ -221,8 +218,8 @@ public class GroupManager {
 
         for (Scope scope : prohibitedMap.keySet()) {
             if (ShareUtils.mateScope(event, scope)) {
-                List<GroupProhibited> groupProhibiteds = prohibitedMap.get(scope);
-                for (GroupProhibited prohibited : groupProhibiteds) {
+                List<GroupProhibited> groupProhibits = prohibitedMap.get(scope);
+                for (GroupProhibited prohibited : groupProhibits) {
                     int mateType = prohibited.getMateType();
                     Mate mate = Mate.VAGUE;
                     String trigger = prohibited.getTrigger();
@@ -313,16 +310,17 @@ public class GroupManager {
         if (message.isEmpty()) {
             messageChain.append("\n敲门口令:(这个人啥也没说!)");
         } else {
-            messageChain.append("\n敲门口令:" + message);
+            messageChain.append("\n敲门口令:").append(message);
         }
 
         try {
             if (invitorId != null) {
-                messageChain.append("\n指路人:" + group.get(invitorId).getNick() + "(" + invitorId + ")");
+                messageChain.append("\n指路人:").append(group.get(invitorId).getNick()).append("(").append(String.valueOf(invitorId)).append(")");
             }
         } catch (Exception e) {
             l.warning("新人加群申请-欢迎消息构造失败!");
         }
+        assert group != null;
         group.sendMessage(messageChain.build());
 
         EventChannel<GroupMessageEvent> channel = GlobalEventChannel.INSTANCE.parentScope(HuYanSession.INSTANCE)

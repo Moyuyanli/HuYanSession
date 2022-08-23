@@ -81,15 +81,15 @@ public class ListUtil {
         String[] split = code.split("\\s+");
         int key = Integer.parseInt(split[0].split("\\\\?[:：]")[1]);
 
-        String reply = "";
+        StringBuilder reply = new StringBuilder();
         //判断新加的群号在这个群组中是否存在，存在则拼接回复消息
         Map<Integer, GroupList> groupListMap = StaticData.getGroupListMap(bot);
         if (groupListMap != null && groupListMap.containsKey(key)) {
             GroupList groupList = groupListMap.get(key);
             for (int i = 1; i < split.length; i++) {
-                Long groupId = Long.parseLong(split[i]);
+                long groupId = Long.parseLong(split[i]);
                 if (groupList.containsGroupId(groupId)) {
-                    reply += "群" + groupId + "已存在\n";
+                    reply.append("群").append(groupId).append("已存在\n");
                 }
             }
         }
@@ -97,14 +97,14 @@ public class ListUtil {
         try {
             //开始添加群组
             HibernateUtil.factory.fromTransaction(session -> {
-                GroupList groupList = null;
+                GroupList groupList;
                 if (groupListMap != null && groupListMap.containsKey(key)) {
                     groupList = groupListMap.get(key);
                 } else {
                     groupList = new GroupList(bot.getId(), key);
                 }
                 for (int i = 1; i < split.length; i++) {
-                    Long groupId = Long.parseLong(split[i]);
+                    long groupId = Long.parseLong(split[i]);
                     if (groupList.containsGroupId(groupId)) {
                         continue;
                     }
@@ -121,12 +121,12 @@ public class ListUtil {
         }
         //我又开始码屎山了，这TM才开始写啊!T_T
         //如果只加了1个群号，并且群号还存在的话返回这条消息
-        if (split.length == 2 && !reply.equals("")) {
+        if (split.length == 2 && !reply.toString().equals("")) {
             subject.sendMessage("群组" + key + "中" + reply);
             return;
         }
         String message = "群组" + key + "添加群成功！";
-        if (!reply.equals("")) {
+        if (!reply.toString().equals("")) {
             message += "其中:\n" + reply;
         }
         subject.sendMessage(message);
@@ -154,7 +154,7 @@ public class ListUtil {
             key = Integer.parseInt(split[1]);
         }
         //拿静态资源
-        Map<Integer, GroupList> groupListMap = null;
+        Map<Integer, GroupList> groupListMap;
         groupListMap = StaticData.getGroupListMap(bot);
         if (groupListMap == null || groupListMap.isEmpty()) {
             subject.sendMessage("没有群组信息!");
@@ -182,7 +182,7 @@ public class ListUtil {
                 while (iterator.hasNext()) {
                     GroupInfo next = iterator.next();
                     chain.add(next.getGroupId() + "->");
-                    String groupName = null;
+                    String groupName;
                     if (bot.getGroup(next.getGroupId()) == null) {
                         groupName = "未知群";
                     } else {
@@ -251,15 +251,14 @@ public class ListUtil {
                 //如果是删除群组
                 if (finalType) {
                     session.remove(groupList);
-                    return true;
                 } else {
                     assert groupList != null;
                     GroupInfo groupInfo = groupList.getGroups().stream().filter(item -> item.getGroupId() == finalValue)
                             .collect(Collectors.toList()).get(0);
                     groupList.getGroups().remove(groupInfo);
                     session.merge(groupList);
-                    return true;
                 }
+                return true;
             });
         } catch (Exception e) {
             if (e instanceof PersistenceException) {
@@ -282,7 +281,7 @@ public class ListUtil {
      *
      * @param bot    所属机器人
      * @param listId 群组编号
-     * @return boolean 存在 true
+     * @return boolean 不存在 true
      * @author Moyuyanli
      * @date 2022/7/11 12:13
      */
@@ -291,13 +290,13 @@ public class ListUtil {
         try {
             groupListMap = StaticData.getGroupListMap(bot);
             if (groupListMap == null || groupListMap.isEmpty()) {
-                return false;
+                return true;
             }
         } catch (NullPointerException e) {
             e.printStackTrace();
-            return false;
+            return true;
         }
-        return groupListMap.containsKey(listId);
+        return !groupListMap.containsKey(listId);
     }
 
     /**
@@ -319,7 +318,7 @@ public class ListUtil {
             int listId = entity.getListId();
 
             if (!listMap.containsKey(bot)) {
-                listMap.put(bot, new HashMap<Integer, GroupList>() {{
+                listMap.put(bot, new HashMap<>() {{
                     put(listId, entity);
                 }});
                 continue;

@@ -1,6 +1,8 @@
 package cn.chahuyun.entity;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
 /**
  * 说明
@@ -88,16 +90,8 @@ public class Scope {
         return isGlobal;
     }
 
-    public void setGlobal(boolean global) {
-        isGlobal = global;
-    }
-
     public boolean getGroupInfo() {
         return isGroupInfo;
-    }
-
-    public void setGroupInfo(boolean isGroupInfo) {
-        this.isGroupInfo = isGroupInfo;
     }
 
     public long getGroupNumber() {
@@ -128,8 +122,16 @@ public class Scope {
         return isGlobal;
     }
 
+    public void setGlobal(boolean global) {
+        isGlobal = global;
+    }
+
     public boolean isGroupInfo() {
         return isGroupInfo;
+    }
+
+    public void setGroupInfo(boolean isGroupInfo) {
+        this.isGroupInfo = isGroupInfo;
     }
 
     @Override
@@ -147,6 +149,9 @@ public class Scope {
 
     @Override
     public boolean equals(Object scope) {
-        return this.mark.equals(((Scope) scope).getMark());
+        if (scope instanceof Scope) {
+            return this.mark.equals(((Scope) scope).getMark());
+        }
+        return false;
     }
 }
