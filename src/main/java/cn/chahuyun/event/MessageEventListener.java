@@ -252,6 +252,18 @@ public class MessageEventListener extends SimpleListenerHost {
         }
 
         /*
+         * 踢人正则
+         */
+        String kickPattern = "tr?\\[mirai:at:\\d+] ?(hmd)?|踢人\\[mirai:at:\\d+] ?(hmd)?";
+        if (owner || power.isGroupManage() || power.isGroupTr()) {
+            if (Pattern.matches(kickPattern, code)) {
+                l.info("踢人指令");
+                GroupManager.kick(event);
+                return;
+            }
+        }
+
+        /*
         违禁词正则
          */
 
@@ -292,7 +304,7 @@ public class MessageEventListener extends SimpleListenerHost {
                 l.info("查询欢迎词指令");
                 GroupWelcomeInfoUtil.queryGroupWelcomeInfo(event);
                 return;
-            }else if (Pattern.matches(deleteGroupWelcomeMessagePattern, code)) {
+            } else if (Pattern.matches(deleteGroupWelcomeMessagePattern, code)) {
                 l.info("删除欢迎词指令");
                 GroupWelcomeInfoUtil.deleteGroupWelcomeInfo(event);
                 return;

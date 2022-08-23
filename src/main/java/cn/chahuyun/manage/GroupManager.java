@@ -400,6 +400,44 @@ public class GroupManager {
 
     }
 
+    /**
+     * 踢人
+     *
+     * @param event 消息事件
+     * @author Moyuyanli
+     * @date 2022/8/23 21:50
+     */
+    public static void kick(MessageEvent event) {
+        Contact subject = event.getSubject();
+        MessageChain message = event.getMessage();
+        String code = message.serializeToMiraiCode();
+
+        Group group = null;
+        if (subject instanceof Group) {
+            group = (Group) subject;
+        }
+
+        long userId = 0;
+        for (SingleMessage singleMessage : message) {
+            if (singleMessage instanceof At) {
+                userId = ((At) singleMessage).getTarget();
+            }
+        }
+        NormalMember member = group.get(userId);
+
+        String[] split = code.split(" +");
+        if (split.length > 1) {
+            String s = split[1];
+            if (s.equals("hmd")) {
+                member.kick("再也不见！",true);
+                return;
+            }
+        }
+
+        member.kick("送你飞机票~");
+    }
+
+
     //==============================================================================
 
     /**
