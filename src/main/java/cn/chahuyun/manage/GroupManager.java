@@ -4,10 +4,7 @@ import cn.chahuyun.HuYanSession;
 import cn.chahuyun.data.ApplyClusterInfo;
 import cn.chahuyun.data.StaticData;
 import cn.chahuyun.dialogue.Dialogue;
-import cn.chahuyun.entity.BlackHouse;
-import cn.chahuyun.entity.GroupProhibited;
-import cn.chahuyun.entity.GroupWelcomeInfo;
-import cn.chahuyun.entity.Scope;
+import cn.chahuyun.entity.*;
 import cn.chahuyun.enums.Mate;
 import cn.chahuyun.utils.BlackHouseUtil;
 import cn.chahuyun.utils.HibernateUtil;
@@ -410,6 +407,23 @@ public class GroupManager {
      * @date 2022/8/22 11:10
      */
     private static ListeningStatus AgreeOrRefuseToApply(MemberJoinRequestEvent apply, GroupMessageEvent event) {
+        Group group = event.getGroup();
+        Member sender = event.getSender();
+        Bot bot = event.getBot();
+        //权限用户识别符
+        String powerString = group.getId() + "." + sender.getId();
+
+        Map<String, Power> powerMap = StaticData.getPowerMap(bot);
+        if (!powerMap.containsKey(powerString)) {
+            return ListeningStatus.LISTENING;
+        }
+        Power power = powerMap.get(powerString);
+        MemberPermission permission = event.getGroup().get(event.getSender().getId()).getPermission();
+        if (permission == MemberPermission.MEMBER) {
+            if (!power.isAdmin() || !power.isGroupManage()) {
+                return ListeningStatus.LISTENING;
+            }
+        }
         switch (event.getMessage().contentToString()) {
             case "同意":
                 apply.accept();
