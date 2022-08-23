@@ -330,7 +330,7 @@ public class GroupManager {
                 .filter(nextGroup -> nextGroup.getGroup() == group)
                 .filter(nextEvent -> {
                     String toString = nextEvent.getMessage().contentToString();
-                    return Pattern.matches("同意 (\\d+|all)|拒绝 (\\d+|all)|开门 (\\d+|all)|关门 (\\d+|all)|门外还有谁|门外有谁|谁还在门外|外面有人吗", toString);
+                    return Pattern.matches("(同意|拒绝|开门|关门) +(\\d+|all)|[!！]申请列表", toString);
                 });
 
 
@@ -440,6 +440,7 @@ public class GroupManager {
                 apply.accept();
                 map.get(apply.getGroupId() + "." + apply.getFromId()).setMessageEvent(event);
             }
+            return ListeningStatus.STOPPED;
         } else if (Pattern.matches("开门 \\d+", content)) {
             int number  = Integer.parseInt(content.substring(3));
             if (!numbers.containsKey(number)) {
@@ -451,13 +452,16 @@ public class GroupManager {
                 apply.accept();
                 map.get(apply.getGroupId() + "." + apply.getFromId()).setMessageEvent(event);
             }
+            return ListeningStatus.STOPPED;
         }else if (Pattern.matches("开门 all", content)) {
             event.getSubject().sendMessage("大门开着的，都进来了");
             apply.accept();
             map.get(apply.getGroupId() + "." + apply.getFromId()).setMessageEvent(event);
+            return ListeningStatus.STOPPED;
         } else if (Pattern.matches("同意 all", content)) {
             apply.accept();
             map.get(apply.getGroupId() + "." + apply.getFromId()).setMessageEvent(event);
+            return ListeningStatus.STOPPED;
         } else if (Pattern.matches("拒绝 \\d+", content)) {
             int number  = Integer.parseInt(content.substring(3));
             if (!numbers.containsKey(number)) {
@@ -468,6 +472,7 @@ public class GroupManager {
                 apply.reject();
                 map.get(apply.getGroupId() + "." + apply.getFromId()).setMessageEvent(event);
             }
+            return ListeningStatus.STOPPED;
         } else if (Pattern.matches("关门 \\d+", content)) {
             int number  = Integer.parseInt(content.substring(3));
             if (!numbers.containsKey(number)) {
@@ -479,13 +484,16 @@ public class GroupManager {
                 apply.accept();
                 map.get(apply.getGroupId() + "." + apply.getFromId()).setMessageEvent(event);
             }
+            return ListeningStatus.STOPPED;
         } else if (Pattern.matches("拒绝 all", content)) {
             apply.accept();
             map.get(apply.getGroupId() + "." + apply.getFromId()).setMessageEvent(event);
+            return ListeningStatus.STOPPED;
         } else if (Pattern.matches("锁大门", content)) {
             event.getSubject().sendMessage("大门我上锁了！");
             apply.accept();
             map.get(apply.getGroupId() + "." + apply.getFromId()).setMessageEvent(event);
+            return ListeningStatus.STOPPED;
         } else {
             String fromNick = apply.getFromNick();
             long fromId = apply.getFromId();
@@ -511,9 +519,9 @@ public class GroupManager {
             } catch (Exception e) {
                 l.warning("新人加群申请-欢迎消息构造失败!");
             }
+            group.sendMessage(messageChain.build());
         }
-
-        return ListeningStatus.STOPPED;
+        return ListeningStatus.LISTENING;
     }
 
 }
