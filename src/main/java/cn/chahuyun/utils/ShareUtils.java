@@ -280,7 +280,7 @@ public class ShareUtils {
     }
 
     private static Message parseMessage(MemberJoinEvent event, String value, String valueType, Object... object) throws IOException {
-        WelcomeMessage welcomeMessage = (WelcomeMessage) object[0];
+        GroupWelcomeInfo welcomeMessage = (GroupWelcomeInfo) object[0];
         ApplyClusterInfo applyClusterInfo = (ApplyClusterInfo) object[1];
         switch (valueType) {
             //at this qq
@@ -298,7 +298,7 @@ public class ShareUtils {
                                 return new At(sender.getId());
                             }
                         } catch (Exception e) {
-                            return new PlainText("本次动态消息无效!");
+                            return new PlainText("动态消息无效!-批准人或邀请人");
                         }
                     default:
                         if (Pattern.matches("\\d+", value)) {
@@ -312,6 +312,9 @@ public class ShareUtils {
             case "message":
                 switch (value) {
                     case "apply":
+                        if (applyClusterInfo.getJoinRequestEvent() == null) {
+                            return new PlainText("我是被别人领进来的...");
+                        }
                         String message = applyClusterInfo.getJoinRequestEvent().getMessage();
                         return new PlainText(message.isEmpty()?"这个人什么都没说...":message);
                     default:

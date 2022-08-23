@@ -17,7 +17,10 @@ import kotlin.coroutines.EmptyCoroutineContext;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.*;
 import net.mamoe.mirai.event.*;
-import net.mamoe.mirai.event.events.*;
+import net.mamoe.mirai.event.events.GroupMessageEvent;
+import net.mamoe.mirai.event.events.MemberJoinEvent;
+import net.mamoe.mirai.event.events.MemberJoinRequestEvent;
+import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.data.*;
 import net.mamoe.mirai.utils.MiraiLogger;
 import org.hibernate.query.criteria.HibernateCriteriaBuilder;
@@ -32,6 +35,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 
@@ -45,9 +49,8 @@ import java.util.stream.Collectors;
 public class GroupManager {
 
 
-    private final static MiraiLogger l = HuYanSession.INSTANCE.getLogger();
-
     public final static Map<String, ApplyClusterInfo> map = new HashMap<>();
+    private final static MiraiLogger l = HuYanSession.INSTANCE.getLogger();
 
     /**
      * @param event 消息事件
@@ -327,11 +330,13 @@ public class GroupManager {
                 .filter(nextGroup -> nextGroup.getGroup() == group)
                 .filter(nextEvent -> {
                     String toString = nextEvent.getMessage().contentToString();
-                    return toString.equals("同意") || toString.equals("拒绝");
+                    return Pattern.matches("同意|拒绝|开门|关门", toString);
                 });
 
 
-        map.put(event.getGroupId()+"."+event.getFromId(),new ApplyClusterInfo(){{setJoinRequestEvent(event);}});
+        map.put(event.getGroupId() + "." + event.getFromId(), new ApplyClusterInfo() {{
+            setJoinRequestEvent(event);
+        }});
 
         //手动控制监听什么时候结束
         channel.subscribe(GroupMessageEvent.class, EmptyCoroutineContext.INSTANCE,
@@ -382,8 +387,14 @@ public class GroupManager {
         if (next) {
             return;
         }
-
-        map.get(group.getId() + "." + event.getMember().getId()).setJoinEvent(event);
+        String mark = group.getId() + "." + event.getMember().getId();
+        if (map.containsKey(mark)) {
+            map.get(mark).setJoinEvent(event);
+        } else {
+            ApplyClusterInfo applyClusterInfo = new ApplyClusterInfo();
+            applyClusterInfo.setJoinEvent(event);
+            map.put(mark, applyClusterInfo);
+        }
 
         Dialogue.INSTANCE.dialogueSession(event, groupWelcomeInfo);
 
@@ -401,12 +412,27 @@ public class GroupManager {
      * @date 2022/8/22 11:10
      */
     private static ListeningStatus AgreeOrRefuseToApply(MemberJoinRequestEvent apply, GroupMessageEvent event) {
-        if (event.getMessage().contentToString().equals("同意")) {
-            apply.accept();
-            map.get(apply.getGroupId() + "." + apply.getFromId()).setMessageEvent(event);
-        } else {
-            apply.reject();
-            map.remove(apply.getGroupId() + "." + apply.getFromId());
+        switch (event.getMessage().contentToString()) {
+            case "同意":
+                apply.accept();
+                map.get(apply.getGroupId() + "." + apply.getFromId()).setMessageEvent(event);
+                break;
+            case "开门":
+                event.getSubject().sendMessage("好的，我这就开门");
+                apply.accept();
+                map.get(apply.getGroupId() + "." + apply.getFromId()).setMessageEvent(event);
+                break;
+            case "拒绝":
+                apply.reject();
+                map.get(apply.getGroupId() + "." + apply.getFromId()).setMessageEvent(event);
+                break;
+            case "关门":
+                event.getSubject().sendMessage("门我反锁了！");
+                apply.accept();
+                map.get(apply.getGroupId() + "." + apply.getFromId()).setMessageEvent(event);
+                break;
+
+
         }
         return ListeningStatus.STOPPED;
     }

@@ -16,7 +16,9 @@ public class WelcomeMessage {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private int id;
-
+    /**
+     * 所属机器人
+     */
     private long bot;
     /**
      * 0-普通消息
@@ -24,7 +26,6 @@ public class WelcomeMessage {
      * 2-语音和转发
      */
     private int type;
-
     /**
      * 标识
      */
@@ -86,6 +87,6 @@ public class WelcomeMessage {
 
     @Override
     public boolean equals(Object obj) {
-        return this.welcomeMessage.equals(((WelcomeMessage)obj).getWelcomeMessage());
+        return this.welcomeMessage.equals(((WelcomeMessage) obj).getWelcomeMessage());
     }
 }

@@ -276,20 +276,28 @@ public class MessageEventListener extends SimpleListenerHost {
             }
         }
 
+        /*
+          欢迎词正则
+         */
         String addGroupWelcomeMessagePattern = "%hyc|添加欢迎词";
+        String queryGroupWelcomeMessagePattern = "hyc\\\\?[：:]|查询欢迎词";
+        String deleteGroupWelcomeMessagePattern = "-hyc\\\\?[：:]\\d+( +\\d+)|删除违禁词\\\\?[：:]\\d+( +\\d+)";
 
         if (owner || power.isGroupManage() || power.isGroupHyc()) {
             if (Pattern.matches(addGroupWelcomeMessagePattern, code)) {
                 l.info("添加欢迎词指令");
                 GroupWelcomeInfoUtil.addGroupWelcomeInfo(event);
                 return;
+            } else if (Pattern.matches(queryGroupWelcomeMessagePattern, code)) {
+                l.info("查询欢迎词指令");
+                GroupWelcomeInfoUtil.queryGroupWelcomeInfo(event);
+                return;
+            }else if (Pattern.matches(deleteGroupWelcomeMessagePattern, code)) {
+                l.info("删除欢迎词指令");
+                GroupWelcomeInfoUtil.deleteGroupWelcomeInfo(event);
+                return;
             }
         }
-
-
-
-
-
 
 
         isSessionMessage(event);
@@ -303,7 +311,7 @@ public class MessageEventListener extends SimpleListenerHost {
      * @author Moyuyanli
      * @date 2022/7/13 21:30
      */
-    private void isSessionMessage(MessageEvent event) {
+    private void isSessionMessage(@NotNull MessageEvent event) {
         String code = event.getMessage().serializeToMiraiCode();
         Bot bot = event.getBot();
 
