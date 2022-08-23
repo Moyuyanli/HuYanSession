@@ -250,19 +250,19 @@ public class Power {
     public String toString() {
         return "权限列表:" +
                 "\nadmin         -管理员:" + (admin ? "是" : "否") +
-                "\nlist        \t-群组管理权限:" + (groupList ? "是" : "否") +
-                "\nsession       -会话管理权限:" + (session ? "是" : "否") +
-                "\nsessionx      -会话管理权限(单一):" + (sessionX ? "是" : "否") +
-                "\nsessiondct   -会话管理权限(多词条):" + (sessionDct ? "是" : "否") +
-                "\nds         \t-定时任务管理权限:" + (ds ? "是" : "否") +
-                "\ndscz      \t-定时任务控制权限:" + (dscz ? "是" : "否") +
-                "\ngroup          -群操作管理权限:" + (groupManage ? "是" : "否") +
-                "\ngroupHyc     -群操作欢迎词权限:" + (groupHyc ? "是" : "否") +
-                "\ngroupWjc     -群操作违禁词权限:" + (groupWjc ? "是" : "否") +
-                "\ngroupJy       -群操作禁言权限:" + (groupJy ? "是" : "否") +
-                "\ngroupHmd   -群操作黑名单权限:" + (groupHmd ? "是" : "否") +
-                "\ngroupCh      -群操作消息撤回权限:" + (groupCh ? "是" : "否") +
-                "\ngroupTr       -群操作踢人权限:" + (groupTr ? "是" : "否");
+                "\nlist        \t-群组管理权限:" + (admin ? "是" : groupList ? "是" : "否") +
+                "\nsession       -会话管理权限:" + (admin ? "是" : session ? "是" : "否") +
+                "\nsessionx      -会话管理权限(单一):" + (admin ? "是" : session ? "是" : sessionX ? "是" : "否") +
+                "\nsessiondct   -会话管理权限(多词条):" + (admin ? "是" : session ? "是" : sessionDct ? "是" : "否") +
+                "\nds         \t-定时任务管理权限:" + (admin ? "是" : ds ? "是" : "否") +
+                "\ndscz      \t-定时任务控制权限:" + (admin ? "是" : ds ? "是" : dscz ? "是" : "否") +
+                "\ngroup          -群操作管理权限:" + (admin ? "是" : groupManage ? "是" : "否") +
+                "\ngroupHyc     -群操作欢迎词权限:" + (admin ? "是" : groupManage ? "是" : groupHyc ? "是" : "否") +
+                "\ngroupWjc     -群操作违禁词权限:" + (admin ? "是" : groupManage ? "是" : groupWjc ? "是" : "否") +
+                "\ngroupJy       -群操作禁言权限:" + (admin ? "是" : groupManage ? "是" : groupJy ? "是" : "否") +
+                "\ngroupHmd   -群操作黑名单权限:" + (admin ? "是" : groupManage ? "是" : groupHmd ? "是" : "否") +
+                "\ngroupCh      -群操作消息撤回权限:" + (admin ? "是" : groupManage ? "是" : groupCh ? "是" : "否") +
+                "\ngroupTr       -群操作踢人权限:" + (admin ? "是" : groupManage ? "是" : groupTr ? "是" : "否");
     }
 
     /**

@@ -253,6 +253,8 @@ public class ShareUtils {
                         return Contact.uploadImage(event.getSubject(), new URL(event.getSender().getAvatarUrl()).openConnection().getInputStream());
                     case "title":
                         return new PlainText(((NormalMember) event.getSender()).getSpecialTitle());
+                    case "info":
+                    return new PlainText((event.getSender()).queryProfile().toString());
                     default:
                         return new PlainText("未识别动态消息:" + "$" + valueType + "(" + value + ")");
                 }

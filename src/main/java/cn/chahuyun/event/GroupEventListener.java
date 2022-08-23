@@ -1,6 +1,7 @@
 package cn.chahuyun.event;
 
 import cn.chahuyun.HuYanSession;
+import cn.chahuyun.config.ConfigData;
 import cn.chahuyun.manage.GroupManager;
 import kotlin.coroutines.CoroutineContext;
 import net.mamoe.mirai.event.EventHandler;
@@ -33,6 +34,10 @@ public class GroupEventListener extends SimpleListenerHost {
      */
     @EventHandler
     public void onMessage(@NotNull GroupEvent event) throws Exception { // 可以抛出任何异常, 将在 handleException 处理
+        long groupId = event.getGroup().getId();
+        if (!ConfigData.INSTANCE.getGroupList().contains(groupId)) {
+            return;
+        }
         if (event instanceof MemberJoinEvent) {
             GroupManager.userJoinGroup((MemberJoinEvent) event);
         }
@@ -45,6 +50,10 @@ public class GroupEventListener extends SimpleListenerHost {
      */
     @EventHandler
     public void onMessageTwo(@NotNull MemberJoinRequestEvent event) throws Exception { // 可以抛出任何异常, 将在 handleException 处理
+        long groupId = event.getGroupId();
+        if (!ConfigData.INSTANCE.getGroupList().contains(groupId)) {
+            return;
+        }
         GroupManager.userRequestGroup(event);
     }
 
