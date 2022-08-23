@@ -414,16 +414,17 @@ public class GroupManager {
         String powerString = group.getId() + "." + sender.getId();
 
         Map<String, Power> powerMap = StaticData.getPowerMap(bot);
-        if (!powerMap.containsKey(powerString)) {
-            return ListeningStatus.LISTENING;
-        }
-        Power power = powerMap.get(powerString);
         MemberPermission permission = event.getGroup().get(event.getSender().getId()).getPermission();
         if (permission == MemberPermission.MEMBER) {
-            if (!power.isAdmin() || !power.isGroupManage()) {
+            if (!powerMap.containsKey(powerString)) {
+                return ListeningStatus.LISTENING;
+            }
+            Power power = powerMap.get(powerString);
+            if (!power.isAdmin() && !power.isGroupManage()) {
                 return ListeningStatus.LISTENING;
             }
         }
+
         switch (event.getMessage().contentToString()) {
             case "同意":
                 apply.accept();
