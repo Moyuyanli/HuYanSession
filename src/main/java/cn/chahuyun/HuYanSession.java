@@ -1,6 +1,7 @@
 package cn.chahuyun;
 
 import cn.chahuyun.command.Command;
+import cn.chahuyun.config.BlackListData;
 import cn.chahuyun.event.GroupEventListener;
 import cn.chahuyun.event.MessageEventListener;
 import cn.chahuyun.config.ConfigData;
@@ -37,7 +38,7 @@ public final class HuYanSession extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        getLogger().info("HuYanSession2 当前版本: 2.0.0-alpha");
+        getLogger().info("HuYanSession2 当前版本: v2.0.0-alpha-04");
 
         getLogger().info("===================HuYanSession2===================");
         MiraiHibernateConfiguration configuration = new MiraiHibernateConfiguration(this);
@@ -46,6 +47,7 @@ public final class HuYanSession extends JavaPlugin {
         EventChannel channel = GlobalEventChannel.INSTANCE.parentScope(HuYanSession.INSTANCE);
         //加载插件，打印日志
         reloadPluginConfig(ConfigData.INSTANCE);
+        reloadPluginConfig(BlackListData.INSTANCE);
         getLogger().info("插件配置已加载！");
         if (ConfigData.INSTANCE.getOwner() == 0) {
             getLogger().warning("主人还没有设置，请设置主人!");

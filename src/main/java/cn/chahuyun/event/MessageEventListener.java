@@ -311,6 +311,20 @@ public class MessageEventListener extends SimpleListenerHost {
             }
         }
 
+        /*
+        黑名单正则
+         */
+
+        String addBlackListPattern = "\\+hmd\\\\?[:：]\\[mirai:at:\\d+]( \\S+)*?";
+
+        if (owner || power.isGroupManage() || power.isGroupHmd()) {
+            if (Pattern.matches(addBlackListPattern, code)) {
+                l.info("删除欢迎词指令");
+                BlackListUtil.addBlackList(event);
+                return;
+            }
+        }
+
 
         isSessionMessage(event);
 

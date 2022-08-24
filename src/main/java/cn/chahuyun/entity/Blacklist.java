@@ -29,7 +29,7 @@ public class Blacklist {
      */
     private String reason;
     /**
-     * 是否提出
+     * 是否踢出
      */
     private boolean kick;
     /**

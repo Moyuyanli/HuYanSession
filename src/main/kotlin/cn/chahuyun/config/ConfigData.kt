@@ -25,10 +25,14 @@ object ConfigData : AutoSavePluginConfig("config") {
     @ValueDescription("主人qq")
     var owner: Long by value()
 
+    /**
+     * 动态消息变量符号
+     */
+    @ValueDescription("动态消息的变量符号")
+    val variableSymbol: String by value("$")
 
     @ValueDescription("是否开启DEBUG级别日志显示(不建议开启)")
     val debugSwitch:Boolean by value()
-
     @ValueDescription("刷屏消息的时间间隔(单位:秒)")
     val matchingNumber: Int by value(2)
     @ValueDescription("最大刷屏次数")

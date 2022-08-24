@@ -21,6 +21,8 @@ import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.regex.Pattern;
 
+import static cn.chahuyun.utils.ShareUtils.DYNAMIC_MESSAGE_PATTERN;
+
 /**
  * GroupWelcomeInfoUtil
  * 群欢迎消息工具
@@ -49,8 +51,7 @@ public class GroupWelcomeInfoUtil {
         int type = 0;
 
         //判断是否存在动态消息
-        String dynamicPattern = "\\$\\w+\\(\\S+?\\)";
-        Pattern compile = Pattern.compile(dynamicPattern);
+        Pattern compile = Pattern.compile(DYNAMIC_MESSAGE_PATTERN);
         if (compile.matcher(value).find()) {
             type = 1;
         }

@@ -48,6 +48,11 @@ public class ShareUtils {
     private final static MiraiLogger l = HuYanSession.INSTANCE.getLogger();
 
     private static final Map<String, Integer> map = new HashMap<>();
+    /**
+     * format 替换 %s ， 下一个String字符
+     */
+    public static final String DYNAMIC_MESSAGE_PATTERN = String.format("\\%s\\w+\\((\\S+?)\\)", ConfigData.INSTANCE.getVariableSymbol());
+
 
     private ShareUtils() {
     }
@@ -142,11 +147,10 @@ public class ShareUtils {
      * @date 2022/8/17 14:23
      */
     public static MessageChain parseMessageParameter(MessageEvent event, String message, Object... object) throws IOException {
-        if (message.contains("$message(null)")) {
+        if (message.contains(ConfigData.INSTANCE.getVariableSymbol()+"message(null)")) {
             return null;
         }
-        String variablePattern = "\\$\\w+\\((\\S+?)\\)";
-        Pattern pattern = Pattern.compile(variablePattern);
+        Pattern pattern = Pattern.compile(DYNAMIC_MESSAGE_PATTERN);
         Matcher matcher = pattern.matcher(message);
         MessageChainBuilder builder = new MessageChainBuilder();
         int index = 0;
@@ -171,12 +175,14 @@ public class ShareUtils {
         return builder.build();
     }
 
+    /**
+     * 欢迎词使用
+     */
     public static MessageChain parseMessageParameter(GroupEvent event, String message, Object... object) throws IOException {
-        if (message.contains("$message(null)")) {
+        if (message.contains( ConfigData.INSTANCE.getVariableSymbol()+"message(null)")) {
             return null;
         }
-        String variablePattern = "\\$\\w+\\((\\S+?)\\)";
-        Pattern pattern = Pattern.compile(variablePattern);
+        Pattern pattern = Pattern.compile(DYNAMIC_MESSAGE_PATTERN);
         Matcher matcher = pattern.matcher(message);
         MessageChainBuilder builder = new MessageChainBuilder();
         int index = 0;
@@ -228,7 +234,7 @@ public class ShareUtils {
                         }
                     }
                 }
-                return new PlainText("未识别动态消息:" + "$" + valueType + "(" + value + ")");
+                return new PlainText("未识别动态消息:" + ConfigData.INSTANCE.getVariableSymbol() + valueType + "(" + value + ")");
             case "message":
                 switch (value) {
                     case "prohibitString":
@@ -241,7 +247,7 @@ public class ShareUtils {
                     case "this":
                         return event.getMessage();
                     default:
-                        return new PlainText("未识别动态消息:" + "$" + valueType + "(" + value + ")");
+                        return new PlainText("未识别动态消息:" + ConfigData.INSTANCE.getVariableSymbol() + valueType + "(" + value + ")");
                 }
             case "user":
                 switch (value) {
@@ -256,7 +262,7 @@ public class ShareUtils {
                     case "info":
                     return new PlainText((event.getSender()).queryProfile().toString());
                     default:
-                        return new PlainText("未识别动态消息:" + "$" + valueType + "(" + value + ")");
+                        return new PlainText("未识别动态消息:" + ConfigData.INSTANCE.getVariableSymbol() + valueType + "(" + value + ")");
                 }
             case "time":
                 switch (value) {
@@ -271,14 +277,14 @@ public class ShareUtils {
                             userFormat = userSimpleDateFormat.format(new Date());
                         } catch (Exception e) {
                             l.warning("动态消息-时间格式化出错!", e);
-                            return new PlainText("未识别动态消息:" + "$" + valueType + "(" + value + ")");
+                            return new PlainText("未识别动态消息:" + ConfigData.INSTANCE.getVariableSymbol() + valueType + "(" + value + ")");
                         }
                         String trim = userFormat.replace("\\", "").trim();
                         return new PlainText(trim);
                 }
         }
 
-        return new PlainText("未识别动态消息:" + "$" + valueType + "(" + value + ")");
+        return new PlainText("未识别动态消息:" + ConfigData.INSTANCE.getVariableSymbol() + valueType + "(" + value + ")");
     }
 
     private static Message parseMessage(MemberJoinEvent event, String value, String valueType, Object... object) throws IOException {
@@ -309,7 +315,7 @@ public class ShareUtils {
                                 return new At(member.getId());
                             }
                         }
-                        return new PlainText("未识别动态消息:" + "$" + valueType + "(" + value + ")");
+                        return new PlainText("未识别动态消息:" + ConfigData.INSTANCE.getVariableSymbol() + valueType + "(" + value + ")");
                 }
             case "message":
                 switch (value) {
@@ -320,7 +326,7 @@ public class ShareUtils {
                         String message = applyClusterInfo.getJoinRequestEvent().getMessage();
                         return new PlainText(message.isEmpty()?"这个人什么都没说...":message);
                     default:
-                        return new PlainText("未识别动态消息:" + "$" + valueType + "(" + value + ")");
+                        return new PlainText("未识别动态消息:" + ConfigData.INSTANCE.getVariableSymbol() + valueType + "(" + value + ")");
                 }
             case "user":
                 switch (value) {
@@ -331,9 +337,9 @@ public class ShareUtils {
                     case "avatar":
                         return Contact.uploadImage(event.getMember(), new URL(event.getMember().getAvatarUrl()).openConnection().getInputStream());
                     case "title":
-                        return new PlainText("群欢迎词不支持的动态消息:" + "$" + valueType + "(" + value + ")");
+                        return new PlainText("群欢迎词不支持的动态消息:" + ConfigData.INSTANCE.getVariableSymbol() + valueType + "(" + value + ")");
                     default:
-                        return new PlainText("未识别动态消息:" + "$" + valueType + "(" + value + ")");
+                        return new PlainText("未识别动态消息:" + ConfigData.INSTANCE.getVariableSymbol() + valueType + "(" + value + ")");
                 }
             case "time":
                 switch (value) {
@@ -348,14 +354,14 @@ public class ShareUtils {
                             userFormat = userSimpleDateFormat.format(new Date());
                         } catch (Exception e) {
                             l.warning("动态消息-时间格式化出错!", e);
-                            return new PlainText("未识别动态消息:" + "$" + valueType + "(" + value + ")");
+                            return new PlainText("未识别动态消息:" + ConfigData.INSTANCE.getVariableSymbol() + valueType + "(" + value + ")");
                         }
                         String trim = userFormat.replace("\\", "").trim();
                         return new PlainText(trim);
                 }
         }
 
-        return new PlainText("未识别动态消息:" + "$" + valueType + "(" + value + ")");
+        return new PlainText("未识别动态消息:" + ConfigData.INSTANCE.getVariableSymbol() + valueType + "(" + value + ")");
     }
 
 

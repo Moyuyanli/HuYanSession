@@ -1,23 +1,18 @@
 package cn.chahuyun.manage;
 
 import cn.chahuyun.HuYanSession;
+import cn.chahuyun.config.BlackListData;
 import cn.chahuyun.data.ApplyClusterInfo;
 import cn.chahuyun.data.StaticData;
 import cn.chahuyun.dialogue.Dialogue;
 import cn.chahuyun.entity.*;
 import cn.chahuyun.enums.Mate;
-import cn.chahuyun.utils.BlackHouseUtil;
-import cn.chahuyun.utils.HibernateUtil;
-import cn.chahuyun.utils.ScopeUtil;
-import cn.chahuyun.utils.ShareUtils;
+import cn.chahuyun.utils.*;
 import kotlin.coroutines.EmptyCoroutineContext;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.*;
 import net.mamoe.mirai.event.*;
-import net.mamoe.mirai.event.events.GroupMessageEvent;
-import net.mamoe.mirai.event.events.MemberJoinEvent;
-import net.mamoe.mirai.event.events.MemberJoinRequestEvent;
-import net.mamoe.mirai.event.events.MessageEvent;
+import net.mamoe.mirai.event.events.*;
 import net.mamoe.mirai.message.data.*;
 import net.mamoe.mirai.utils.MiraiLogger;
 import org.hibernate.query.criteria.HibernateCriteriaBuilder;
@@ -423,7 +418,12 @@ public class GroupManager {
                 userId = ((At) singleMessage).getTarget();
             }
         }
+        assert group != null;
         NormalMember member = group.get(userId);
+        if (member == null) {
+            l.warning("该群员不存在！");
+            return;
+        }
 
         String[] split = code.split(" +");
         if (split.length > 1) {
@@ -437,6 +437,117 @@ public class GroupManager {
         member.kick("送你飞机票~");
     }
 
+    /**
+     * 有人加群时检测黑名单用户
+     *
+     * @param event 加群事件
+     * @return boolean
+     * @author Moyuyanli
+     * @date 2022/8/24 23:04
+     */
+    public static boolean detectBlackList(MemberJoinEvent event) {
+        Group group = event.getGroup();
+        NormalMember member = event.getMember();
+        Bot bot = event.getBot();
+        List<Blacklist> blacklists = null;
+        try {
+            blacklists = HibernateUtil.factory.fromTransaction(session -> {
+                HibernateCriteriaBuilder builder = session.getCriteriaBuilder();
+                JpaCriteriaQuery<Blacklist> query = builder.createQuery(Blacklist.class);
+                JpaRoot<Blacklist> from = query.from(Blacklist.class);
+                query.select(from);
+                query.where(builder.equal(from.get("bot"), bot.getId()));
+                query.where(builder.equal(from.get("blackQQ"), member.getId()));
+                List<Blacklist> list = session.createQuery(query).list();
+                for (Blacklist blacklist : list) {
+                    if (blacklist.getScope() == null) {
+                        blacklist.setScope(ScopeUtil.getScope(blacklist.getScopeMark()));
+                    }
+                }
+                return list;
+            });
+        } catch (Exception e) {
+            l.error("出错啦~",e);
+            return false;
+        }
+        if (blacklists == null || blacklists.isEmpty()) {
+            return false;
+        }
+        for (Blacklist blacklist : blacklists) {
+            if (ShareUtils.mateScope(bot, group, blacklist.getScope())) {
+                group.sendMessage("检测到黑名单用户: " + member.getId() + " ,封禁理由:" + blacklist.getReason());
+                member.kick(blacklist.getReason());
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 有人加群时检测黑名单用户
+     *
+     * @param event 加群事件
+     * @return boolean
+     * @author Moyuyanli
+     * @date 2022/8/24 23:04
+     */
+    public static boolean detectBlackList(MemberJoinRequestEvent event) {
+        Group group = event.getGroup();
+        long member = event.getFromId();
+        Bot bot = event.getBot();
+        List<Blacklist> blacklists = null;
+        try {
+            blacklists = HibernateUtil.factory.fromTransaction(session -> {
+                HibernateCriteriaBuilder builder = session.getCriteriaBuilder();
+                JpaCriteriaQuery<Blacklist> query = builder.createQuery(Blacklist.class);
+                JpaRoot<Blacklist> from = query.from(Blacklist.class);
+                query.select(from);
+                query.where(builder.equal(from.get("bot"), bot.getId()));
+                query.where(builder.equal(from.get("blackQQ"), member));
+                List<Blacklist> list = session.createQuery(query).list();
+                for (Blacklist blacklist : list) {
+                    if (blacklist.getScope() == null) {
+                        blacklist.setScope(ScopeUtil.getScope(blacklist.getScopeMark()));
+                    }
+                }
+                return list;
+            });
+        } catch (Exception e) {
+            l.error("出错啦~",e);
+            return false;
+        }
+        if (blacklists == null || blacklists.isEmpty()) {
+            return false;
+        }
+        for (Blacklist blacklist : blacklists) {
+            if (ShareUtils.mateScope(bot, group, blacklist.getScope())) {
+                group.sendMessage("检测到黑名单用户: " + member + " ,封禁理由:" + blacklist.getReason());
+                event.reject();
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 自动加入黑名单
+     *
+     * @param event 退群事件
+     * @author Moyuyanli
+     * @date 2022/8/24 23:36
+     */
+    public static void autoAddBlackList(MemberLeaveEvent event) {
+        long botId = event.getBot().getId();
+        Member member = event.getMember();
+        long userId = member.getId();
+        Group group = event.getGroup();
+        long groupId = group.getId();
+
+        Scope scope = new Scope(botId, "当前", false, false, groupId, 0);
+        Blacklist blacklist = new Blacklist(botId, userId, BlackListData.INSTANCE.getAutoBlackListReason(), scope);
+        BlackListUtil.saveBlackList(blacklist, scope);
+        group.sendMessage(String.format("%s(%d) 离开了我们,已经加入黑名单!", member.getNick(), userId));
+    }
 
     //==============================================================================
 

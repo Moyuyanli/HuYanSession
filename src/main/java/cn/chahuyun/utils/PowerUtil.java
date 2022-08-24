@@ -21,7 +21,7 @@ import org.hibernate.query.criteria.JpaRoot;
 import java.util.*;
 
 /**
- * 说明
+ * 权限工具
  *
  * @author Moyuyanli
  * @Description : 权限操作

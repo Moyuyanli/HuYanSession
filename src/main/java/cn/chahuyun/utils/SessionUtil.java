@@ -24,8 +24,10 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.regex.Pattern;
 
+import static cn.chahuyun.utils.ShareUtils.DYNAMIC_MESSAGE_PATTERN;
+
 /**
- * 说明
+ * 对话消息工具类
  *
  * @author Moyuyanli
  * @Description :对话消息工具类
@@ -123,8 +125,7 @@ public class SessionUtil {
         }
         //判断是否存在动态消息
         boolean dynamic = false;
-        String dynamicPattern = "\\$\\w+\\(\\S+?\\)";
-        Pattern compile = Pattern.compile(dynamicPattern);
+        Pattern compile = Pattern.compile(DYNAMIC_MESSAGE_PATTERN);
         if (compile.matcher(key).find() || compile.matcher(value).find()) {
             dynamic = true;
         }
@@ -320,8 +321,7 @@ public class SessionUtil {
         }
         //判断是否存在动态消息
         boolean dynamic = false;
-        String dynamicPattern = "\\$\\w+\\(\\S+?\\)";
-        Pattern compile = Pattern.compile(dynamicPattern);
+        Pattern compile = Pattern.compile(DYNAMIC_MESSAGE_PATTERN);
         if (compile.matcher(key).find() || compile.matcher(value).find()) {
             dynamic = true;
         }

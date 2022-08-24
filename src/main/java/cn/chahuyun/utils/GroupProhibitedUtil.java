@@ -100,7 +100,7 @@ public class GroupProhibitedUtil {
         String key = strings[1];
 
         Scope scope = new Scope(bot.getId(), "当前", false, false, subject.getId(), -1);
-        GroupProhibited groupProhibited = new GroupProhibited(bot.getId(), key, "$at(this)触发天条,$message(prohibitString)", 60, "1m", true, true, false, 0, scope);
+        GroupProhibited groupProhibited = new GroupProhibited(bot.getId(), key, ConfigData.INSTANCE.getVariableSymbol()+"at(this)触发天条,"+ConfigData.INSTANCE.getVariableSymbol()+"message(prohibitString)", 60, "1m", true, true, false, 0, scope);
 
         if (strings.length > 2) {
             for (int i = 2; i < strings.length; i++) {
