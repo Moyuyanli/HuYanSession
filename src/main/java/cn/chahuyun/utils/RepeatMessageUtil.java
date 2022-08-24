@@ -13,6 +13,7 @@ import net.mamoe.mirai.message.data.MessageUtils;
 import net.mamoe.mirai.message.data.PlainText;
 import net.mamoe.mirai.utils.MiraiLogger;
 
+import java.security.Permission;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -83,6 +84,9 @@ public class RepeatMessageUtil {
 
         //突破3次
         if (repeatMessage.getNumberOf() >= screen + 3) {
+            if (group.getBotPermission() == MemberPermission.MEMBER) {
+                return true;
+            }
             group.getSettings().setMuteAll(true);
             subject.sendMessage(MessageUtils.newChain().plus(new At(ConfigData.INSTANCE.getOwner()))
                     .plus(new PlainText("检测到有机器人冲突，已开启全体禁言，5秒后将会自动解除！")));
@@ -100,12 +104,12 @@ public class RepeatMessageUtil {
             repeatMessageMap.put(mark, repeatMessage);
             return true;
         } else if (repeatMessage.getNumberOf() >= screen) {
+            if (group.getBotPermission() == MemberPermission.MEMBER) {
+                return true;
+            }
             if (!repeatMessage.isReplyTo()) {
                 subject.sendMessage("检测到刷屏,已阻止!");
                 repeatMessage.setReplyTo(true);
-            }
-            if (group.getBotPermission() == MemberPermission.MEMBER) {
-                return true;
             }
             try {
                 group.get(sender.getId()).mute(60);
