@@ -4,6 +4,7 @@ import cn.chahuyun.HuYanSession;
 import cn.chahuyun.config.ConfigData;
 import cn.chahuyun.data.StaticData;
 import cn.chahuyun.dialogue.Dialogue;
+import cn.chahuyun.entity.Blacklist;
 import cn.chahuyun.entity.Power;
 import cn.chahuyun.entity.Session;
 import cn.chahuyun.manage.GroupManager;
@@ -87,6 +88,7 @@ public class MessageEventListener extends SimpleListenerHost {
         boolean prohibited = false;
 
         if (!owner) {
+            BlackListUtil.isBlackUser(event);
             if (powerUser) {
                 if (!powerMap.get(powerString).isGroupManage() && !powerMap.get(powerString).isGroupWjc()) {
                     if (GroupManager.isProhibited(event)) {

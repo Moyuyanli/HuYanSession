@@ -4,16 +4,14 @@ import cn.chahuyun.HuYanSession;
 import cn.chahuyun.entity.Blacklist;
 import cn.chahuyun.entity.Scope;
 import net.mamoe.mirai.Bot;
-import net.mamoe.mirai.contact.Contact;
-import net.mamoe.mirai.contact.Group;
-import net.mamoe.mirai.contact.MemberPermission;
-import net.mamoe.mirai.contact.User;
+import net.mamoe.mirai.contact.*;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.data.*;
 import net.mamoe.mirai.utils.MiraiLogger;
 import org.hibernate.query.criteria.HibernateCriteriaBuilder;
 import org.hibernate.query.criteria.JpaCriteriaQuery;
 import org.hibernate.query.criteria.JpaRoot;
+import xyz.cssxsh.mirai.hibernate.entry.MessageRecord;
 
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -68,8 +66,6 @@ public class BlackListUtil {
                 String s = split[i];
                 switch (s) {
                     case "t":
-                    case "tr":
-                    case "kick":
                         kick = false;
                         break;
                     case "jy":
@@ -248,7 +244,68 @@ public class BlackListUtil {
         return true;
     }
 
+    /**
+     * 在消息中处理黑名单用户
+     *
+     * @param event 消息事件
+     * @author Moyuyanli
+     * @date 2022/8/25 19:35
+     */
+    public static void isBlackUser(MessageEvent event) {
+        Contact subject = event.getSubject();
+        Group group = null;
+        if (subject instanceof Group) {
+            group = (Group) subject;
+        } else {
+            return;
+        }
+        User user = event.getSender();
+        Bot bot = event.getBot();
+        NormalMember member = group.get(user.getId());
 
+        List<Blacklist> blacklists = null;
+        try {
+            blacklists = HibernateUtil.factory.fromTransaction(session -> {
+                HibernateCriteriaBuilder builder = session.getCriteriaBuilder();
+                JpaCriteriaQuery<Blacklist> query = builder.createQuery(Blacklist.class);
+                JpaRoot<Blacklist> from = query.from(Blacklist.class);
+                query.select(from);
+                query.where(builder.equal(from.get("bot"), bot.getId()));
+                query.where(builder.equal(from.get("blackQQ"), user.getId()));
+                List<Blacklist> list = session.createQuery(query).list();
+                for (Blacklist blacklist : list) {
+                    if (blacklist.getScope() == null) {
+                        blacklist.setScope(ScopeUtil.getScope(blacklist.getScopeMark()));
+                    }
+                }
+                return list;
+            });
+        } catch (Exception e) {
+            l.error("出错啦~", e);
+            return;
+        }
+        if (blacklists == null || blacklists.isEmpty()) {
+            return;
+        }
+        for (Blacklist blacklist : blacklists) {
+            if (ShareUtils.mateScope(bot, group, blacklist.getScope())) {
+                if (blacklist.isKick()) {
+                    try {
+                        member.kick("你已被封禁");
+                        subject.sendMessage(String.format("检测到黑名单用户 %d ,已踢出,封禁理由: %s", user.getId(), blacklist.getReason()));
+                    } catch (Exception e) {
+                        l.warning("该用户不存在");
+                    }
+                } else if (blacklist.isProhibit()) {
+                    member.mute(999999999);
+                    subject.sendMessage(String.format("检测到黑名单用户 %d ,已禁言,封禁理由: %s", user.getId(), blacklist.getReason()));
+                } else if (blacklist.isWithdraw()) {
+                    MessageSource.recall(event.getMessage());
+                    subject.sendMessage(String.format("检测到黑名单用户 %d ,已撤回消息,封禁理由: %s", user.getId(), blacklist.getReason()));
+                }
+            }
+        }
+    }
 
 
 }
