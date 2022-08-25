@@ -20,7 +20,8 @@ import net.mamoe.mirai.message.data.PlainText
 object BlackListData : AutoSavePluginConfig("blackListConfig") {
 
     @ValueDescription("是否开启退群自动加入黑名单")
-    val isAutoBlackList:Boolean by value()
+    val isAutoBlackList: Boolean by value()
+
     @ValueDescription("显示理由")
     val AutoBlackListReason: String by value("退群自动加入黑名单！")
 

@@ -9,11 +9,13 @@ import net.mamoe.mirai.contact.Group;
 import net.mamoe.mirai.contact.MemberPermission;
 import net.mamoe.mirai.contact.User;
 import net.mamoe.mirai.event.events.MessageEvent;
-import net.mamoe.mirai.message.data.At;
-import net.mamoe.mirai.message.data.MessageChain;
-import net.mamoe.mirai.message.data.SingleMessage;
+import net.mamoe.mirai.message.data.*;
 import net.mamoe.mirai.utils.MiraiLogger;
+import org.hibernate.query.criteria.HibernateCriteriaBuilder;
+import org.hibernate.query.criteria.JpaCriteriaQuery;
+import org.hibernate.query.criteria.JpaRoot;
 
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.regex.Pattern;
 
@@ -123,6 +125,103 @@ public class BlackListUtil {
     }
 
     /**
+     * 查询黑名单用户
+     *
+     * @param event 消息事件
+     * @author Moyuyanli
+     * @date 2022/8/25 17:13
+     */
+    public static void queryBlackList(MessageEvent event) {
+        //hmd:
+        Contact subject = event.getSubject();
+        Bot bot = event.getBot();
+
+        List<Blacklist> blacklists = null;
+        try {
+            blacklists = HibernateUtil.factory.fromTransaction(session -> {
+                HibernateCriteriaBuilder builder = session.getCriteriaBuilder();
+                JpaCriteriaQuery<Blacklist> query = builder.createQuery(Blacklist.class);
+                JpaRoot<Blacklist> from = query.from(Blacklist.class);
+                query.select(from);
+                query.where(builder.equal(from.get("bot"), bot.getId()));
+                List<Blacklist> list = session.createQuery(query).list();
+                for (Blacklist blacklist : list) {
+                    if (blacklist.getScope() == null) {
+                        blacklist.setScope(ScopeUtil.getScope(blacklist.getScopeMark()));
+                    }
+                }
+                return list;
+            });
+        } catch (Exception e) {
+            l.error("出错啦~",e);
+            return;
+        }
+
+        if (blacklists == null || blacklists.isEmpty()) {
+            subject.sendMessage("没有黑名单信息!");
+            return;
+        }
+
+        ForwardMessageBuilder messageBuilder = new ForwardMessageBuilder(subject);
+        messageBuilder.add(bot, new PlainText("以下是所有黑名单用户↓"));
+
+        for (Blacklist blacklist : blacklists) {
+            MessageChainBuilder chainBuilder = new MessageChainBuilder();
+            chainBuilder.add(String.format("黑名单编号:%d%nqq:%d%n封禁理由:%s%n" ,blacklist.getId(), blacklist.getBlackQQ(), blacklist.getReason()));
+            Scope scope = blacklist.getScope();
+            if (ShareUtils.mateScope(event, scope)) {
+                chainBuilder.add("当前群是否触发:是\n");
+            } else {
+                chainBuilder.add("当前群是否触发:否\n");
+            }
+            chainBuilder.add(String.format("作用域:%s",scope.getScopeName()));
+            messageBuilder.add(bot,chainBuilder.build());
+        }
+
+        subject.sendMessage(messageBuilder.build());
+
+    }
+
+    /**
+     * 删除黑名单
+     *
+     * @param event 消息事件
+     * @author Moyuyanli
+     * @date 2022/8/25 19:11
+     */
+    public static void deleteBlackList(MessageEvent event) {
+        //-hmd:id
+        String code = event.getMessage().serializeToMiraiCode();
+        Bot bot = event.getBot();
+        Contact subject = event.getSubject();
+
+        String key = code.split("[:：]")[1];
+
+        Boolean aBoolean = HibernateUtil.factory.fromTransaction(session -> {
+            HibernateCriteriaBuilder builder = session.getCriteriaBuilder();
+            JpaCriteriaQuery<Blacklist> query = builder.createQuery(Blacklist.class);
+            JpaRoot<Blacklist> from = query.from(Blacklist.class);
+            query.select(from);
+            query.where(builder.equal(from.get("id"), key));
+            List<Blacklist> list = session.createQuery(query).list();
+            if (list == null || list.isEmpty()) {
+                return false;
+            }
+            Blacklist blacklist = list.get(0);
+            session.remove(blacklist);
+            return true;
+        });
+
+        if (aBoolean) {
+            subject.sendMessage("黑名单删除成功!");
+        } else {
+            subject.sendMessage("黑明单删除失败!");
+        }
+    }
+
+
+
+    /**
      * 保存黑名单
      *
      * @param blacklist 黑名单
@@ -148,6 +247,8 @@ public class BlackListUtil {
         }
         return true;
     }
+
+
 
 
 }

@@ -316,11 +316,23 @@ public class MessageEventListener extends SimpleListenerHost {
          */
 
         String addBlackListPattern = "\\+hmd\\\\?[:：]\\[mirai:at:\\d+]( \\S+)*?";
+        String queryBlackListPattern = "hmd\\\\?[:：]";
+        String deleteBlackListPattern = "-hmd\\\\?[:：]\\d+";
+
+
 
         if (owner || power.isGroupManage() || power.isGroupHmd()) {
             if (Pattern.matches(addBlackListPattern, code)) {
-                l.info("删除欢迎词指令");
+                l.info("添加黑名单指令");
                 BlackListUtil.addBlackList(event);
+                return;
+            } else if (Pattern.matches(queryBlackListPattern, code)) {
+                l.info("查询黑名单指令");
+                BlackListUtil.queryBlackList(event);
+                return;
+            } else if (Pattern.matches(deleteBlackListPattern, code)) {
+                l.info("删除黑名单指令");
+                BlackListUtil.deleteBlackList(event);
                 return;
             }
         }
