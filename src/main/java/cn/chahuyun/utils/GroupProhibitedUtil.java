@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 import java.util.regex.Pattern;
 
 /**
@@ -51,15 +50,7 @@ public class GroupProhibitedUtil {
                 JpaCriteriaQuery<GroupProhibited> query = builder.createQuery(GroupProhibited.class);
                 JpaRoot<GroupProhibited> from = query.from(GroupProhibited.class);
                 query.select(from);
-                List<GroupProhibited> list = session.createQuery(query).list();
-                for (GroupProhibited groupProhibited : list) {
-                    if (groupProhibited.getScopeInfo() == null) {
-                        Scope scope = ScopeUtil.getScope(groupProhibited.getScopeMark());
-                        assert scope != null;
-                        groupProhibited.setScopeInfo(scope);
-                    }
-                }
-                return list;
+                return session.createQuery(query).list();
             });
         } catch (Exception e) {
             l.error("出错啦~", e);
@@ -84,7 +75,7 @@ public class GroupProhibitedUtil {
      * @author Moyuyanli
      * @date 2022/8/17 19:12
      */
-    public static void addProhibited(MessageEvent event) throws ExecutionException, InterruptedException {
+    public static void addProhibited(MessageEvent event) {
         //+wjc:body [3h|gr1|%(重设回复消息)|ch|jy|hmd3|0|全局|1|2|3|4]
         String code = event.getMessage().serializeToMiraiCode();
         Contact subject = event.getSubject();
@@ -100,7 +91,7 @@ public class GroupProhibitedUtil {
         String key = strings[1];
 
         Scope scope = new Scope(bot.getId(), "当前", false, false, subject.getId(), -1);
-        GroupProhibited groupProhibited = new GroupProhibited(bot.getId(), key, ConfigData.INSTANCE.getVariableSymbol()+"at(this)触发天条,"+ConfigData.INSTANCE.getVariableSymbol()+"message(prohibitString)", 60, "1m", true, true, false, 0, scope);
+        GroupProhibited groupProhibited = new GroupProhibited(bot.getId(), key, ConfigData.INSTANCE.getVariableSymbol() + "at(this)触发天条," + ConfigData.INSTANCE.getVariableSymbol() + "message(prohibitString)", 60, "1m", true, true, false, 0, scope);
 
         if (strings.length > 2) {
             for (int i = 2; i < strings.length; i++) {

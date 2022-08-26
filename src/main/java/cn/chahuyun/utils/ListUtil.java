@@ -1,10 +1,10 @@
 package cn.chahuyun.utils;
 
 import cn.chahuyun.HuYanSession;
+import cn.chahuyun.config.ConfigData;
 import cn.chahuyun.data.StaticData;
 import cn.chahuyun.entity.GroupInfo;
 import cn.chahuyun.entity.GroupList;
-import cn.chahuyun.config.ConfigData;
 import jakarta.persistence.PersistenceException;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.Contact;

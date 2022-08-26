@@ -18,7 +18,6 @@ import org.hibernate.query.criteria.JpaRoot;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.ExecutionException;
 import java.util.regex.Pattern;
 
 import static cn.chahuyun.utils.ShareUtils.DYNAMIC_MESSAGE_PATTERN;
@@ -35,7 +34,7 @@ public class GroupWelcomeInfoUtil {
     private final static MiraiLogger l = HuYanSession.INSTANCE.getLogger();
 
 
-    public static void addGroupWelcomeInfo(MessageEvent event) throws ExecutionException, InterruptedException {
+    public static void addGroupWelcomeInfo(MessageEvent event) {
         Contact subject = event.getSubject();
         User user = event.getSender();
         Bot bot = event.getBot();
@@ -95,7 +94,7 @@ public class GroupWelcomeInfoUtil {
                             subject.sendMessage("该群组不存在!");
                             return;
                         }
-                        scope = new Scope(bot.getId(), "群组", false, true, subject.getId(), listId);
+                        scope = new Scope(bot.getId(), "群组" + listId, false, true, subject.getId(), listId);
                     }
                     break;
             }
@@ -247,13 +246,7 @@ public class GroupWelcomeInfoUtil {
                 query.select(from);
                 query.where(builder.equal(from.get("bot"), bot.getId()));
                 query.where(builder.equal(from.get("randomMark"), key));
-                List<GroupWelcomeInfo> list = session.createQuery(query).list();
-                for (GroupWelcomeInfo info : list) {
-                    if (info.getScope() == null) {
-                        info.setScope(Objects.requireNonNull(ScopeUtil.getScope(info.getScopeMark())));
-                    }
-                }
-                return list;
+                return session.createQuery(query).list();
             });
         } catch (Exception e) {
             l.error("出错啦!", e);

@@ -2,13 +2,11 @@ package cn.chahuyun.utils;
 
 import cn.chahuyun.HuYanSession;
 import cn.chahuyun.entity.Scope;
-import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.utils.MiraiLogger;
 import org.hibernate.query.criteria.HibernateCriteriaBuilder;
 import org.hibernate.query.criteria.JpaCriteriaQuery;
 import org.hibernate.query.criteria.JpaRoot;
 
-import java.sql.SQLException;
 import java.util.List;
 
 /**

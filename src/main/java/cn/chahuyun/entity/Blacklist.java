@@ -1,5 +1,6 @@
 package cn.chahuyun.entity;
 
+import cn.chahuyun.utils.ScopeUtil;
 import jakarta.persistence.*;
 
 /**
@@ -135,7 +136,7 @@ public class Blacklist {
     }
 
     public Scope getScope() {
-        return scope;
+        return ScopeUtil.getScope(this.scopeMark);
     }
 
     public void setScope(Scope scopeInfo) {

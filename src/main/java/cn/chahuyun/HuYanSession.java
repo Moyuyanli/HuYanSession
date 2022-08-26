@@ -2,9 +2,9 @@ package cn.chahuyun;
 
 import cn.chahuyun.command.Command;
 import cn.chahuyun.config.BlackListData;
+import cn.chahuyun.config.ConfigData;
 import cn.chahuyun.event.GroupEventListener;
 import cn.chahuyun.event.MessageEventListener;
-import cn.chahuyun.config.ConfigData;
 import cn.chahuyun.utils.*;
 import net.mamoe.mirai.console.command.CommandManager;
 import net.mamoe.mirai.console.plugin.jvm.JavaPlugin;
@@ -38,7 +38,7 @@ public final class HuYanSession extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        getLogger().info("HuYanSession2 当前版本: v2.0.0-alpha-04");
+        getLogger().info("HuYanSession2 当前版本: v2.0.0-alpha-06");
 
         getLogger().info("===================HuYanSession2===================");
         MiraiHibernateConfiguration configuration = new MiraiHibernateConfiguration(this);
@@ -52,7 +52,7 @@ public final class HuYanSession extends JavaPlugin {
         if (ConfigData.INSTANCE.getOwner() == 0) {
             getLogger().warning("主人还没有设置，请设置主人!");
         }
-        getLogger().info("主人已设置:"+ConfigData.INSTANCE.getOwner());
+        getLogger().info("主人已设置:" + ConfigData.INSTANCE.getOwner());
 
         CommandManager.INSTANCE.registerCommand(Command.INSTANCE, true);
         getLogger().info("插件指令已加载！");
@@ -61,6 +61,7 @@ public final class HuYanSession extends JavaPlugin {
         SessionUtil.init(true);
         PowerUtil.init(true);
         GroupProhibitedUtil.init(true);
+        ManySessionUtil.init(true);
 
         //注册群消息事件
         channel.registerListenerHost(new MessageEventListener());

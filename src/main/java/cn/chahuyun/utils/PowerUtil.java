@@ -1,9 +1,9 @@
 package cn.chahuyun.utils;
 
 import cn.chahuyun.HuYanSession;
+import cn.chahuyun.config.ConfigData;
 import cn.chahuyun.data.StaticData;
 import cn.chahuyun.entity.Power;
-import cn.chahuyun.config.ConfigData;
 import kotlin.coroutines.EmptyCoroutineContext;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.*;
@@ -18,7 +18,10 @@ import org.hibernate.query.criteria.HibernateCriteriaBuilder;
 import org.hibernate.query.criteria.JpaCriteriaQuery;
 import org.hibernate.query.criteria.JpaRoot;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 权限工具
@@ -227,9 +230,9 @@ public class PowerUtil {
             return 0;
         });
         if (type) {
-            subject.sendMessage("添加用户 " + friend.getRemark() + " 权限 " + (value.equals("all")?"全部":value) + " 成功!");
+            subject.sendMessage("添加用户 " + friend.getRemark() + " 权限 " + (value.equals("all") ? "全部" : value) + " 成功!");
         } else {
-            subject.sendMessage("删除用户 " + friend.getRemark() + " 权限" + (value.equals("all")?"全部":value) + " 成功!");
+            subject.sendMessage("删除用户 " + friend.getRemark() + " 权限" + (value.equals("all") ? "全部" : value) + " 成功!");
         }
         init(false);
     }

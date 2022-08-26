@@ -10,13 +10,13 @@ package cn.chahuyun.enums;
 public enum Mate {
 
     //ACCURATE("精准",1),
-    ACCURATE("精准",1),
+    ACCURATE("精准", 1),
     //VAGUE("模糊",2),
-    VAGUE("模糊",2),
+    VAGUE("模糊", 2),
     //START("头部",3),
-    START("头部",3),
+    START("头部", 3),
     //END("结尾",4);
-    END("结尾",4);
+    END("结尾", 4);
 
     private String mateName;
     private int mateType;

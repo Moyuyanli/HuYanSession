@@ -26,7 +26,6 @@ public class GroupInfo {
     private long groupId;
 
 
-
     public GroupInfo() {
     }
 

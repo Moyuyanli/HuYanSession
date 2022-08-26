@@ -30,6 +30,12 @@ public class StaticData {
      * 消息信息
      */
     private static Map<Long, Map<String, Session>> sessionMap;
+    /**
+     * 不同机器人
+     * 不同触发词
+     * 多词条消息
+     */
+    private static Map<Long, Map<String, ManySessionInfo>> manySession;
 
     /**
      * 不同机器人
@@ -44,7 +50,6 @@ public class StaticData {
      * 多条违禁词
      */
     private static Map<Long, Map<Scope, List<GroupProhibited>>> prohibitedMap;
-
 
     private StaticData() {
     }
@@ -162,5 +167,25 @@ public class StaticData {
 
     public static void setPowerMap(Map<Long, Map<String, Power>> powerMap) {
         StaticData.powerMap = powerMap;
+    }
+
+    /**
+     * 获取多词条消息map
+     *
+     * @param bot 所属机器人
+     * @return
+     */
+    public static Map<String, ManySessionInfo> getManySession(Bot bot) {
+        if (manySession == null) {
+            manySession = new HashMap<>();
+        }
+        if (manySession.containsKey(bot.getId())) {
+            return manySession.get(bot.getId());
+        }
+        return new HashMap<>();
+    }
+
+    public static void setManySession(Map<Long, Map<String, ManySessionInfo>> manySession) {
+        StaticData.manySession = manySession;
     }
 }

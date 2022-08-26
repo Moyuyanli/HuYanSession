@@ -13,11 +13,9 @@ import net.mamoe.mirai.message.data.MessageUtils;
 import net.mamoe.mirai.message.data.PlainText;
 import net.mamoe.mirai.utils.MiraiLogger;
 
-import java.security.Permission;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Timer;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;

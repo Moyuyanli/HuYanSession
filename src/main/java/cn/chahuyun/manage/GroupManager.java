@@ -117,8 +117,9 @@ public class GroupManager {
             if (e instanceof PermissionDeniedException) {
                 subject.sendMessage("禁言失败,你机器居然不是管理员???");
             } else {
-                subject.sendMessage("出错啦~");
+                subject.sendMessage("禁言失败！");
                 l.error("出错啦~", e);
+                return;
             }
         }
         subject.sendMessage(messages.build());
@@ -301,7 +302,7 @@ public class GroupManager {
         eventMap.put(doorNumber, event.getEventId());
         MessageChainBuilder messageChain = new MessageChainBuilder();
         messageChain.append(new PlainText("来人啦~!\n" +
-                "门牌号:" +  doorNumber++ + "\n" +
+                "门牌号:" + doorNumber++ + "\n" +
                 "时间:" + format + "\n" +
                 "敲门人:" + fromNick + "(" + fromId + ")"));
         if (message.isEmpty()) {
@@ -335,7 +336,7 @@ public class GroupManager {
 
         //手动控制监听什么时候结束
         channel.subscribe(GroupMessageEvent.class, EmptyCoroutineContext.INSTANCE,
-                ConcurrencyKind.LOCKED, EventPriority.HIGH, messageEvent -> AgreeOrRefuseToApply(event, messageEvent,eventMap));
+                ConcurrencyKind.LOCKED, EventPriority.HIGH, messageEvent -> AgreeOrRefuseToApply(event, messageEvent, eventMap));
 
     }
 
@@ -429,7 +430,7 @@ public class GroupManager {
         if (split.length > 1) {
             String s = split[1];
             if (s.equals("hmd")) {
-                member.kick("再也不见！",true);
+                member.kick("再也不见！", true);
                 return;
             }
         }
@@ -467,7 +468,7 @@ public class GroupManager {
                 return list;
             });
         } catch (Exception e) {
-            l.error("出错啦~",e);
+            l.error("出错啦~", e);
             return false;
         }
         if (blacklists == null || blacklists.isEmpty()) {
@@ -513,7 +514,7 @@ public class GroupManager {
                 return list;
             });
         } catch (Exception e) {
-            l.error("出错啦~",e);
+            l.error("出错啦~", e);
             return false;
         }
         if (blacklists == null || blacklists.isEmpty()) {
@@ -560,7 +561,7 @@ public class GroupManager {
      * @author Moyuyanli
      * @date 2022/8/22 11:10
      */
-    private static ListeningStatus AgreeOrRefuseToApply(MemberJoinRequestEvent apply, GroupMessageEvent event,Map<Integer,Long> numbers) {
+    private static ListeningStatus AgreeOrRefuseToApply(MemberJoinRequestEvent apply, GroupMessageEvent event, Map<Integer, Long> numbers) {
         Group group = event.getGroup();
         Member sender = event.getSender();
         Bot bot = event.getBot();
@@ -580,7 +581,7 @@ public class GroupManager {
         }
         String content = event.getMessage().contentToString();
         if (Pattern.matches("同意 \\d+", content)) {
-            int number  = Integer.parseInt(content.substring(3));
+            int number = Integer.parseInt(content.substring(3));
             if (!numbers.containsKey(number)) {
                 return ListeningStatus.LISTENING;
             }
@@ -591,7 +592,7 @@ public class GroupManager {
             }
             return ListeningStatus.STOPPED;
         } else if (Pattern.matches("开门 \\d+", content)) {
-            int number  = Integer.parseInt(content.substring(3));
+            int number = Integer.parseInt(content.substring(3));
             if (!numbers.containsKey(number)) {
                 return ListeningStatus.LISTENING;
             }
@@ -602,7 +603,7 @@ public class GroupManager {
                 map.get(apply.getGroupId() + "." + apply.getFromId()).setMessageEvent(event);
             }
             return ListeningStatus.STOPPED;
-        }else if (Pattern.matches("开门 all", content)) {
+        } else if (Pattern.matches("开门 all", content)) {
             event.getSubject().sendMessage("大门开着的，都进来了");
             apply.accept();
             map.get(apply.getGroupId() + "." + apply.getFromId()).setMessageEvent(event);
@@ -612,7 +613,7 @@ public class GroupManager {
             map.get(apply.getGroupId() + "." + apply.getFromId()).setMessageEvent(event);
             return ListeningStatus.STOPPED;
         } else if (Pattern.matches("拒绝 \\d+", content)) {
-            int number  = Integer.parseInt(content.substring(3));
+            int number = Integer.parseInt(content.substring(3));
             if (!numbers.containsKey(number)) {
                 return ListeningStatus.LISTENING;
             }
@@ -623,7 +624,7 @@ public class GroupManager {
             }
             return ListeningStatus.STOPPED;
         } else if (Pattern.matches("关门 \\d+", content)) {
-            int number  = Integer.parseInt(content.substring(3));
+            int number = Integer.parseInt(content.substring(3));
             if (!numbers.containsKey(number)) {
                 return ListeningStatus.LISTENING;
             }
@@ -652,7 +653,7 @@ public class GroupManager {
             String format = simpleDateFormat.format(new Date());
             MessageChainBuilder messageChain = new MessageChainBuilder();
             messageChain.append(new PlainText("门外还有人呢!\n" +
-                    "门牌号:" +  doorNumber + "\n" +
+                    "门牌号:" + doorNumber + "\n" +
                     "时间:" + format + "\n" +
                     "敲门人:" + fromNick + "(" + fromId + ")"));
             if (message.isEmpty()) {

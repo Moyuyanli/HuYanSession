@@ -1,6 +1,8 @@
 package cn.chahuyun.entity;
 
 import cn.chahuyun.enums.Mate;
+import cn.chahuyun.utils.ScopeUtil;
+import cn.chahuyun.utils.ShareUtils;
 import jakarta.persistence.*;
 
 /**
@@ -52,24 +54,24 @@ public class Session {
     @Transient
     private Mate mate;
     @Transient
-    private Scope scopeInfo;
+    private Scope scope;
 
     public Session() {
     }
 
-    public Session(long bot, int type, String term, String reply, Mate mate, Scope scopeInfo,boolean dynamic) {
+    public Session(long bot, int type, String term, String reply, Mate mate, Scope scope, boolean dynamic) {
         this.bot = bot;
         this.type = type;
         this.term = term;
         this.reply = reply;
         this.mateInter = mate.getMateType();
         this.mate = mate;
-        this.scopeInfo = scopeInfo;
+        this.scope = scope;
         this.dynamic = dynamic;
-        this.scopeMark = bot + "." + scopeInfo.isGlobal() + "." + scopeInfo.isGroupInfo() + "." + scopeInfo.getGroupNumber() + "." + scopeInfo.getListId();
+        this.scopeMark = bot + "." + scope.isGlobal() + "." + scope.isGroupInfo() + "." + scope.getGroupNumber() + "." + scope.getListId();
     }
 
-    public Session(int id, long bot, int type, String term, String reply, Mate mate, Scope scopeInfo) {
+    public Session(int id, long bot, int type, String term, String reply, Mate mate, Scope scope) {
         this.id = id;
         this.bot = bot;
         this.type = type;
@@ -77,7 +79,7 @@ public class Session {
         this.mateInter = mate.getMateType();
         this.reply = reply;
         this.mate = mate;
-        this.scopeInfo = scopeInfo;
+        this.scope = scope;
     }
 
     public int getId() {
@@ -137,18 +139,7 @@ public class Session {
     }
 
     public Mate getMate() {
-        switch (mateInter) {
-            case 1:
-                return Mate.ACCURATE;
-            case 2:
-                return Mate.VAGUE;
-            case 3:
-                return Mate.START;
-            case 4:
-                return Mate.END;
-            default:
-                return Mate.ACCURATE;
-        }
+        return ShareUtils.getMate(mateInter);
     }
 
     public void setMate(Mate mate) {
@@ -156,12 +147,13 @@ public class Session {
         this.mateInter = mate.getMateType();
     }
 
-    public Scope getScopeInfo() {
-        return scopeInfo;
+    public Scope getScope() {
+        return ScopeUtil.getScope(this.scopeMark);
     }
 
-    public void setScopeInfo(Scope scopeInfo) {
-        this.scopeInfo = scopeInfo;
+    public void setScope(Scope scope) {
+        this.scopeMark = bot + "." + scope.isGlobal() + "." + scope.isGroupInfo() + "." + scope.getGroupNumber() + "." + scope.getListId();
+        this.scope = scope;
     }
 
     public int getMateInter() {
@@ -181,7 +173,7 @@ public class Session {
                 ", key='" + term + '\'' +
                 ", reply='" + reply + '\'' +
                 ", mate=" + mate +
-                ", scope=" + scopeInfo +
+                ", scope=" + scope +
                 '}';
     }
 }

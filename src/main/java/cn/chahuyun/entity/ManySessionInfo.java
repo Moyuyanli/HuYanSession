@@ -2,6 +2,8 @@ package cn.chahuyun.entity;
 
 import cn.chahuyun.enums.Mate;
 import cn.chahuyun.utils.MateUtil;
+import cn.chahuyun.utils.ScopeUtil;
+import cn.chahuyun.utils.ShareUtils;
 import jakarta.persistence.*;
 
 import java.util.ArrayList;
@@ -51,7 +53,6 @@ public class ManySessionInfo {
      * 作用域标识
      */
     private String scopeMark;
-
     /**
      * 匹配类型
      */
@@ -142,15 +143,16 @@ public class ManySessionInfo {
     }
 
     public Mate getMate() {
-        return mate;
+        return ShareUtils.getMate(mateType);
     }
 
     public void setMate(Mate mate) {
         this.mate = mate;
+        this.mateType = mate.getMateType();
     }
 
     public Scope getScope() {
-        return scope;
+        return ScopeUtil.getScope(this.scopeMark);
     }
 
     public void setScope(Scope scopeInfo) {

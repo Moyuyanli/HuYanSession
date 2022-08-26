@@ -11,10 +11,8 @@ import net.mamoe.mirai.utils.MiraiLogger;
 import org.hibernate.query.criteria.HibernateCriteriaBuilder;
 import org.hibernate.query.criteria.JpaCriteriaQuery;
 import org.hibernate.query.criteria.JpaRoot;
-import xyz.cssxsh.mirai.hibernate.entry.MessageRecord;
 
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 import java.util.regex.Pattern;
 
 /**
@@ -35,7 +33,7 @@ public class BlackListUtil {
      * @author Moyuyanli
      * @date 2022/8/24 18:34
      */
-    public static void addBlackList(MessageEvent event) throws ExecutionException, InterruptedException {
+    public static void addBlackList(MessageEvent event) {
         //+hmd:at ...
         MessageChain message = event.getMessage();
         Contact subject = event.getSubject();
@@ -109,7 +107,7 @@ public class BlackListUtil {
                 group.get(userId).kick(reason);
                 subject.sendMessage("检测到黑名单用户->" + userId + " 已踢出,理由:" + reason);
             } catch (Exception e) {
-                l.error("出错啦~",e);
+                l.error("出错啦~", e);
                 subject.sendMessage("检测到黑名单用户->" + userId + " 踢出失败!");
             }
         } else {
@@ -149,7 +147,7 @@ public class BlackListUtil {
                 return list;
             });
         } catch (Exception e) {
-            l.error("出错啦~",e);
+            l.error("出错啦~", e);
             return;
         }
 
@@ -163,15 +161,15 @@ public class BlackListUtil {
 
         for (Blacklist blacklist : blacklists) {
             MessageChainBuilder chainBuilder = new MessageChainBuilder();
-            chainBuilder.add(String.format("黑名单编号:%d%nqq:%d%n封禁理由:%s%n" ,blacklist.getId(), blacklist.getBlackQQ(), blacklist.getReason()));
+            chainBuilder.add(String.format("黑名单编号:%d%nqq:%d%n封禁理由:%s%n", blacklist.getId(), blacklist.getBlackQQ(), blacklist.getReason()));
             Scope scope = blacklist.getScope();
             if (ShareUtils.mateScope(event, scope)) {
                 chainBuilder.add("当前群是否触发:是\n");
             } else {
                 chainBuilder.add("当前群是否触发:否\n");
             }
-            chainBuilder.add(String.format("作用域:%s",scope.getScopeName()));
-            messageBuilder.add(bot,chainBuilder.build());
+            chainBuilder.add(String.format("作用域:%s", scope.getScopeName()));
+            messageBuilder.add(bot, chainBuilder.build());
         }
 
         subject.sendMessage(messageBuilder.build());
@@ -216,17 +214,16 @@ public class BlackListUtil {
     }
 
 
-
     /**
      * 保存黑名单
      *
      * @param blacklist 黑名单
-     * @param scope 作用域
+     * @param scope     作用域
      * @return boolean
      * @author Moyuyanli
      * @date 2022/8/24 23:31
      */
-    public static boolean saveBlackList(Blacklist blacklist,Scope scope) {
+    public static boolean saveBlackList(Blacklist blacklist, Scope scope) {
         try {
             HibernateUtil.factory.fromTransaction(session -> {
                 //判断对应作用域是否存在
@@ -238,7 +235,7 @@ public class BlackListUtil {
                 return null;
             });
         } catch (Exception e) {
-            l.error("出错啦~",e);
+            l.error("出错啦~", e);
             return false;
         }
         return true;

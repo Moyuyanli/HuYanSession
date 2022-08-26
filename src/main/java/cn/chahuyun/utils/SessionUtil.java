@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 import java.util.regex.Pattern;
 
 import static cn.chahuyun.utils.ShareUtils.DYNAMIC_MESSAGE_PATTERN;
@@ -65,10 +64,6 @@ public class SessionUtil {
         //解析成sessionMap
         if (sessions != null && !sessions.isEmpty()) {
             for (Session entity : sessions) {
-                if (entity.getScopeInfo() == null) {
-                    Scope scope = ScopeUtil.getScope(entity.getScopeMark());
-                    entity.setScopeInfo(scope);
-                }
                 if (!sessionAll.containsKey(entity.getBot())) {
                     sessionAll.put(entity.getBot(), new HashMap<>() {{
                         put(entity.getTerm(), entity);
@@ -165,7 +160,7 @@ public class SessionUtil {
                                 subject.sendMessage("该群组不存在!");
                                 return;
                             }
-                            scope = new Scope(bot.getId(), "群组", false, true, subject.getId(), listId);
+                            scope = new Scope(bot.getId(), "群组" + listId, false, true, subject.getId(), listId);
                         }
                         break;
                 }
@@ -241,7 +236,7 @@ public class SessionUtil {
      * @author Moyuyanli
      * @date 2022/7/29 15:05
      */
-    public static void studyDialogue(MessageEvent event) throws ExecutionException, InterruptedException {
+    public static void studyDialogue(MessageEvent event) {
         //%xx|学习对话
         Contact subject = event.getSubject();
         User user = event.getSender();
@@ -301,7 +296,7 @@ public class SessionUtil {
                             subject.sendMessage("该群组不存在!");
                             return;
                         }
-                        scope = new Scope(bot.getId(), "群组", false, true, subject.getId(), listId);
+                        scope = new Scope(bot.getId(), "群组" + listId, false, true, subject.getId(), listId);
                     }
                     break;
             }
@@ -365,7 +360,7 @@ public class SessionUtil {
      * @author Moyuyanli
      * @date 2022/8/20 12:31
      */
-    public static void deleteInformationSession(MessageEvent event) throws ExecutionException, InterruptedException {
+    public static void deleteInformationSession(MessageEvent event) {
         Contact subject = event.getSubject();
         Bot bot = event.getBot();
         User user = event.getSender();
@@ -466,7 +461,7 @@ public class SessionUtil {
     private static String judgeScope(MessageEvent event, Contact subject, Session session) {
         String trigger = "其他群触发";
         long groupId = event.getSubject().getId();
-        Scope scopeInfo = session.getScopeInfo();
+        Scope scopeInfo = session.getScope();
         if (scopeInfo.getGlobal()) {
             trigger = "全局触发";
         } else if (scopeInfo.getGroupInfo()) {

@@ -25,8 +25,17 @@ public class ManySession {
      */
     private String mark;
     /**
+     * 是否包含动态消息参数
+     */
+    private boolean dynamic;
+    /**
+     * 是否是转发或语音消息
+     */
+    private boolean other;
+    /**
      * 回复消息
      */
+    @Column(length = 10240)
     private String reply;
 
     public ManySession() {
@@ -36,6 +45,22 @@ public class ManySession {
         this.bot = bot;
         this.mark = bot+"."+trigger+"."+reply;
         this.reply = reply;
+    }
+
+    public ManySession(long bot,String trigger , boolean dynamic, boolean other, String reply) {
+        this.bot = bot;
+        this.mark = bot+"."+trigger+"."+reply;
+        this.dynamic = dynamic;
+        this.other = other;
+        this.reply = reply;
+    }
+
+    public boolean isDynamic() {
+        return dynamic;
+    }
+
+    public void setDynamic(boolean dynamic) {
+        this.dynamic = dynamic;
     }
 
     public int getId() {
@@ -68,5 +93,13 @@ public class ManySession {
 
     public void setReply(String reply) {
         this.reply = reply;
+    }
+
+    public boolean isOther() {
+        return other;
+    }
+
+    public void setOther(boolean other) {
+        this.other = other;
     }
 }

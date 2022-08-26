@@ -1,6 +1,6 @@
 package cn.chahuyun.entity;
 
-import cn.chahuyun.enums.Mate;
+import cn.chahuyun.utils.ScopeUtil;
 import jakarta.persistence.*;
 
 /**
@@ -199,7 +199,7 @@ public class GroupProhibited {
     }
 
     public Scope getScopeInfo() {
-        return scopeInfo;
+        return ScopeUtil.getScope(this.scopeMark);
     }
 
     public void setScopeInfo(Scope scopeInfo) {

@@ -1,7 +1,6 @@
 package cn.chahuyun.utils;
 
 import cn.chahuyun.HuYanSession;
-import cn.chahuyun.entity.*;
 import net.mamoe.mirai.utils.MiraiLogger;
 import org.hibernate.SessionFactory;
 import xyz.cssxsh.mirai.hibernate.MiraiHibernateConfiguration;
@@ -35,8 +34,9 @@ public class HibernateUtil {
 
     /**
      * Hibernate初始化
-     * @author Moyuyanli
+     *
      * @param configuration Configuration
+     * @author Moyuyanli
      * @date 2022/7/30 23:04
      */
     public static void init(MiraiHibernateConfiguration configuration) {
@@ -52,9 +52,6 @@ public class HibernateUtil {
         factory = configuration.buildSessionFactory();
         l.info("H2数据库初始化成功!");
     }
-
-
-
 
 
 }

@@ -49,6 +49,7 @@ public class ShareUtils {
 
     private static final Map<String, Integer> map = new HashMap<>();
     /**
+     * String.format用法
      * format 替换 %s ， 下一个String字符
      */
     public static final String DYNAMIC_MESSAGE_PATTERN = String.format("\\%s\\w+\\((\\S+?)\\)", ConfigData.INSTANCE.getVariableSymbol());
@@ -147,7 +148,7 @@ public class ShareUtils {
      * @date 2022/8/17 14:23
      */
     public static MessageChain parseMessageParameter(MessageEvent event, String message, Object... object) throws IOException {
-        if (message.contains(ConfigData.INSTANCE.getVariableSymbol()+"message(null)")) {
+        if (message.contains(ConfigData.INSTANCE.getVariableSymbol() + "message(null)")) {
             return null;
         }
         Pattern pattern = Pattern.compile(DYNAMIC_MESSAGE_PATTERN);
@@ -179,7 +180,7 @@ public class ShareUtils {
      * 欢迎词使用
      */
     public static MessageChain parseMessageParameter(GroupEvent event, String message, Object... object) throws IOException {
-        if (message.contains( ConfigData.INSTANCE.getVariableSymbol()+"message(null)")) {
+        if (message.contains(ConfigData.INSTANCE.getVariableSymbol() + "message(null)")) {
             return null;
         }
         Pattern pattern = Pattern.compile(DYNAMIC_MESSAGE_PATTERN);
@@ -260,7 +261,7 @@ public class ShareUtils {
                     case "title":
                         return new PlainText(((NormalMember) event.getSender()).getSpecialTitle());
                     case "info":
-                    return new PlainText((event.getSender()).queryProfile().toString());
+                        return new PlainText((event.getSender()).queryProfile().toString());
                     default:
                         return new PlainText("未识别动态消息:" + ConfigData.INSTANCE.getVariableSymbol() + valueType + "(" + value + ")");
                 }
@@ -324,7 +325,7 @@ public class ShareUtils {
                             return new PlainText("我是被别人领进来的...");
                         }
                         String message = applyClusterInfo.getJoinRequestEvent().getMessage();
-                        return new PlainText(message.isEmpty()?"这个人什么都没说...":message);
+                        return new PlainText(message.isEmpty() ? "这个人什么都没说..." : message);
                     default:
                         return new PlainText("未识别动态消息:" + ConfigData.INSTANCE.getVariableSymbol() + valueType + "(" + value + ")");
                 }
@@ -445,10 +446,7 @@ public class ShareUtils {
                 }
                 break;
             case VAGUE:
-                if (code.contains(key)) {
-                    return true;
-                }
-                break;
+                return true;
             case START:
                 if (code.startsWith(key)) {
                     return true;
@@ -474,7 +472,7 @@ public class ShareUtils {
      * @date 2022/8/20 12:37
      */
     @NotNull
-    public static MessageEvent getNextMessageEventFromUser(User user) throws InterruptedException, ExecutionException {
+    public static MessageEvent getNextMessageEventFromUser(User user) {
         EventChannel<MessageEvent> channel = GlobalEventChannel.INSTANCE.parentScope(HuYanSession.INSTANCE)
                 .filterIsInstance(MessageEvent.class)
                 .filter(event -> event.getSender().getId() == user.getId());
@@ -483,9 +481,31 @@ public class ShareUtils {
 
         channel.subscribeOnce(MessageEvent.class, EmptyCoroutineContext.INSTANCE,
                 ConcurrencyKind.LOCKED, EventPriority.HIGH, future::complete);
-        MessageEvent event = future.get();
+        MessageEvent event = null;
+        try {
+            event = future.get();
+        } catch (InterruptedException | ExecutionException e) {
+            l.error("获取下一条消息出错!", e);
+        }
+        assert event != null;
         event.intercept();
         return event;
+    }
+
+    @NotNull
+    public static Mate getMate(int mateType) {
+        switch (mateType) {
+            case 1:
+                return Mate.ACCURATE;
+            case 2:
+                return Mate.VAGUE;
+            case 3:
+                return Mate.START;
+            case 4:
+                return Mate.END;
+            default:
+                return Mate.ACCURATE;
+        }
     }
 
 }
