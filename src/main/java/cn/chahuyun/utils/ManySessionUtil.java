@@ -11,9 +11,8 @@ import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.Contact;
 import net.mamoe.mirai.contact.User;
 import net.mamoe.mirai.event.events.MessageEvent;
-import net.mamoe.mirai.message.data.Audio;
-import net.mamoe.mirai.message.data.ForwardMessage;
-import net.mamoe.mirai.message.data.MessageChain;
+import net.mamoe.mirai.message.code.MiraiCode;
+import net.mamoe.mirai.message.data.*;
 import net.mamoe.mirai.utils.MiraiLogger;
 import org.hibernate.query.criteria.HibernateCriteriaBuilder;
 import org.hibernate.query.criteria.JpaCriteriaQuery;
@@ -23,6 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static cn.chahuyun.utils.ShareUtils.DYNAMIC_MESSAGE_PATTERN;
 
@@ -63,6 +63,7 @@ public class ManySessionUtil {
         }
 
         Map<Long, Map<String, ManySessionInfo>> map = null;
+        assert manySessionInfos != null;
         for (ManySessionInfo manySessionInfo : manySessionInfos) {
             if (map == null) {
                 map = new HashMap<>() {{
@@ -103,57 +104,65 @@ public class ManySessionUtil {
             return;
         }
         String code = triggerEvent.getMessage().serializeToMiraiCode();
-        subject.sendMessage("请发送参数(中间以空格隔开)");
-        MessageEvent paramEvent = ShareUtils.getNextMessageEventFromUser(user);
-        if (ShareUtils.isQuit(paramEvent)) {
-            return;
-        }
-        String[] split = paramEvent.getMessage().serializeToMiraiCode().split(" +");
 
-        Scope scope = new Scope(bot.getId(), "当前", false, false, subject.getId(), -1);
-        Mate mate = Mate.ACCURATE;
-        boolean isRandom = false;
-
-
-        for (String param : split) {
-            switch (param) {
-                case "0":
-                case "全局":
-                    scope = new Scope(bot.getId(), "全局", true, false, subject.getId(), -1);
-                    break;
-                case "2":
-                case "模糊":
-                    mate = Mate.VAGUE;
-                    break;
-                case "3":
-                case "头部":
-                    mate = Mate.START;
-                    break;
-                case "4":
-                case "结尾":
-                    mate = Mate.END;
-                    break;
-                case "sj":
-                case "随机":
-                    isRandom = true;
-                    break;
-                default:
-                    String listPattern = "gr\\d+|群组\\d+";
-                    if (Pattern.matches(listPattern, param)) {
-                        int listId = Integer.parseInt(param.substring(2));
-                        if (ListUtil.isContainsList(bot, listId)) {
-                            subject.sendMessage("该群组不存在!");
-                            return;
-                        }
-                        scope = new Scope(bot.getId(), "群组" + listId, false, true, subject.getId(), listId);
-                    }
-                    break;
+        boolean editOrAdd = StaticData.getManySession(bot).containsKey(code);
+        ManySessionInfo manySessionInfo;
+        Scope scope = null;
+        if (editOrAdd) {
+            manySessionInfo = StaticData.getManySession(bot).get(code);
+        } else {
+            subject.sendMessage("请发送参数(中间以空格隔开)");
+            MessageEvent paramEvent = ShareUtils.getNextMessageEventFromUser(user);
+            if (ShareUtils.isQuit(paramEvent)) {
+                return;
             }
+            String[] split = paramEvent.getMessage().serializeToMiraiCode().split(" +");
+
+            scope = new Scope(bot.getId(), "当前", false, false, subject.getId(), -1);
+            Mate mate = Mate.ACCURATE;
+            boolean isRandom = false;
+
+
+            for (String param : split) {
+                switch (param) {
+                    case "0":
+                    case "全局":
+                        scope = new Scope(bot.getId(), "全局", true, false, subject.getId(), -1);
+                        break;
+                    case "2":
+                    case "模糊":
+                        mate = Mate.VAGUE;
+                        break;
+                    case "3":
+                    case "头部":
+                        mate = Mate.START;
+                        break;
+                    case "4":
+                    case "结尾":
+                        mate = Mate.END;
+                        break;
+                    case "sj":
+                    case "随机":
+                        isRandom = true;
+                        break;
+                    default:
+                        String listPattern = "gr\\d+|群组\\d+";
+                        if (Pattern.matches(listPattern, param)) {
+                            int listId = Integer.parseInt(param.substring(2));
+                            if (ListUtil.isContainsList(bot, listId)) {
+                                subject.sendMessage("该群组不存在!");
+                                return;
+                            }
+                            scope = new Scope(bot.getId(), "群组" + listId, false, true, subject.getId(), listId);
+                        }
+                        break;
+                }
+            }
+
+
+            manySessionInfo = new ManySessionInfo(bot.getId(), isRandom, 0, code, mate.getMateType(), scope);
         }
-
-        ManySessionInfo manySessionInfo = new ManySessionInfo(bot.getId(), isRandom, 0, code, mate.getMateType(), scope);
         List<ManySession> sessionList = manySessionInfo.getManySessions();
-
         boolean isQuit = false;
         while (!isQuit) {
             subject.sendMessage("请发送多词条回复消息:");
@@ -163,7 +172,7 @@ public class ManySessionUtil {
             }
             MessageChain nextEventMessage = nextEvent.getMessage();
             String miraiCode = nextEventMessage.serializeToMiraiCode();
-            if (miraiCode.contains("！") || miraiCode.contains("!")) {
+            if (miraiCode.equals("！") || miraiCode.equals("!")) {
                 if (sessionList.size() > 2) {
                     sessionList.remove(sessionList.size() - 1);
                     subject.sendMessage("删除上一条回复消息成功！");
@@ -188,7 +197,9 @@ public class ManySessionUtil {
             sessionList.add(manySession);
             subject.sendMessage("添加成功!");
         }
-
+        if (editOrAdd) {
+            scope = manySessionInfo.getScope();
+        }
         Scope finalScope = scope;
         try {
             HibernateUtil.factory.fromTransaction(session -> {
@@ -205,6 +216,7 @@ public class ManySessionUtil {
             return;
         }
         subject.sendMessage("多词条保存成功!");
+        init(false);
     }
 
     public static void editManySession(MessageEvent event) {
@@ -212,11 +224,124 @@ public class ManySessionUtil {
     }
 
     public static void queryManySession(MessageEvent event) {
+        MessageChain message = event.getMessage();
+        Contact subject = event.getSubject();
+        Bot bot = event.getBot();
 
+        init(false);
+
+        Map<String, ManySessionInfo> manySession = StaticData.getManySession(bot);
+        if (manySession == null || manySession.isEmpty()) {
+            subject.sendMessage("没有多词条消息!");
+            return;
+        }
+
+        ForwardMessageBuilder builder = new ForwardMessageBuilder(subject);
+        builder.add(bot, new PlainText("以下是所有多词条消息↓"));
+
+        for (ManySessionInfo value : manySession.values()) {
+            List<ManySession> manySessions = value.getManySessions();
+            PlainText plainText = new PlainText(String.format("多词条编号:%d%n触发方式:%s%n触发内容:%s%n", value.getId(), value.getMate().getMateName(), value.getTrigger()));
+            plainText.plus(String.format("作用域:%s%n", value.getScope().getScopeName()));
+            plainText.plus(String.format("当前群是否触发:%b", ShareUtils.mateScope(event, value.getScope()) ? "是" : "否"));
+            builder.add(bot, plainText);
+            ForwardMessageBuilder messageBuilder = new ForwardMessageBuilder(subject);
+            for (ManySession session : manySessions) {
+                if (session.isOther()) {
+                    messageBuilder.add(bot, new PlainText(String.format("编号:%s", session.getId())));
+                    MessageChain singleMessages = MessageChain.deserializeFromJsonString(session.getReply());
+                    messageBuilder.add(bot, singleMessages);
+                    continue;
+                }
+                MessageChainBuilder messageChainBuilder = new MessageChainBuilder();
+                messageChainBuilder.add(String.format("编号:%s%n", session.getId()));
+                messageChainBuilder.add(MiraiCode.deserializeMiraiCode(session.getReply()));
+                messageBuilder.add(bot, messageChainBuilder.build());
+            }
+        }
+        subject.sendMessage(builder.build());
     }
 
+    /**
+     * 删除多词条，支持一次性删除多条
+     *
+     * @param event 消息事件
+     * @author Moyuyanli
+     * @date 2022/8/27 1:11
+     */
     public static void deleteManySession(MessageEvent event) {
+        //-hyc:id id?
+        String code = event.getMessage().serializeToMiraiCode();
+        Contact subject = event.getSubject();
+        Bot bot = event.getBot();
 
+        init(false);
+
+        String[] split = code.split("[：:]")[1].split(" +");
+        int keyId = Integer.parseInt(split[0]);
+
+        Map<String, ManySessionInfo> manySession = StaticData.getManySession(bot);
+        ManySessionInfo manySessionInfo = null;
+        for (ManySessionInfo value : manySession.values()) {
+            if (value.getId() == keyId) {
+                manySessionInfo = value;
+            }
+        }
+        if (manySessionInfo == null) {
+            subject.sendMessage("沒有找到对应的多词条!");
+            return;
+        }
+        boolean deleteType = split.length > 1;
+        List<ManySession> manySessions = manySessionInfo.getManySessions();
+        List<ManySession> manySessionList = manySessionInfo.getManySessions();
+
+        if (split.length > 1) {
+            for (String value : split) {
+                int s = 0;
+                try {
+                    s = Integer.parseInt(value);
+                } catch (NumberFormatException e) {
+                    l.warning("删除多词条-id中含有不是数值的字符!");
+                }
+                int finalS = s;
+                manySessionList = manySessionList.stream().filter(it -> it.getId() != finalS).collect(Collectors.toList());
+            }
+        }
+
+        boolean deleteMessageType = manySessions.size() > manySessionList.size();
+
+        ManySessionInfo finalManySessionInfo = manySessionInfo;
+        List<ManySession> finalManySessionList = manySessionList;
+        HibernateUtil.factory.fromTransaction(session -> {
+            if (deleteType) {
+                session.remove(finalManySessionInfo);
+            } else if (deleteMessageType) {
+                finalManySessionInfo.setManySessions(finalManySessionList);
+                session.merge(finalManySessionInfo);
+            }
+            return 0;
+        });
+
+        if (deleteType) {
+            subject.sendMessage(String.format("删除多词条 %s 成功！", manySessionInfo.getTrigger()));
+        } else if (deleteMessageType) {
+            subject.sendMessage(String.format("删除多词条 %s 下的回复成功!", manySessionInfo.getTrigger()));
+        } else {
+            subject.sendMessage("没有找到要删除的多词条回复！");
+        }
+        init(false);
+    }
+
+    /**
+     * 轮询次数递增
+     *
+     * @param sessionInfo 多词条消息
+     * @author Moyuyanli
+     * @date 2022/8/22 16:32
+     */
+    public static void increase(ManySessionInfo sessionInfo) {
+        sessionInfo.setPollingNumber(sessionInfo.getPollingNumber() + 1);
+        HibernateUtil.factory.fromTransaction(session -> session.merge(sessionInfo));
     }
 
 }

@@ -123,6 +123,9 @@ public class MessageEventListener extends SimpleListenerHost {
         用户权限
          */
         Power power = powerMap.get(powerString);
+        if (power == null) {
+            power = new Power();
+        }
         boolean admin = power.isAdmin();
         /*
         特殊匹配
@@ -349,13 +352,16 @@ public class MessageEventListener extends SimpleListenerHost {
                 ManySessionUtil.addManySession(event);
                 return;
             } else if (Pattern.matches(editManySessionPattern, code)) {
-
+                l.info("修改多词条指令");
+                ManySessionUtil.editManySession(event);
                 return;
             } else if (Pattern.matches(queryManySessionPattern, code)) {
-
+                l.info("查询多词条指令");
+                ManySessionUtil.queryManySession(event);
                 return;
             } else if (Pattern.matches(deleteManySessionPattern, code)) {
-
+                l.info("删除多词条指令");
+                ManySessionUtil.deleteManySession(event);
                 return;
             }
         }
@@ -378,9 +384,6 @@ public class MessageEventListener extends SimpleListenerHost {
 
         Map<String, Session> sessionMap = StaticData.getSessionMap(bot);
         for (Map.Entry<String, Session> entry : sessionMap.entrySet()) {
-            if (ConfigData.INSTANCE.getDebugSwitch()) {
-                l.info("Session-> " + entry.getKey());
-            }
             //先做模糊查询判断存在不存在
             if (code.contains(entry.getKey())) {
                 if (ConfigData.INSTANCE.getDebugSwitch()) {
@@ -406,9 +409,6 @@ public class MessageEventListener extends SimpleListenerHost {
 
         Map<String, ManySessionInfo> manySession = StaticData.getManySession(bot);
         for (Map.Entry<String, ManySessionInfo> entry : manySession.entrySet()) {
-            if (ConfigData.INSTANCE.getDebugSwitch()) {
-                l.info("ManySession-> " + entry.getKey());
-            }
             //先做模糊查询判断存在不存在
             if (code.contains(entry.getKey())) {
                 if (ConfigData.INSTANCE.getDebugSwitch()) {

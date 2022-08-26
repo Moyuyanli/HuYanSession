@@ -4,6 +4,7 @@ import cn.chahuyun.HuYanSession;
 import cn.chahuyun.entity.*;
 import cn.chahuyun.manage.GroupManager;
 import cn.chahuyun.utils.GroupWelcomeInfoUtil;
+import cn.chahuyun.utils.ManySessionUtil;
 import cn.chahuyun.utils.ShareUtils;
 import net.mamoe.mirai.contact.BotIsBeingMutedException;
 import net.mamoe.mirai.contact.Contact;
@@ -119,6 +120,7 @@ public class Dialogue {
             } else {
                 subject.sendMessage(MiraiCode.deserializeMiraiCode(reply.getReply()));
             }
+            ManySessionUtil.increase(session);
         } catch (EventCancelledException e) {
             l.error("发送消息被取消:" + e.getMessage());
             e.printStackTrace();
