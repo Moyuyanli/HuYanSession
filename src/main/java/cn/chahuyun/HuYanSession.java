@@ -38,7 +38,7 @@ public final class HuYanSession extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        getLogger().info("HuYanSession2 当前版本: v2.0.0-alpha-06");
+        getLogger().info("HuYanSession2 当前版本: v2.0.0-alpha");
 
         getLogger().info("===================HuYanSession2===================");
         MiraiHibernateConfiguration configuration = new MiraiHibernateConfiguration(this);
@@ -62,6 +62,7 @@ public final class HuYanSession extends JavaPlugin {
         PowerUtil.init(true);
         GroupProhibitedUtil.init(true);
         ManySessionUtil.init(true);
+        QuartzUtil.init(true);
 
         //注册群消息事件
         channel.registerListenerHost(new MessageEventListener());
