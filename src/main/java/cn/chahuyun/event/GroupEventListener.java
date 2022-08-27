@@ -42,9 +42,6 @@ public class GroupEventListener extends SimpleListenerHost {
         if (botPermission == MemberPermission.MEMBER) {
             return;
         }
-        if (!ConfigData.INSTANCE.getGroupList().contains(groupId)) {
-            return;
-        }
         if (event instanceof MemberJoinEvent) {
             MemberJoinEvent memberJoinEvent = (MemberJoinEvent) event;
             if (GroupManager.detectBlackList(memberJoinEvent)) {

@@ -286,7 +286,7 @@ public class MessageEventListener extends SimpleListenerHost {
          */
 
         //+wjc:body [3h|gr1|%(重设回复消息)|ch|jy|hmd3|0|全局]
-        String addProhibitedPattern = "^\\+wjc\\\\?[:：]\\S+( +\\S+){0,6}|^添加违禁词\\\\?[:：]\\S+( +\\S+){0,6}";
+        String addProhibitedPattern = "^\\+wjc\\\\?[:：]\\S+( +\\S+)*?|^添加违禁词\\\\?[:：]\\S+( +\\S+)*?";
         String deleteProhibitedPattern = "^\\-wjc\\\\?[:：]\\d+|^删除违禁词\\\\?[:：]\\d+";
         String queryProhibitedPattern = "^\\wjc\\\\?[:：]|^查询违禁词";
 
@@ -311,7 +311,7 @@ public class MessageEventListener extends SimpleListenerHost {
          */
         String addGroupWelcomeMessagePattern = "^%hyc|^添加欢迎词";
         String queryGroupWelcomeMessagePattern = "^hyc\\\\?[：:]|^查询欢迎词";
-        String deleteGroupWelcomeMessagePattern = "^-hyc\\\\?[：:]\\d+( +\\d+)|^删除违禁词\\\\?[：:]\\d+( +\\d+)";
+        String deleteGroupWelcomeMessagePattern = "^-hyc\\\\?[：:]\\d+( +\\d+)|^删除欢迎词\\\\?[：:]\\d+( +\\d+)";
 
         if (owner || admin || power.isGroupManage() || power.isGroupHyc()) {
             if (Pattern.matches(addGroupWelcomeMessagePattern, code)) {
@@ -358,7 +358,7 @@ public class MessageEventListener extends SimpleListenerHost {
          */
         String addManySessionPattern = "^%dct|^添加多词条";
         String queryManySessionPattern = "^dct\\\\?[:：]|^查询多词条";
-        String deleteManySessionPattern = "^-dct\\\\?[:：]\\d+|^删除多词条\\\\?[:：]\\d+";
+        String deleteManySessionPattern = "^-dct\\\\?[:：]\\d+( +\\d+)*?|^删除多词条\\\\?[:：]\\d+( +\\d+)*?";
 
         if (owner || admin || power.isSession() || power.isSessionDct()) {
             if (Pattern.matches(addManySessionPattern, code)) {

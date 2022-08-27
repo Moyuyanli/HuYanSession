@@ -187,10 +187,13 @@ public class QuartzUtil {
             subject.sendMessage("请发送多词条回复消息:");
             MessageEvent nextEvent = ShareUtils.getNextMessageEventFromUser(user);
             if (ShareUtils.isQuit(nextEvent)) {
-                isQuit = true;
+                return;
             }
             MessageChain nextEventMessage = nextEvent.getMessage();
             String miraiCode = nextEventMessage.serializeToMiraiCode();
+            if (miraiCode.equals("！！") || miraiCode.equals("!!")) {
+                isQuit = true;
+            }
             if (miraiCode.equals("！") || miraiCode.equals("!")) {
                 if (manySessions.size() > 2) {
                     manySessions.remove(manySessions.size() - 1);
