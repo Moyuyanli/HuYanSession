@@ -191,6 +191,51 @@ public class GroupManager {
     }
 
     /**
+     * 赐予群友特殊头衔
+     *
+     * @param event 消息事件
+     * @author Moyuyanli
+     * @date 2022/8/27 18:57
+     */
+    public static void editUserTitle(MessageEvent event) {
+        //%@at xxx
+        MessageChain message = event.getMessage();
+        String code = message.serializeToMiraiCode();
+        Contact subject = event.getSubject();
+        Bot bot = event.getBot();
+        Group group = bot.getGroup(subject.getId());
+
+        long userId = 0;
+        for (SingleMessage singleMessage : message) {
+            if (singleMessage instanceof At) {
+                userId = ((At) singleMessage).getTarget();
+            }
+        }
+        if (userId == 0) {
+            subject.sendMessage("没有这个人");
+            return;
+        }
+
+        String title = code.split(" +")[1];
+
+        if (group == null) {
+            subject.sendMessage("没有这个群");
+            return;
+        }
+        NormalMember normalMember = group.get(userId);
+        if (normalMember == null) {
+            subject.sendMessage("没有这个人");
+            return;
+        }
+        if (group.getBotPermission() != MemberPermission.OWNER) {
+            subject.sendMessage("你的机器人不是群主，无法使用此功能！");
+            return;
+        }
+        normalMember.setSpecialTitle(title);
+        subject.sendMessage("修改头衔成功！");
+    }
+
+    /**
      * 判断是否是违禁词
      *
      * @param event 消息事件
@@ -273,7 +318,7 @@ public class GroupManager {
             BlackHouseUtil.saveOrUpdate(blackHouse);
         }
         //回复消息
-        MessageChain messages = ShareUtils.parseMessageParameter(event, groupProhibited.getReply(), groupProhibited);
+        MessageChain messages = DynamicMessageUtil.parseMessageParameter(event, groupProhibited.getReply(), groupProhibited);
         if (messages != null) {
             subject.sendMessage(messages);
         }

@@ -299,6 +299,8 @@ public class ListUtil {
         return !groupListMap.containsKey(listId);
     }
 
+    //==========================================================================================
+
     /**
      * 解析查询参数
      *
@@ -329,5 +331,6 @@ public class ListUtil {
         }
         return listMap;
     }
+
 
 }

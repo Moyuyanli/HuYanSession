@@ -1,7 +1,10 @@
 package cn.chahuyun.utils;
 
 import cn.chahuyun.HuYanSession;
+import cn.chahuyun.entity.GroupList;
 import cn.chahuyun.entity.Scope;
+import net.mamoe.mirai.contact.ContactList;
+import net.mamoe.mirai.contact.Group;
 import net.mamoe.mirai.utils.MiraiLogger;
 import org.hibernate.query.criteria.HibernateCriteriaBuilder;
 import org.hibernate.query.criteria.JpaCriteriaQuery;

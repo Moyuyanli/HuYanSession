@@ -269,6 +269,19 @@ public class MessageEventListener extends SimpleListenerHost {
         }
 
         /*
+         * 特殊头衔正则
+         */
+        String editGroupUserTitlePattern = "^%\\[mirai:at:\\d+] \\S+|^设置头衔 \\S+";
+        if (owner || admin || power.isGroupManage()) {
+            if (Pattern.matches(editGroupUserTitlePattern, code)) {
+                l.info("设置头衔指令");
+                GroupManager.editUserTitle(event);
+                return;
+            }
+        }
+
+
+        /*
         违禁词正则
          */
 
@@ -340,9 +353,10 @@ public class MessageEventListener extends SimpleListenerHost {
             }
         }
 
-
+        /*
+         * 多词条正则
+         */
         String addManySessionPattern = "^%dct|^添加多词条";
-        String editManySessionPattern = "^%dct\\\\?[:：]\\d+|^修改多词条\\\\?[:：]\\d+";
         String queryManySessionPattern = "^dct\\\\?[:：]|^查询多词条";
         String deleteManySessionPattern = "^-dct\\\\?[:：]\\d+|^删除多词条\\\\?[:：]\\d+";
 
@@ -350,10 +364,6 @@ public class MessageEventListener extends SimpleListenerHost {
             if (Pattern.matches(addManySessionPattern, code)) {
                 l.info("添加多词条指令");
                 ManySessionUtil.addManySession(event);
-                return;
-            } else if (Pattern.matches(editManySessionPattern, code)) {
-                l.info("修改多词条指令");
-                ManySessionUtil.editManySession(event);
                 return;
             } else if (Pattern.matches(queryManySessionPattern, code)) {
                 l.info("查询多词条指令");
@@ -365,6 +375,39 @@ public class MessageEventListener extends SimpleListenerHost {
                 return;
             }
         }
+
+        /*
+        定时器正则
+         */
+        String addQuartzPattern = "^%ds|^添加定时任务|^添加定时器";
+        String queryQuartzPattern = "^ds\\\\?[:：]|^查询定时任务|^查询定时器";
+        String deleteQuartzPattern = "^-ds\\\\?[:：]\\d+|^删除定时任务\\\\?[:：]\\d+|^删除定时器\\\\?[:：]\\d+";
+        String switchQuartzPattern = "^%ds\\\\?[:：]\\d+|^切换定时任务\\\\?[:：]\\d+|^切换定时器\\\\?[:：]\\d+";
+
+        if (owner || admin || power.isDs() || power.isDscz()) {
+            if (Pattern.matches(switchQuartzPattern, code)) {
+                l.info("切换定时器指令");
+                QuartzUtil.switchQuartz(event);
+                return;
+            } else if (Pattern.matches(queryQuartzPattern, code)) {
+                l.info("查询定时器指令");
+                QuartzUtil.queryQuartz(event);
+                return;
+            }
+        }
+        if (owner || admin || power.isDs()) {
+            if (Pattern.matches(addQuartzPattern, code)) {
+                l.info("添加定时器指令");
+                QuartzUtil.addQuartz(event);
+                return;
+            } else if (Pattern.matches(deleteQuartzPattern, code)) {
+                l.info("删除定时器指令");
+                QuartzUtil.deleteQuartz(event);
+                return;
+            }
+        }
+
+
 
 
         isSessionMessage(event);

@@ -66,6 +66,18 @@ public class StaticData {
         return new HashMap<>();
     }
 
+    public static Map<Integer, GroupList> getGroupListMap(long bot) {
+
+        if (groupListMap == null) {
+            groupListMap = new HashMap<>();
+            return new HashMap<>();
+        }
+        if (groupListMap.containsKey(bot)) {
+            return groupListMap.get(bot);
+        }
+        return new HashMap<>();
+    }
+
     public static void setGroupListMap(Map<Long, Map<Integer, GroupList>> groupListMap) {
         StaticData.groupListMap = groupListMap;
     }

@@ -106,61 +106,67 @@ public class ManySessionUtil {
         String code = triggerEvent.getMessage().serializeToMiraiCode();
 
         boolean editOrAdd = StaticData.getManySession(bot).containsKey(code);
-        ManySessionInfo manySessionInfo;
-        Scope scope = null;
+        ManySessionInfo manySessionInfo = null;
+        Scope scope;
+        Mate mate;
+        boolean isRandom;
         if (editOrAdd) {
             manySessionInfo = StaticData.getManySession(bot).get(code);
+            scope = manySessionInfo.getScope();
+            mate = manySessionInfo.getMate();
+            isRandom = manySessionInfo.isRandom();
         } else {
-            subject.sendMessage("请发送参数(中间以空格隔开)");
-            MessageEvent paramEvent = ShareUtils.getNextMessageEventFromUser(user);
-            if (ShareUtils.isQuit(paramEvent)) {
-                return;
-            }
-            String[] split = paramEvent.getMessage().serializeToMiraiCode().split(" +");
-
             scope = new Scope(bot.getId(), "当前", false, false, subject.getId(), -1);
-            Mate mate = Mate.ACCURATE;
-            boolean isRandom = false;
+            mate = Mate.ACCURATE;
+            isRandom = false;
+        }
+        subject.sendMessage("请发送参数(中间以空格隔开)");
+        MessageEvent paramEvent = ShareUtils.getNextMessageEventFromUser(user);
+        if (ShareUtils.isQuit(paramEvent)) {
+            return;
+        }
+        String[] split = paramEvent.getMessage().serializeToMiraiCode().split(" +");
 
-
-            for (String param : split) {
-                switch (param) {
-                    case "0":
-                    case "全局":
-                        scope = new Scope(bot.getId(), "全局", true, false, subject.getId(), -1);
-                        break;
-                    case "2":
-                    case "模糊":
-                        mate = Mate.VAGUE;
-                        break;
-                    case "3":
-                    case "头部":
-                        mate = Mate.START;
-                        break;
-                    case "4":
-                    case "结尾":
-                        mate = Mate.END;
-                        break;
-                    case "sj":
-                    case "随机":
-                        isRandom = true;
-                        break;
-                    default:
-                        String listPattern = "gr\\d+|群组\\d+";
-                        if (Pattern.matches(listPattern, param)) {
-                            int listId = Integer.parseInt(param.substring(2));
-                            if (ListUtil.isContainsList(bot, listId)) {
-                                subject.sendMessage("该群组不存在!");
-                                return;
-                            }
-                            scope = new Scope(bot.getId(), "群组" + listId, false, true, subject.getId(), listId);
+        for (String param : split) {
+            switch (param) {
+                case "0":
+                case "全局":
+                    scope = new Scope(bot.getId(), "全局", true, false, subject.getId(), -1);
+                    break;
+                case "2":
+                case "模糊":
+                    mate = Mate.VAGUE;
+                    break;
+                case "3":
+                case "头部":
+                    mate = Mate.START;
+                    break;
+                case "4":
+                case "结尾":
+                    mate = Mate.END;
+                    break;
+                case "sj":
+                case "随机":
+                    isRandom = true;
+                    break;
+                default:
+                    String listPattern = "gr\\d+|群组\\d+";
+                    if (Pattern.matches(listPattern, param)) {
+                        int listId = Integer.parseInt(param.substring(2));
+                        if (ListUtil.isContainsList(bot, listId)) {
+                            subject.sendMessage("该群组不存在!");
+                            return;
                         }
-                        break;
-                }
+                        scope = new Scope(bot.getId(), "群组" + listId, false, true, subject.getId(), listId);
+                    }
+                    break;
             }
-
-
-            manySessionInfo = new ManySessionInfo(bot.getId(), isRandom, 0, code, mate.getMateType(), scope);
+            if (editOrAdd) {
+                manySessionInfo.setScope(scope);
+                manySessionInfo.setMate(mate);
+            } else {
+                manySessionInfo = new ManySessionInfo(bot.getId(), isRandom, 0, code, mate.getMateType(), scope);
+            }
         }
         List<ManySession> sessionList = manySessionInfo.getManySessions();
         boolean isQuit = false;
@@ -200,14 +206,15 @@ public class ManySessionUtil {
         if (editOrAdd) {
             scope = manySessionInfo.getScope();
         }
-        Scope finalScope = scope;
         try {
+            Scope finalScope = scope;
+            ManySessionInfo finalManySessionInfo = manySessionInfo;
             HibernateUtil.factory.fromTransaction(session -> {
                 if (!ScopeUtil.isScopeEmpty(finalScope)) {
                     //不存在则先添加作用域
                     session.persist(finalScope);
                 }
-                session.merge(manySessionInfo);
+                session.merge(finalManySessionInfo);
                 return 0;
             });
         } catch (Exception e) {
@@ -219,10 +226,14 @@ public class ManySessionUtil {
         init(false);
     }
 
-    public static void editManySession(MessageEvent event) {
 
-    }
-
+    /**
+     * 查询多词条
+     *
+     * @param event 消息事件
+     * @author Moyuyanli
+     * @date 2022/8/26 18:33
+     */
     public static void queryManySession(MessageEvent event) {
         MessageChain message = event.getMessage();
         Contact subject = event.getSubject();

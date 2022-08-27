@@ -3,9 +3,9 @@ package cn.chahuyun.dialogue;
 import cn.chahuyun.HuYanSession;
 import cn.chahuyun.entity.*;
 import cn.chahuyun.manage.GroupManager;
+import cn.chahuyun.utils.DynamicMessageUtil;
 import cn.chahuyun.utils.GroupWelcomeInfoUtil;
 import cn.chahuyun.utils.ManySessionUtil;
-import cn.chahuyun.utils.ShareUtils;
 import net.mamoe.mirai.contact.BotIsBeingMutedException;
 import net.mamoe.mirai.contact.Contact;
 import net.mamoe.mirai.contact.Group;
@@ -63,7 +63,7 @@ public class Dialogue {
             if (session.getType() == 5) {
                 subject.sendMessage(MessageChain.deserializeFromJsonString(session.getReply()));
             } else if (session.isDynamic()) {
-                MessageChain messages = ShareUtils.parseMessageParameter(event, session.getReply(), session);
+                MessageChain messages = DynamicMessageUtil.parseMessageParameter(event, session.getReply(), session);
                 if (messages == null) {
                     return;
                 }
@@ -112,7 +112,7 @@ public class Dialogue {
             if (reply.isOther()) {
                 subject.sendMessage(MessageChain.deserializeFromJsonString(reply.getReply()));
             } else if (reply.isDynamic()) {
-                MessageChain messages = ShareUtils.parseMessageParameter(event, reply.getReply(), session);
+                MessageChain messages = DynamicMessageUtil.parseMessageParameter(event, reply.getReply(), session);
                 if (messages == null) {
                     return;
                 }
@@ -170,7 +170,7 @@ public class Dialogue {
                     subject.sendMessage(MiraiCode.deserializeMiraiCode(welcomeMessage.getWelcomeMessage()));
                     break;
                 case 1:
-                    MessageChain messages = ShareUtils.parseMessageParameter(group, welcomeMessage.getWelcomeMessage(), welcomeInfo, GroupManager.map.get(mark));
+                    MessageChain messages = DynamicMessageUtil.parseMessageParameter(group, welcomeMessage.getWelcomeMessage(), welcomeInfo, GroupManager.map.get(mark));
                     subject.sendMessage(messages);
                     break;
                 case 2:

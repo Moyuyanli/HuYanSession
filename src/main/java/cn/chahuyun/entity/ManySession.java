@@ -41,15 +41,18 @@ public class ManySession {
     public ManySession() {
     }
 
-    public ManySession(long bot,String trigger, String reply) {
-        this.bot = bot;
-        this.mark = bot+"."+trigger+"."+reply;
-        this.reply = reply;
-    }
 
     public ManySession(long bot,String trigger , boolean dynamic, boolean other, String reply) {
         this.bot = bot;
-        this.mark = bot+"."+trigger+"."+reply;
+        this.mark = bot+"."+trigger;
+        this.dynamic = dynamic;
+        this.other = other;
+        this.reply = reply;
+    }
+
+    public ManySession(long bot,QuartzInfo quartzInfo , boolean dynamic, boolean other, String reply) {
+        this.bot = bot;
+        this.mark = bot+"."+quartzInfo.getId()+"."+quartzInfo.getName();
         this.dynamic = dynamic;
         this.other = other;
         this.reply = reply;
