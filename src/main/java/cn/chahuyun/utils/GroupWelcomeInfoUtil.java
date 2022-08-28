@@ -129,7 +129,7 @@ public class GroupWelcomeInfoUtil {
 
         //查询重复
         List<WelcomeMessage> welcomeMessages = groupWelcomeInfo.getWelcomeMessages();
-        WelcomeMessage welcomeMessage = new WelcomeMessage(bot.getId(), type, randomMark, value);
+        WelcomeMessage welcomeMessage = new WelcomeMessage(bot.getId(), type, value);
         if (welcomeMessages.contains(welcomeMessage)) {
             subject.sendMessage("这条欢迎消息已经存在");
             return;

@@ -44,7 +44,7 @@ public class GroupWelcomeInfo {
      * 欢迎消息集合
      */
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, targetEntity = WelcomeMessage.class)
-    @JoinColumn(name = "WelcomeMessage_mark")
+    @JoinColumn(name = "WELCOMEMESSAGEINFO_ID")
     private List<WelcomeMessage> welcomeMessages = new ArrayList<>();
     /**
      * 作用域

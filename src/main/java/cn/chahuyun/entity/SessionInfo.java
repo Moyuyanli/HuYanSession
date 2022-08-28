@@ -14,7 +14,7 @@ import jakarta.persistence.*;
  */
 @Entity
 @Table(name = "Session")
-public class Session {
+public class SessionInfo {
 
     /**
      * id
@@ -56,10 +56,10 @@ public class Session {
     @Transient
     private Scope scope;
 
-    public Session() {
+    public SessionInfo() {
     }
 
-    public Session(long bot, int type, String term, String reply, Mate mate, Scope scope, boolean dynamic) {
+    public SessionInfo(long bot, int type, String term, String reply, Mate mate, Scope scope, boolean dynamic) {
         this.bot = bot;
         this.type = type;
         this.term = term;
@@ -71,7 +71,7 @@ public class Session {
         this.scopeMark = bot + "." + scope.isGlobal() + "." + scope.isGroupInfo() + "." + scope.getGroupNumber() + "." + scope.getListId();
     }
 
-    public Session(int id, long bot, int type, String term, String reply, Mate mate, Scope scope) {
+    public SessionInfo(int id, long bot, int type, String term, String reply, Mate mate, Scope scope) {
         this.id = id;
         this.bot = bot;
         this.type = type;

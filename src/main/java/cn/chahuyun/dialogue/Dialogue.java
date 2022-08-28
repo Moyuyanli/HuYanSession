@@ -53,23 +53,23 @@ public class Dialogue {
      * 会话消息
      *
      * @param event   消息事件
-     * @param session 会话消息
+     * @param sessionInfo 会话消息
      * @author Moyuyanli
      * @date 2022/7/13 21:46
      */
-    public void dialogueSession(MessageEvent event, Session session) {
+    public void dialogueSession(MessageEvent event, SessionInfo sessionInfo) {
         Contact subject = event.getSubject();
         try {
-            if (session.getType() == 5) {
-                subject.sendMessage(MessageChain.deserializeFromJsonString(session.getReply()));
-            } else if (session.isDynamic()) {
-                MessageChain messages = DynamicMessageUtil.parseMessageParameter(event, session.getReply(), session);
+            if (sessionInfo.getType() == 5) {
+                subject.sendMessage(MessageChain.deserializeFromJsonString(sessionInfo.getReply()));
+            } else if (sessionInfo.isDynamic()) {
+                MessageChain messages = DynamicMessageUtil.parseMessageParameter(event, sessionInfo.getReply(), sessionInfo);
                 if (messages == null) {
                     return;
                 }
                 subject.sendMessage(messages);
             } else {
-                subject.sendMessage(MiraiCode.deserializeMiraiCode(session.getReply()));
+                subject.sendMessage(MiraiCode.deserializeMiraiCode(sessionInfo.getReply()));
             }
         } catch (EventCancelledException e) {
             l.error("发送消息被取消:" + e.getMessage());

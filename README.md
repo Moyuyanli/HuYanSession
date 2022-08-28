@@ -50,7 +50,7 @@
 
 ---
 ## **自定义回复**
-`权限id：session`
+`权限id：sessionInfo`
 
 ### 参数
 

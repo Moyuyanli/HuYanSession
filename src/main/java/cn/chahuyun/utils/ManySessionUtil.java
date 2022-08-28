@@ -180,6 +180,7 @@ public class ManySessionUtil {
             String miraiCode = nextEventMessage.serializeToMiraiCode();
             if (miraiCode.equals("！！") || miraiCode.equals("!!")) {
                 isQuit = true;
+                continue;
             }
             if (miraiCode.equals("！") || miraiCode.equals("!")) {
                 if (sessionList.size() > 2) {
@@ -202,7 +203,7 @@ public class ManySessionUtil {
                 other = true;
                 miraiCode = MessageChain.serializeToJsonString(nextEventMessage);
             }
-            ManySession manySession = new ManySession(bot.getId(), code, dynamic, other, miraiCode);
+            ManySession manySession = new ManySession(bot.getId(), dynamic, other, miraiCode);
             sessionList.add(manySession);
             subject.sendMessage("添加成功!");
         }

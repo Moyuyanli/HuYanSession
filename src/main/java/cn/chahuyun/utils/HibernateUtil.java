@@ -2,6 +2,7 @@ package cn.chahuyun.utils;
 
 import cn.chahuyun.HuYanSession;
 import net.mamoe.mirai.utils.MiraiLogger;
+import org.hibernate.HibernateException;
 import org.hibernate.SessionFactory;
 import xyz.cssxsh.mirai.hibernate.MiraiHibernateConfiguration;
 
@@ -49,7 +50,12 @@ public class HibernateUtil {
 //        configuration.addAnnotatedClass(Session.class);
 //        configuration.addAnnotatedClass(GroupWelcomeInfo.class);
 //        configuration.addAnnotatedClass(WelcomeMessage.class);
-        factory = configuration.buildSessionFactory();
+        try {
+            factory = configuration.buildSessionFactory();
+        } catch (HibernateException e) {
+            l.error("请删除data中的HuYan.mv.db后重新启动！",e);
+            return;
+        }
         l.info("H2数据库初始化成功!");
     }
 

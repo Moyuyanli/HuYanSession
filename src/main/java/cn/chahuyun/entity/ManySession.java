@@ -21,10 +21,6 @@ public class ManySession {
      */
     private long bot;
     /**
-     * 多词条消息识别
-     */
-    private String mark;
-    /**
      * 是否包含动态消息参数
      */
     private boolean dynamic;
@@ -42,17 +38,8 @@ public class ManySession {
     }
 
 
-    public ManySession(long bot,String trigger , boolean dynamic, boolean other, String reply) {
+    public ManySession(long bot, boolean dynamic, boolean other, String reply) {
         this.bot = bot;
-        this.mark = bot+"."+trigger;
-        this.dynamic = dynamic;
-        this.other = other;
-        this.reply = reply;
-    }
-
-    public ManySession(long bot,QuartzInfo quartzInfo , boolean dynamic, boolean other, String reply) {
-        this.bot = bot;
-        this.mark = bot+"."+quartzInfo.getId()+"."+quartzInfo.getName();
         this.dynamic = dynamic;
         this.other = other;
         this.reply = reply;
@@ -80,14 +67,6 @@ public class ManySession {
 
     public void setBot(long bot) {
         this.bot = bot;
-    }
-
-    public String getMark() {
-        return mark;
-    }
-
-    public void setMark(String mark) {
-        this.mark = mark;
     }
 
     public String getReply() {

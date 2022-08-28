@@ -17,8 +17,6 @@ public class GroupInfo {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private int id;
 
-    private String mark;
-
     private long bot;
 
     private int listId;
@@ -30,7 +28,6 @@ public class GroupInfo {
     }
 
     public GroupInfo(long bot, int listId, long groupId) {
-        this.mark = bot + "." + listId;
         this.bot = bot;
         this.listId = listId;
         this.groupId = groupId;
@@ -67,14 +64,6 @@ public class GroupInfo {
 
     public void setListId(int listId) {
         this.listId = listId;
-    }
-
-    public String getMark() {
-        return mark;
-    }
-
-    public void setMark(String mark) {
-        this.mark = mark;
     }
 
     @Override

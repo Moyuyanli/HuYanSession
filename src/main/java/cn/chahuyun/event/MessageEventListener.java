@@ -6,7 +6,7 @@ import cn.chahuyun.data.StaticData;
 import cn.chahuyun.dialogue.Dialogue;
 import cn.chahuyun.entity.ManySessionInfo;
 import cn.chahuyun.entity.Power;
-import cn.chahuyun.entity.Session;
+import cn.chahuyun.entity.SessionInfo;
 import cn.chahuyun.manage.GroupManager;
 import cn.chahuyun.utils.*;
 import kotlin.coroutines.CoroutineContext;
@@ -435,25 +435,25 @@ public class MessageEventListener extends SimpleListenerHost {
         String code = event.getMessage().serializeToMiraiCode();
         Bot bot = event.getBot();
 
-        Map<String, Session> sessionMap = StaticData.getSessionMap(bot);
-        for (Map.Entry<String, Session> entry : sessionMap.entrySet()) {
+        Map<String, SessionInfo> sessionMap = StaticData.getSessionMap(bot);
+        for (Map.Entry<String, SessionInfo> entry : sessionMap.entrySet()) {
             //先做模糊查询判断存在不存在
             if (code.contains(entry.getKey())) {
                 if (ConfigData.INSTANCE.getDebugSwitch()) {
                     l.info("匹配触发内容->存在");
                 }
                 //存在则尝试匹配作用域
-                Session session = entry.getValue();
-                if (ShareUtils.mateScope(event, session.getScope())) {
+                SessionInfo sessionInfo = entry.getValue();
+                if (ShareUtils.mateScope(event, sessionInfo.getScope())) {
                     if (ConfigData.INSTANCE.getDebugSwitch()) {
                         l.info("匹配作用域->存在");
                     }
                     //尝试匹配匹配方式
-                    if (ShareUtils.mateMate(code, session.getMate(), session.getTerm())) {
+                    if (ShareUtils.mateMate(code, sessionInfo.getMate(), sessionInfo.getTerm())) {
                         if (ConfigData.INSTANCE.getDebugSwitch()) {
                             l.info("匹配匹配方式->成功");
                         }
-                        Dialogue.INSTANCE.dialogueSession(event, session);
+                        Dialogue.INSTANCE.dialogueSession(event, sessionInfo);
                         return;
                     }
                 }

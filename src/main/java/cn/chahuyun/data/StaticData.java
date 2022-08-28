@@ -29,7 +29,7 @@ public class StaticData {
      * 不同触发词
      * 消息信息
      */
-    private static Map<Long, Map<String, Session>> sessionMap;
+    private static Map<Long, Map<String, SessionInfo>> sessionMap;
     /**
      * 不同机器人
      * 不同触发词
@@ -82,7 +82,7 @@ public class StaticData {
         StaticData.groupListMap = groupListMap;
     }
 
-    public static Map<String, Session> getSessionMap(Bot bot) {
+    public static Map<String, SessionInfo> getSessionMap(Bot bot) {
         if (sessionMap == null) {
             sessionMap = new HashMap<>();
             return new HashMap<>();
@@ -93,7 +93,7 @@ public class StaticData {
         return new HashMap<>();
     }
 
-    public static void setSessionMap(Map<Long, Map<String, Session>> sessionMap) {
+    public static void setSessionMap(Map<Long, Map<String, SessionInfo>> sessionMap) {
         StaticData.sessionMap = sessionMap;
     }
 

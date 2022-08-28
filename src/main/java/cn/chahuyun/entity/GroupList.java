@@ -34,7 +34,7 @@ public class GroupList {
      * 所有群号
      */
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, targetEntity = GroupInfo.class)
-    @JoinColumn(name = "GroupInfo_mark")
+    @JoinColumn(name = "GROUPLIST_ID")
     private List<GroupInfo> groups = new ArrayList<>();
 
     public GroupList() {

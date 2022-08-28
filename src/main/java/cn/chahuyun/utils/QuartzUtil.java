@@ -215,7 +215,7 @@ public class QuartzUtil {
                 other = true;
                 miraiCode = MessageChain.serializeToJsonString(nextEventMessage);
             }
-            ManySession manySession = new ManySession(bot.getId(), miraiCode, dynamic, other, miraiCode);
+            ManySession manySession = new ManySession(bot.getId(), dynamic, other, miraiCode);
             manySessions.add(manySession);
             subject.sendMessage("添加成功!");
         }
