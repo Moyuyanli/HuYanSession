@@ -217,7 +217,10 @@ public class ShareUtils {
                 }
                 break;
             case VAGUE:
-                return true;
+                if (code.contains(key)) {
+                    return true;
+                }
+                break;
             case START:
                 if (code.startsWith(key)) {
                     return true;
