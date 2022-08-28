@@ -256,10 +256,11 @@ public class ManySessionUtil {
 
         for (ManySessionInfo value : manySession.values()) {
             List<ManySession> manySessions = value.getManySessions();
-            PlainText plainText = new PlainText(String.format("多词条编号:%d%n触发方式:%s%n触发内容:%s%n", value.getId(), value.getMate().getMateName(), value.getTrigger()));
-            plainText.plus(String.format("作用域:%s%n", value.getScope().getScopeName()));
-            plainText.plus(String.format("当前群是否触发:%b", ShareUtils.mateScope(event, value.getScope()) ? "是" : "否"));
-            builder.add(bot, plainText);
+            MessageChainBuilder messages = new MessageChainBuilder();
+            messages.add(String.format("多词条编号:%d%n触发方式:%s%n触发内容:%s%n", value.getId(), value.getMate().getMateName(), value.getTrigger()));
+            messages.add(String.format("作用域:%s%n", value.getScope().getScopeName()));
+            messages.add(String.format("当前群是否触发:%s", ShareUtils.mateScope(event, value.getScope()) ? "是" : "否"));
+            builder.add(bot, messages.build());
             ForwardMessageBuilder messageBuilder = new ForwardMessageBuilder(subject);
             for (ManySession session : manySessions) {
                 if (session.isOther()) {
@@ -273,6 +274,7 @@ public class ManySessionUtil {
                 messageChainBuilder.add(MiraiCode.deserializeMiraiCode(session.getReply()));
                 messageBuilder.add(bot, messageChainBuilder.build());
             }
+            builder.add(bot, messageBuilder.build());
         }
         subject.sendMessage(builder.build());
     }
@@ -291,10 +293,10 @@ public class ManySessionUtil {
         Bot bot = event.getBot();
 
         init(false);
-
+        //获取id
         String[] split = code.split("[：:]")[1].split(" +");
         int keyId = Integer.parseInt(split[0]);
-
+        //拿到id对应的多词条
         Map<String, ManySessionInfo> manySession = StaticData.getManySession(bot);
         ManySessionInfo manySessionInfo = null;
         for (ManySessionInfo value : manySession.values()) {
@@ -306,10 +308,12 @@ public class ManySessionUtil {
             subject.sendMessage("沒有找到对应的多词条!");
             return;
         }
-        boolean deleteType = split.length > 1;
+        //如果参数等于1，就是删除多词条
+        boolean deleteType = split.length == 1;
+        //留两份，做对照
         List<ManySession> manySessions = manySessionInfo.getManySessions();
         List<ManySession> manySessionList = manySessionInfo.getManySessions();
-
+        //大于1就开始删除
         if (split.length > 1) {
             for (String value : split) {
                 int s = 0;
@@ -319,14 +323,16 @@ public class ManySessionUtil {
                     l.warning("删除多词条-id中含有不是数值的字符!");
                 }
                 int finalS = s;
+                //因为要操作list长度，这里用流
                 manySessionList = manySessionList.stream().filter(it -> it.getId() != finalS).collect(Collectors.toList());
             }
         }
-
+        //有回复词被删除了的话，这个表示
         boolean deleteMessageType = manySessions.size() > manySessionList.size();
 
         ManySessionInfo finalManySessionInfo = manySessionInfo;
         List<ManySession> finalManySessionList = manySessionList;
+
         HibernateUtil.factory.fromTransaction(session -> {
             if (deleteType) {
                 session.remove(finalManySessionInfo);

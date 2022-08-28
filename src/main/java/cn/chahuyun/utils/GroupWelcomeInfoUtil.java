@@ -78,7 +78,7 @@ public class GroupWelcomeInfoUtil {
         String[] split = param.split(" +");
         for (String s : split) {
             switch (s) {
-                case "*":
+                case "sj":
                 case "随机":
                     random = true;
                     break;
