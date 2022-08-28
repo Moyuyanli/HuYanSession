@@ -102,9 +102,19 @@ public class MessageEventListener extends SimpleListenerHost {
             }
         }
 
+        //机器人在群里的权限
+        boolean isGroupAdmin = false;
+        boolean isGroupOwner = false;
         if (subject instanceof Group) {
             if (RepeatMessageUtil.isScreen(event)) {
                 return;
+            }
+            Group group = (Group) subject;
+            MemberPermission botPermission = group.getBotPermission();
+            if (botPermission == MemberPermission.ADMINISTRATOR) {
+                isGroupAdmin = true;
+            } else if (botPermission == MemberPermission.OWNER) {
+                isGroupOwner = true;
             }
         }
 
@@ -234,7 +244,7 @@ public class MessageEventListener extends SimpleListenerHost {
          */
         String groupProhibitPattern = "^\\[mirai:at:\\d+\\] \\d+[s|d|h|m]";
 
-        if (owner || admin || power.isGroupManage() || power.isGroupJy()) {
+        if ((owner || admin || power.isGroupManage() || power.isGroupJy()) && (isGroupAdmin || isGroupOwner)) {
             if (Pattern.matches(groupProhibitPattern, code)) {
                 l.info("禁言指令");
                 GroupManager.prohibit(event);
@@ -248,7 +258,7 @@ public class MessageEventListener extends SimpleListenerHost {
 
         String groupRecallPattern = "^[!！]recall( +\\d+)?([-~]\\d+)?|^撤回( +\\d+)?(-\\d+)?";
 
-        if (owner || admin || power.isGroupManage() || power.isGroupCh()) {
+        if ((owner || admin || power.isGroupManage() || power.isGroupCh()) && (isGroupAdmin || isGroupOwner)) {
             if (Pattern.matches(groupRecallPattern, code)) {
                 l.info("撤回消息指令");
                 GroupManager.recall(event);
@@ -260,7 +270,7 @@ public class MessageEventListener extends SimpleListenerHost {
          * 踢人正则
          */
         String kickPattern = "^tr?\\[mirai:at:\\d+] ?(hmd)?|^踢人\\[mirai:at:\\d+] ?(hmd)?";
-        if (owner || admin || power.isGroupManage() || power.isGroupTr()) {
+        if ((owner || admin || power.isGroupManage() || power.isGroupTr()) && (isGroupAdmin || isGroupOwner ) ) {
             if (Pattern.matches(kickPattern, code)) {
                 l.info("踢人指令");
                 GroupManager.kick(event);

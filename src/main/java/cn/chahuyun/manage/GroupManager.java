@@ -111,17 +111,7 @@ public class GroupManager {
         }
         //禁言
         assert member != null;
-        try {
-            member.mute(time);
-        } catch (Exception e) {
-            if (e instanceof PermissionDeniedException) {
-                subject.sendMessage("禁言失败,你机器居然不是管理员???");
-            } else {
-                subject.sendMessage("禁言失败！");
-                l.error("出错啦~", e);
-                return;
-            }
-        }
+        member.mute(time);
         subject.sendMessage(messages.build());
     }
 
@@ -249,6 +239,11 @@ public class GroupManager {
         Bot bot = event.getBot();
 
         if (!(subject instanceof Group)) {
+            return false;
+        }
+        Group group = (Group) subject;
+        MemberPermission botPermission = group.getBotPermission();
+        if (botPermission == MemberPermission.MEMBER) {
             return false;
         }
 
