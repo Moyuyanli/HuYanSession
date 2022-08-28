@@ -466,7 +466,7 @@ public class SessionUtil {
             trigger = "全局触发";
         } else if (scopeInfo.getGroupInfo()) {
             trigger = "群组:" + scopeInfo.getListId() + "触发";
-        } else if (groupId == subject.getId()) {
+        } else if (scopeInfo.getGroupNumber() == groupId) {
             trigger = "当前群触发";
         }
         return trigger;
