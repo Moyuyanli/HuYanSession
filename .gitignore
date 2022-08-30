@@ -129,3 +129,4 @@ src/test/kotlin/RunTerminal.kt
 
 # Local Test Launch Point working directory
 /debug-sandbox
+/src/test/

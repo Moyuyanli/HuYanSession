@@ -19,11 +19,6 @@ public class HibernateUtil {
     private final static MiraiLogger l = HuYanSession.INSTANCE.getLogger();
 
     /**
-     * 数据库连接驱动
-     */
-    private static final String CLASS_NAME = "org.h2.Driver";
-
-    /**
      * 数据库连接前缀
      */
     private static final String SQL_PATH_PREFIX = "jdbc:h2:file:";
@@ -44,12 +39,6 @@ public class HibernateUtil {
         String path = SQL_PATH_PREFIX + "./data/cn.chahuyun.HuYanSession/HuYan";
         configuration.setProperty("hibernate.connection.url", path);
         configuration.scan("cn.chahuyun.entity");
-//        configuration.addAnnotatedClass(GroupList.class);
-//        configuration.addAnnotatedClass(GroupInfo.class);
-//        configuration.addAnnotatedClass(Scope.class);
-//        configuration.addAnnotatedClass(Session.class);
-//        configuration.addAnnotatedClass(GroupWelcomeInfo.class);
-//        configuration.addAnnotatedClass(WelcomeMessage.class);
         try {
             factory = configuration.buildSessionFactory();
         } catch (HibernateException e) {

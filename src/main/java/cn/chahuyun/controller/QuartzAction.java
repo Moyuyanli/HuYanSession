@@ -1,10 +1,13 @@
-package cn.chahuyun.utils;
+package cn.chahuyun.controller;
 
 import cn.chahuyun.HuYanSession;
 import cn.chahuyun.entity.ManySession;
 import cn.chahuyun.entity.QuartzInfo;
 import cn.chahuyun.entity.Scope;
 import cn.chahuyun.manage.QuartzManager;
+import cn.chahuyun.utils.HibernateUtil;
+import cn.chahuyun.utils.ScopeUtil;
+import cn.chahuyun.utils.ShareUtils;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.Contact;
 import net.mamoe.mirai.contact.User;
@@ -28,7 +31,7 @@ import static cn.chahuyun.utils.ShareUtils.DYNAMIC_MESSAGE_PATTERN;
  * @author Moyuyanli
  * @Date 2022/8/27 18:50
  */
-public class QuartzUtil {
+public class QuartzAction {
 
     private final static MiraiLogger l = HuYanSession.INSTANCE.getLogger();
 
@@ -137,7 +140,7 @@ public class QuartzUtil {
                     String listPattern = "gr\\d+|群组\\d+";
                     if (Pattern.matches(listPattern, param)) {
                         int listId = Integer.parseInt(param.substring(2));
-                        if (ListUtil.isContainsList(bot, listId)) {
+                        if (ListAction.isContainsList(bot, listId)) {
                             subject.sendMessage("该群组不存在!");
                             return;
                         }
@@ -371,6 +374,7 @@ public class QuartzUtil {
         }
         QuartzInfo quartzInfo = quartzInfos.get(0);
         quartzInfo.setStatus(!quartzInfo.isStatus());
+        //todo 定时任务切换没做完
         if (QuartzManager.addSchedulerJob(quartzInfo)) {
             subject.sendMessage(String.format("定时器 %s %s成功!", quartzInfo.getName(), quartzInfo.isStatus() ? "开启" : "关闭"));
             updateQuartz(quartzInfo);
@@ -397,8 +401,6 @@ public class QuartzUtil {
     /**
      * 保存定时器新的状态
      *
-     * @param quartzInfo
-     * @return void
      * @author Moyuyanli
      * @date 2022/8/27 20:33
      */

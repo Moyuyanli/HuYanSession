@@ -3,12 +3,14 @@ package cn.chahuyun;
 import cn.chahuyun.command.Command;
 import cn.chahuyun.config.BlackListData;
 import cn.chahuyun.config.ConfigData;
+import cn.chahuyun.controller.*;
 import cn.chahuyun.event.GroupEventListener;
 import cn.chahuyun.event.MessageEventListener;
-import cn.chahuyun.utils.*;
+import cn.chahuyun.utils.HibernateUtil;
 import net.mamoe.mirai.console.command.CommandManager;
 import net.mamoe.mirai.console.plugin.jvm.JavaPlugin;
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescriptionBuilder;
+import net.mamoe.mirai.event.Event;
 import net.mamoe.mirai.event.EventChannel;
 import net.mamoe.mirai.event.GlobalEventChannel;
 import xyz.cssxsh.mirai.hibernate.MiraiHibernateConfiguration;
@@ -44,7 +46,7 @@ public final class HuYanSession extends JavaPlugin {
         MiraiHibernateConfiguration configuration = new MiraiHibernateConfiguration(this);
         HibernateUtil.init(configuration);
 
-        EventChannel channel = GlobalEventChannel.INSTANCE.parentScope(HuYanSession.INSTANCE);
+        EventChannel<Event> channel = GlobalEventChannel.INSTANCE.parentScope(HuYanSession.INSTANCE);
         //加载插件，打印日志
         reloadPluginConfig(ConfigData.INSTANCE);
         reloadPluginConfig(BlackListData.INSTANCE);
@@ -57,12 +59,12 @@ public final class HuYanSession extends JavaPlugin {
         CommandManager.INSTANCE.registerCommand(Command.INSTANCE, true);
         getLogger().info("插件指令已加载！");
 
-        ListUtil.init(true);
-        SessionUtil.init(true);
-        PowerUtil.init(true);
-        GroupProhibitedUtil.init(true);
-        ManySessionUtil.init(true);
-        QuartzUtil.init(true);
+        ListAction.init(true);
+        SessionAction.init(true);
+        PowerAction.init(true);
+        GroupProhibitedAction.init(true);
+        ManySessionAction.init(true);
+        QuartzAction.init(true);
 
         //注册群消息事件
         channel.registerListenerHost(new MessageEventListener());

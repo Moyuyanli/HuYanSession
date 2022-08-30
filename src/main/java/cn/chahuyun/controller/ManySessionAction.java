@@ -1,4 +1,4 @@
-package cn.chahuyun.utils;
+package cn.chahuyun.controller;
 
 import cn.chahuyun.HuYanSession;
 import cn.chahuyun.config.ConfigData;
@@ -7,6 +7,9 @@ import cn.chahuyun.entity.ManySession;
 import cn.chahuyun.entity.ManySessionInfo;
 import cn.chahuyun.entity.Scope;
 import cn.chahuyun.enums.Mate;
+import cn.chahuyun.utils.HibernateUtil;
+import cn.chahuyun.utils.ScopeUtil;
+import cn.chahuyun.utils.ShareUtils;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.Contact;
 import net.mamoe.mirai.contact.User;
@@ -33,7 +36,7 @@ import static cn.chahuyun.utils.ShareUtils.DYNAMIC_MESSAGE_PATTERN;
  * @Description :多词条消息工具
  * @Date 2022/8/26 21:19
  */
-public class ManySessionUtil {
+public class ManySessionAction {
 
     private final static MiraiLogger l = HuYanSession.INSTANCE.getLogger();
 
@@ -153,7 +156,7 @@ public class ManySessionUtil {
                     String listPattern = "gr\\d+|群组\\d+";
                     if (Pattern.matches(listPattern, param)) {
                         int listId = Integer.parseInt(param.substring(2));
-                        if (ListUtil.isContainsList(bot, listId)) {
+                        if (ListAction.isContainsList(bot, listId)) {
                             subject.sendMessage("该群组不存在!");
                             return;
                         }
@@ -168,6 +171,7 @@ public class ManySessionUtil {
                 manySessionInfo = new ManySessionInfo(bot.getId(), isRandom, 0, code, mate.getMateType(), scope);
             }
         }
+        assert manySessionInfo != null;
         List<ManySession> sessionList = manySessionInfo.getManySessions();
         boolean isQuit = false;
         while (!isQuit) {
@@ -239,7 +243,6 @@ public class ManySessionUtil {
      * @date 2022/8/26 18:33
      */
     public static void queryManySession(MessageEvent event) {
-        MessageChain message = event.getMessage();
         Contact subject = event.getSubject();
         Bot bot = event.getBot();
 

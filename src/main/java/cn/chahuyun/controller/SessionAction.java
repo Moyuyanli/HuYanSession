@@ -1,4 +1,4 @@
-package cn.chahuyun.utils;
+package cn.chahuyun.controller;
 
 import cn.chahuyun.HuYanSession;
 import cn.chahuyun.config.ConfigData;
@@ -6,6 +6,9 @@ import cn.chahuyun.data.StaticData;
 import cn.chahuyun.entity.Scope;
 import cn.chahuyun.entity.SessionInfo;
 import cn.chahuyun.enums.Mate;
+import cn.chahuyun.utils.HibernateUtil;
+import cn.chahuyun.utils.ScopeUtil;
+import cn.chahuyun.utils.ShareUtils;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.Contact;
 import net.mamoe.mirai.contact.User;
@@ -32,7 +35,7 @@ import static cn.chahuyun.utils.ShareUtils.DYNAMIC_MESSAGE_PATTERN;
  * @Description :对话消息工具类
  * @Date 2022/7/9 17:14
  */
-public class SessionUtil {
+public class SessionAction {
 
     private final static MiraiLogger l = HuYanSession.INSTANCE.getLogger();
 
@@ -156,7 +159,7 @@ public class SessionUtil {
                         String listPattern = "gr\\d+|群组\\d+";
                         if (Pattern.matches(listPattern, s)) {
                             int listId = Integer.parseInt(s.substring(2));
-                            if (ListUtil.isContainsList(bot, listId)) {
+                            if (ListAction.isContainsList(bot, listId)) {
                                 subject.sendMessage("该群组不存在!");
                                 return;
                             }
@@ -292,7 +295,7 @@ public class SessionUtil {
                     String listPattern = "gr\\d+|群组\\d+";
                     if (Pattern.matches(listPattern, s)) {
                         int listId = Integer.parseInt(s.substring(2));
-                        if (ListUtil.isContainsList(bot, listId)) {
+                        if (ListAction.isContainsList(bot, listId)) {
                             subject.sendMessage("该群组不存在!");
                             return;
                         }
@@ -430,7 +433,7 @@ public class SessionUtil {
             HibernateUtil.factory.fromTransaction(session -> {
                 SessionInfo sessionInfoEntity = new SessionInfo(bot.getId(), type, key, value, mate, scope, dynamic);
                 //判断对应作用域是否存在
-                if (!ScopeUtil.isScopeEmpty(scope)) {
+                if (ScopeUtil.isScopeEmpty(scope)) {
                     //不存在则先添加作用域
                     session.persist(scope);
                 }

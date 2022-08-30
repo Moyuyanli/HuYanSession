@@ -1,9 +1,10 @@
-package cn.chahuyun.utils;
+package cn.chahuyun.controller;
 
 import cn.chahuyun.HuYanSession;
 import cn.chahuyun.config.ConfigData;
 import cn.chahuyun.data.StaticData;
 import cn.chahuyun.entity.Power;
+import cn.chahuyun.utils.HibernateUtil;
 import kotlin.coroutines.EmptyCoroutineContext;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.*;
@@ -30,7 +31,7 @@ import java.util.Map;
  * @Description : 权限操作
  * @Date 2022/8/14 17:29
  */
-public class PowerUtil {
+public class PowerAction {
 
     private final static MiraiLogger l = HuYanSession.INSTANCE.getLogger();
 

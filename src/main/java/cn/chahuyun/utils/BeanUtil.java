@@ -1,8 +1,6 @@
 package cn.chahuyun.utils;
 
-import cn.chahuyun.HuYanSession;
 import cn.hutool.db.Entity;
-import net.mamoe.mirai.utils.MiraiLogger;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -16,8 +14,6 @@ import java.lang.reflect.InvocationTargetException;
  * @date 2022/7/12 9:30
  */
 public class BeanUtil {
-
-    private final static MiraiLogger l = HuYanSession.INSTANCE.getLogger();
 
     /**
      * 通过传入的泛型，来实现从entity中获取值然后创建对应对象

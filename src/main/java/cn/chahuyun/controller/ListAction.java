@@ -1,10 +1,11 @@
-package cn.chahuyun.utils;
+package cn.chahuyun.controller;
 
 import cn.chahuyun.HuYanSession;
 import cn.chahuyun.config.ConfigData;
 import cn.chahuyun.data.StaticData;
 import cn.chahuyun.entity.GroupInfo;
 import cn.chahuyun.entity.GroupList;
+import cn.chahuyun.utils.HibernateUtil;
 import jakarta.persistence.PersistenceException;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.Contact;
@@ -25,7 +26,7 @@ import java.util.stream.Collectors;
  * @author Moyuyanli
  * @Date 2022/7/9 18:55
  */
-public class ListUtil {
+public class ListAction {
 
     private final static MiraiLogger l = HuYanSession.INSTANCE.getLogger();
 

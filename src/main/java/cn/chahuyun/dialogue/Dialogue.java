@@ -1,11 +1,11 @@
 package cn.chahuyun.dialogue;
 
 import cn.chahuyun.HuYanSession;
+import cn.chahuyun.controller.GroupWelcomeInfoAction;
+import cn.chahuyun.controller.ManySessionAction;
 import cn.chahuyun.entity.*;
 import cn.chahuyun.manage.GroupManager;
 import cn.chahuyun.utils.DynamicMessageUtil;
-import cn.chahuyun.utils.GroupWelcomeInfoUtil;
-import cn.chahuyun.utils.ManySessionUtil;
 import net.mamoe.mirai.contact.BotIsBeingMutedException;
 import net.mamoe.mirai.contact.Contact;
 import net.mamoe.mirai.contact.Group;
@@ -52,7 +52,7 @@ public class Dialogue {
     /**
      * 会话消息
      *
-     * @param event   消息事件
+     * @param event       消息事件
      * @param sessionInfo 会话消息
      * @author Moyuyanli
      * @date 2022/7/13 21:46
@@ -120,7 +120,7 @@ public class Dialogue {
             } else {
                 subject.sendMessage(MiraiCode.deserializeMiraiCode(reply.getReply()));
             }
-            ManySessionUtil.increase(session);
+            ManySessionAction.increase(session);
         } catch (EventCancelledException e) {
             l.error("发送消息被取消:" + e.getMessage());
             e.printStackTrace();
@@ -163,7 +163,7 @@ public class Dialogue {
                 int pollingNumber = welcomeInfo.getPollingNumber();
                 //获取轮询的结尾
                 welcomeMessage = welcomeMessages.get(pollingNumber < size ? pollingNumber : pollingNumber % size);
-                GroupWelcomeInfoUtil.increase(welcomeInfo);
+                GroupWelcomeInfoAction.increase(welcomeInfo);
             }
             switch (welcomeMessage.getType()) {
                 case 0:
@@ -171,6 +171,7 @@ public class Dialogue {
                     break;
                 case 1:
                     MessageChain messages = DynamicMessageUtil.parseMessageParameter(group, welcomeMessage.getWelcomeMessage(), welcomeInfo, GroupManager.map.get(mark));
+                    assert messages != null;
                     subject.sendMessage(messages);
                     break;
                 case 2:

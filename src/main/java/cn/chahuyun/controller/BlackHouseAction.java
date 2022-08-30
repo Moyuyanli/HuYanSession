@@ -1,7 +1,8 @@
-package cn.chahuyun.utils;
+package cn.chahuyun.controller;
 
 import cn.chahuyun.HuYanSession;
 import cn.chahuyun.entity.BlackHouse;
+import cn.chahuyun.utils.HibernateUtil;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.utils.MiraiLogger;
 import org.hibernate.query.criteria.HibernateCriteriaBuilder;
@@ -15,7 +16,7 @@ import org.hibernate.query.criteria.JpaRoot;
  * @author Moyuyanli
  * @date 2022/8/19 10:48
  */
-public class BlackHouseUtil {
+public class BlackHouseAction {
 
     private final static MiraiLogger l = HuYanSession.INSTANCE.getLogger();
 

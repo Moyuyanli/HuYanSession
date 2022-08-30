@@ -2,32 +2,27 @@ package cn.chahuyun.utils;
 
 import cn.chahuyun.HuYanSession;
 import cn.chahuyun.config.ConfigData;
-import cn.chahuyun.data.ApplyClusterInfo;
 import cn.chahuyun.data.StaticData;
-import cn.chahuyun.entity.*;
+import cn.chahuyun.entity.GroupInfo;
+import cn.chahuyun.entity.GroupList;
+import cn.chahuyun.entity.Scope;
 import cn.chahuyun.enums.Mate;
 import kotlin.coroutines.EmptyCoroutineContext;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.Contact;
 import net.mamoe.mirai.contact.Group;
-import net.mamoe.mirai.contact.NormalMember;
 import net.mamoe.mirai.contact.User;
 import net.mamoe.mirai.event.ConcurrencyKind;
 import net.mamoe.mirai.event.EventChannel;
 import net.mamoe.mirai.event.EventPriority;
 import net.mamoe.mirai.event.GlobalEventChannel;
-import net.mamoe.mirai.event.events.GroupEvent;
-import net.mamoe.mirai.event.events.MemberJoinEvent;
 import net.mamoe.mirai.event.events.MessageEvent;
-import net.mamoe.mirai.message.code.MiraiCode;
-import net.mamoe.mirai.message.data.*;
+import net.mamoe.mirai.message.data.At;
+import net.mamoe.mirai.message.data.MessageChain;
+import net.mamoe.mirai.message.data.SingleMessage;
 import net.mamoe.mirai.utils.MiraiLogger;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.IOException;
-import java.net.URL;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -241,7 +236,7 @@ public class ShareUtils {
      * 获取用户的下一次消息事件
      *
      * @param user 用户
-     * @return net.mamoe.mirai.event.events.MessageEvent
+     * @return MessageEvent
      * @author Moyuyanli
      * @date 2022/8/20 12:37
      */
@@ -269,14 +264,13 @@ public class ShareUtils {
     @NotNull
     public static Mate getMate(int mateType) {
         switch (mateType) {
-            case 1:
-                return Mate.ACCURATE;
             case 2:
                 return Mate.VAGUE;
             case 3:
                 return Mate.START;
             case 4:
                 return Mate.END;
+            case 1:
             default:
                 return Mate.ACCURATE;
         }

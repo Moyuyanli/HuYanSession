@@ -1,8 +1,11 @@
-package cn.chahuyun.utils;
+package cn.chahuyun.controller;
 
 import cn.chahuyun.HuYanSession;
 import cn.chahuyun.entity.Blacklist;
 import cn.chahuyun.entity.Scope;
+import cn.chahuyun.utils.HibernateUtil;
+import cn.chahuyun.utils.ScopeUtil;
+import cn.chahuyun.utils.ShareUtils;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.*;
 import net.mamoe.mirai.event.events.MessageEvent;
@@ -22,7 +25,7 @@ import java.util.regex.Pattern;
  * @Description :黑名单工具类
  * @Date 2022/8/24 18:24
  */
-public class BlackListUtil {
+public class BlackListAction {
 
     private final static MiraiLogger l = HuYanSession.INSTANCE.getLogger();
 
@@ -130,7 +133,7 @@ public class BlackListUtil {
         Contact subject = event.getSubject();
         Bot bot = event.getBot();
 
-        List<Blacklist> blacklists = null;
+        List<Blacklist> blacklists;
         try {
             blacklists = HibernateUtil.factory.fromTransaction(session -> {
                 HibernateCriteriaBuilder builder = session.getCriteriaBuilder();
@@ -186,7 +189,6 @@ public class BlackListUtil {
     public static void deleteBlackList(MessageEvent event) {
         //-hmd:id
         String code = event.getMessage().serializeToMiraiCode();
-        Bot bot = event.getBot();
         Contact subject = event.getSubject();
 
         String key = code.split("[:：]")[1];
@@ -250,7 +252,7 @@ public class BlackListUtil {
      */
     public static void isBlackUser(MessageEvent event) {
         Contact subject = event.getSubject();
-        Group group = null;
+        Group group;
         if (subject instanceof Group) {
             group = (Group) subject;
         } else {
@@ -260,7 +262,7 @@ public class BlackListUtil {
         Bot bot = event.getBot();
         NormalMember member = group.get(user.getId());
 
-        List<Blacklist> blacklists = null;
+        List<Blacklist> blacklists;
         try {
             blacklists = HibernateUtil.factory.fromTransaction(session -> {
                 HibernateCriteriaBuilder builder = session.getCriteriaBuilder();

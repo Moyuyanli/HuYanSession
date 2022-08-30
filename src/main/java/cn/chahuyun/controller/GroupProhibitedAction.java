@@ -1,10 +1,13 @@
-package cn.chahuyun.utils;
+package cn.chahuyun.controller;
 
 import cn.chahuyun.HuYanSession;
 import cn.chahuyun.config.ConfigData;
 import cn.chahuyun.data.StaticData;
 import cn.chahuyun.entity.GroupProhibited;
 import cn.chahuyun.entity.Scope;
+import cn.chahuyun.utils.HibernateUtil;
+import cn.chahuyun.utils.ScopeUtil;
+import cn.chahuyun.utils.ShareUtils;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.Contact;
 import net.mamoe.mirai.contact.User;
@@ -31,7 +34,7 @@ import java.util.regex.Pattern;
  * @author Moyuyanli
  * @date 2022/8/16 14:19
  */
-public class GroupProhibitedUtil {
+public class GroupProhibitedAction {
 
     private final static MiraiLogger l = HuYanSession.INSTANCE.getLogger();
 
@@ -184,7 +187,7 @@ public class GroupProhibitedUtil {
         try {
             HibernateUtil.factory.fromTransaction(session -> {
                 //判断对应作用域是否存在
-                if (!ScopeUtil.isScopeEmpty(scope)) {
+                if (ScopeUtil.isScopeEmpty(scope)) {
                     //不存在则先添加作用域
                     session.persist(scope);
                 }

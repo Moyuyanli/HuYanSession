@@ -1,4 +1,4 @@
-package cn.chahuyun.utils;
+package cn.chahuyun.controller;
 
 import cn.chahuyun.HuYanSession;
 import cn.chahuyun.config.ConfigData;
@@ -27,7 +27,7 @@ import java.util.concurrent.TimeUnit;
  * @author Moyuyanli
  * @date 2022/8/18 16:03
  */
-public class RepeatMessageUtil {
+public class RepeatMessageAction {
 
     private final static MiraiLogger l = HuYanSession.INSTANCE.getLogger();
     /**

@@ -2,12 +2,17 @@ package cn.chahuyun.manage;
 
 import cn.chahuyun.HuYanSession;
 import cn.chahuyun.config.BlackListData;
+import cn.chahuyun.controller.BlackHouseAction;
+import cn.chahuyun.controller.BlackListAction;
 import cn.chahuyun.data.ApplyClusterInfo;
 import cn.chahuyun.data.StaticData;
 import cn.chahuyun.dialogue.Dialogue;
 import cn.chahuyun.entity.*;
 import cn.chahuyun.enums.Mate;
-import cn.chahuyun.utils.*;
+import cn.chahuyun.utils.DynamicMessageUtil;
+import cn.chahuyun.utils.HibernateUtil;
+import cn.chahuyun.utils.ScopeUtil;
+import cn.chahuyun.utils.ShareUtils;
 import kotlin.coroutines.EmptyCoroutineContext;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.*;
@@ -296,7 +301,7 @@ public class GroupManager {
         }
 
         if (groupProhibited.isAccumulate()) {
-            BlackHouse blackHouse = BlackHouseUtil.getBlackHouse(bot, sender.getId());
+            BlackHouse blackHouse = BlackHouseAction.getBlackHouse(bot, sender.getId());
             if (blackHouse == null) {
                 blackHouse = new BlackHouse(bot.getId(), sender.getId(), groupProhibited.getId(), 1);
             } else {
@@ -310,7 +315,7 @@ public class GroupManager {
             subject.sendMessage(MessageUtils.newChain()
                     .plus(new At(sender.getId()))
                     .plus(new PlainText("你已经违规 " + blackHouse.getNumber() + " 次，当违规 " + groupProhibited.getAccumulateNumber() + " 次就会被踢出!")));
-            BlackHouseUtil.saveOrUpdate(blackHouse);
+            BlackHouseAction.saveOrUpdate(blackHouse);
         }
         //回复消息
         MessageChain messages = DynamicMessageUtil.parseMessageParameter(event, groupProhibited.getReply(), groupProhibited);
@@ -586,7 +591,7 @@ public class GroupManager {
 
         Scope scope = new Scope(botId, "当前", false, false, groupId, 0);
         Blacklist blacklist = new Blacklist(botId, userId, BlackListData.INSTANCE.getAutoBlackListReason(), scope);
-        BlackListUtil.saveBlackList(blacklist, scope);
+        BlackListAction.saveBlackList(blacklist, scope);
         group.sendMessage(String.format("%s(%d) 离开了我们,已经加入黑名单!", member.getNick(), userId));
     }
 

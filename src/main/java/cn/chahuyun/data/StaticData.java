@@ -185,7 +185,6 @@ public class StaticData {
      * 获取多词条消息map
      *
      * @param bot 所属机器人
-     * @return
      */
     public static Map<String, ManySessionInfo> getManySession(Bot bot) {
         if (manySession == null) {

@@ -1,9 +1,9 @@
 package cn.chahuyun.job;
 
 import cn.chahuyun.config.ConfigData;
+import cn.chahuyun.controller.QuartzAction;
 import cn.chahuyun.entity.*;
 import cn.chahuyun.utils.DynamicMessageUtil;
-import cn.chahuyun.utils.QuartzUtil;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.ContactList;
 import net.mamoe.mirai.contact.Group;
@@ -13,7 +13,6 @@ import net.mamoe.mirai.utils.MiraiLogger;
 import org.quartz.Job;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
-import org.quartz.JobExecutionException;
 
 import java.util.List;
 import java.util.Map;
@@ -27,7 +26,7 @@ import java.util.Objects;
  */
 public class TimingJob implements Job {
     @Override
-    public void execute(JobExecutionContext context) throws JobExecutionException {
+    public void execute(JobExecutionContext context) {
         JobDataMap jobDataMap = context.getJobDetail().getJobDataMap();
         QuartzInfo base = (QuartzInfo) jobDataMap.get("data");
         Map<Integer, GroupList> groupList = (Map<Integer, GroupList>) jobDataMap.get("groupList");
@@ -84,7 +83,7 @@ public class TimingJob implements Job {
                 int pollingNumber = quartzInfo.getPollingNumber();
                 ManySession manySession = manySessions.get(pollingNumber < size ? pollingNumber : pollingNumber % size);
                 sendMessage(group, manySession.isDynamic(), manySession.isOther(), manySession.getReply());
-                QuartzUtil.increase(quartzInfo);
+                QuartzAction.increase(quartzInfo);
             }
         }
     }

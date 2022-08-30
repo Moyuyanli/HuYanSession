@@ -2,13 +2,14 @@ package cn.chahuyun.event;
 
 import cn.chahuyun.HuYanSession;
 import cn.chahuyun.config.ConfigData;
+import cn.chahuyun.controller.*;
 import cn.chahuyun.data.StaticData;
 import cn.chahuyun.dialogue.Dialogue;
 import cn.chahuyun.entity.ManySessionInfo;
 import cn.chahuyun.entity.Power;
 import cn.chahuyun.entity.SessionInfo;
 import cn.chahuyun.manage.GroupManager;
-import cn.chahuyun.utils.*;
+import cn.chahuyun.utils.ShareUtils;
 import kotlin.coroutines.CoroutineContext;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.*;
@@ -88,7 +89,7 @@ public class MessageEventListener extends SimpleListenerHost {
         boolean prohibited = false;
 
         if (!owner) {
-            BlackListUtil.isBlackUser(event);
+            BlackListAction.isBlackUser(event);
             if (powerUser) {
                 if (!powerMap.get(powerString).isGroupManage() && !powerMap.get(powerString).isGroupWjc()) {
                     if (GroupManager.isProhibited(event)) {
@@ -106,7 +107,7 @@ public class MessageEventListener extends SimpleListenerHost {
         boolean isGroupAdmin = false;
         boolean isGroupOwner = false;
         if (subject instanceof Group) {
-            if (RepeatMessageUtil.isScreen(event)) {
+            if (RepeatMessageAction.isScreen(event)) {
                 return;
             }
             Group group = (Group) subject;
@@ -169,15 +170,15 @@ public class MessageEventListener extends SimpleListenerHost {
         if (owner || admin || power.isGroupList()) {
             if (Pattern.matches(addListPattern, code)) {
                 l.info("添加群组指令");
-                ListUtil.addGroupListInfo(event);
+                ListAction.addGroupListInfo(event);
                 return;
             } else if (Pattern.matches(queryListPattern, code)) {
                 l.info("查询群组指令");
-                ListUtil.queryGroupListInfo(event);
+                ListAction.queryGroupListInfo(event);
                 return;
             } else if (Pattern.matches(deleteListPattern, code)) {
                 l.info("删除群组指令");
-                ListUtil.deleteGroupListInfo(event);
+                ListAction.deleteGroupListInfo(event);
                 return;
             }
 
@@ -195,23 +196,23 @@ public class MessageEventListener extends SimpleListenerHost {
         if (owner || admin || power.isSession() || power.isSessionX()) {
             if (Pattern.matches(addStudyPattern, code)) {
                 l.info("学习会话指令");
-                SessionUtil.studySession(event);
+                SessionAction.studySession(event);
                 return;
             } else if (Pattern.matches(queryStudyPattern, code)) {
                 l.info("查询会话指令");
-                SessionUtil.querySession(event);
+                SessionAction.querySession(event);
                 return;
             } else if (Pattern.matches(addsStudyPattern, code)) {
                 l.info("添加会话指令");
-                SessionUtil.studyDialogue(event);
+                SessionAction.studyDialogue(event);
                 return;
             } else if (Pattern.matches(deleteStudyPattern, code)) {
                 l.info("删除会话指令");
-                SessionUtil.deleteSession(event);
+                SessionAction.deleteSession(event);
                 return;
             } else if (Pattern.matches(deleteDialogueStudyPattern, code)) {
                 l.info("删除会话指令");
-                SessionUtil.deleteInformationSession(event);
+                SessionAction.deleteInformationSession(event);
                 return;
             }
         }
@@ -226,15 +227,15 @@ public class MessageEventListener extends SimpleListenerHost {
         if (owner || admin) {
             if (Pattern.matches(addPowerPattern, code)) {
                 l.info("添加权限指令");
-                PowerUtil.addOrUpdatePower(event, true);
+                PowerAction.addOrUpdatePower(event, true);
                 return;
             } else if (Pattern.matches(deletePowerPattern, code)) {
                 l.info("删除权限指令");
-                PowerUtil.addOrUpdatePower(event, false);
+                PowerAction.addOrUpdatePower(event, false);
                 return;
             } else if (Pattern.matches(queryPowerPattern, code)) {
                 l.info("查询权限指令");
-                PowerUtil.queryPower(event);
+                PowerAction.queryPower(event);
                 return;
             }
         }
@@ -242,7 +243,7 @@ public class MessageEventListener extends SimpleListenerHost {
         /*
         禁言正则
          */
-        String groupProhibitPattern = "^\\[mirai:at:\\d+\\] \\d+[s|d|h|m]";
+        String groupProhibitPattern = "^\\[mirai:at:\\d+] \\d+[sdhm]";
 
         if ((owner || admin || power.isGroupManage() || power.isGroupJy()) && (isGroupAdmin || isGroupOwner)) {
             if (Pattern.matches(groupProhibitPattern, code)) {
@@ -297,21 +298,21 @@ public class MessageEventListener extends SimpleListenerHost {
 
         //+wjc:body [3h|gr1|%(重设回复消息)|ch|jy|hmd3|0|全局]
         String addProhibitedPattern = "^\\+wjc\\\\?[:：]\\S+( +\\S+)*?|^添加违禁词\\\\?[:：]\\S+( +\\S+)*?";
-        String deleteProhibitedPattern = "^\\-wjc\\\\?[:：]\\d+|^删除违禁词\\\\?[:：]\\d+";
+        String deleteProhibitedPattern = "^-wjc\\\\?[:：]\\d+|^删除违禁词\\\\?[:：]\\d+";
         String queryProhibitedPattern = "^\\wjc\\\\?[:：]|^查询违禁词";
 
         if (owner || admin || power.isGroupManage() || power.isGroupWjc()) {
             if (Pattern.matches(addProhibitedPattern, code)) {
                 l.info("添加违禁词指令");
-                GroupProhibitedUtil.addProhibited(event);
+                GroupProhibitedAction.addProhibited(event);
                 return;
             } else if (Pattern.matches(deleteProhibitedPattern, code)) {
                 l.info("删除违禁词指令");
-                GroupProhibitedUtil.deleteProhibited(event);
+                GroupProhibitedAction.deleteProhibited(event);
                 return;
             } else if (Pattern.matches(queryProhibitedPattern, code)) {
                 l.info("查询违禁词指令");
-                GroupProhibitedUtil.queryGroupProhibited(event);
+                GroupProhibitedAction.queryGroupProhibited(event);
                 return;
             }
         }
@@ -326,15 +327,15 @@ public class MessageEventListener extends SimpleListenerHost {
         if (owner || admin || power.isGroupManage() || power.isGroupHyc()) {
             if (Pattern.matches(addGroupWelcomeMessagePattern, code)) {
                 l.info("添加欢迎词指令");
-                GroupWelcomeInfoUtil.addGroupWelcomeInfo(event);
+                GroupWelcomeInfoAction.addGroupWelcomeInfo(event);
                 return;
             } else if (Pattern.matches(queryGroupWelcomeMessagePattern, code)) {
                 l.info("查询欢迎词指令");
-                GroupWelcomeInfoUtil.queryGroupWelcomeInfo(event);
+                GroupWelcomeInfoAction.queryGroupWelcomeInfo(event);
                 return;
             } else if (Pattern.matches(deleteGroupWelcomeMessagePattern, code)) {
                 l.info("删除欢迎词指令");
-                GroupWelcomeInfoUtil.deleteGroupWelcomeInfo(event);
+                GroupWelcomeInfoAction.deleteGroupWelcomeInfo(event);
                 return;
             }
         }
@@ -350,15 +351,15 @@ public class MessageEventListener extends SimpleListenerHost {
         if (owner || admin || power.isGroupManage() || power.isGroupHmd()) {
             if (Pattern.matches(addBlackListPattern, code)) {
                 l.info("添加黑名单指令");
-                BlackListUtil.addBlackList(event);
+                BlackListAction.addBlackList(event);
                 return;
             } else if (Pattern.matches(queryBlackListPattern, code)) {
                 l.info("查询黑名单指令");
-                BlackListUtil.queryBlackList(event);
+                BlackListAction.queryBlackList(event);
                 return;
             } else if (Pattern.matches(deleteBlackListPattern, code)) {
                 l.info("删除黑名单指令");
-                BlackListUtil.deleteBlackList(event);
+                BlackListAction.deleteBlackList(event);
                 return;
             }
         }
@@ -373,15 +374,15 @@ public class MessageEventListener extends SimpleListenerHost {
         if (owner || admin || power.isSession() || power.isSessionDct()) {
             if (Pattern.matches(addManySessionPattern, code)) {
                 l.info("添加多词条指令");
-                ManySessionUtil.addManySession(event);
+                ManySessionAction.addManySession(event);
                 return;
             } else if (Pattern.matches(queryManySessionPattern, code)) {
                 l.info("查询多词条指令");
-                ManySessionUtil.queryManySession(event);
+                ManySessionAction.queryManySession(event);
                 return;
             } else if (Pattern.matches(deleteManySessionPattern, code)) {
                 l.info("删除多词条指令");
-                ManySessionUtil.deleteManySession(event);
+                ManySessionAction.deleteManySession(event);
                 return;
             }
         }
@@ -397,22 +398,22 @@ public class MessageEventListener extends SimpleListenerHost {
         if (owner || admin || power.isDs() || power.isDscz()) {
             if (Pattern.matches(switchQuartzPattern, code)) {
                 l.info("切换定时器指令");
-                QuartzUtil.switchQuartz(event);
+                QuartzAction.switchQuartz(event);
                 return;
             } else if (Pattern.matches(queryQuartzPattern, code)) {
                 l.info("查询定时器指令");
-                QuartzUtil.queryQuartz(event);
+                QuartzAction.queryQuartz(event);
                 return;
             }
         }
         if (owner || admin || power.isDs()) {
             if (Pattern.matches(addQuartzPattern, code)) {
                 l.info("添加定时器指令");
-                QuartzUtil.addQuartz(event);
+                QuartzAction.addQuartz(event);
                 return;
             } else if (Pattern.matches(deleteQuartzPattern, code)) {
                 l.info("删除定时器指令");
-                QuartzUtil.deleteQuartz(event);
+                QuartzAction.deleteQuartz(event);
                 return;
             }
         }
