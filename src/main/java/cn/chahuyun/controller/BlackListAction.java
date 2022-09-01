@@ -229,7 +229,7 @@ public class BlackListAction {
         try {
             HibernateUtil.factory.fromTransaction(session -> {
                 //判断对应作用域是否存在
-                if (!ScopeUtil.isScopeEmpty(scope)) {
+                if (ScopeUtil.isScopeEmpty(scope)) {
                     //不存在则先添加作用域
                     session.persist(scope);
                 }

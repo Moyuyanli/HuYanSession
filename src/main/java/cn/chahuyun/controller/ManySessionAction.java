@@ -218,7 +218,7 @@ public class ManySessionAction {
             Scope finalScope = scope;
             ManySessionInfo finalManySessionInfo = manySessionInfo;
             HibernateUtil.factory.fromTransaction(session -> {
-                if (!ScopeUtil.isScopeEmpty(finalScope)) {
+                if (ScopeUtil.isScopeEmpty(finalScope)) {
                     //不存在则先添加作用域
                     session.persist(finalScope);
                 }
