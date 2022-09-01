@@ -24,7 +24,7 @@ public class ScopeUtil {
      * 判断该作用是是否存在
      *
      * @param scope 作用域
-     * @return boolean  t 存在
+     * @return boolean  t 不存在
      * @author Moyuyanli
      * @date 2022/8/12 15:57
      */
@@ -39,9 +39,9 @@ public class ScopeUtil {
             return session.createQuery(query).list();
         });
         if (scopeList == null || scopeList.isEmpty()) {
-            return false;
+            return true;
         }
-        return true;
+        return false;
     }
 
     /**
