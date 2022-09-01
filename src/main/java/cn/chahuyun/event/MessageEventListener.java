@@ -189,7 +189,7 @@ public class MessageEventListener extends SimpleListenerHost {
          */
         String addStudyPattern = "^xx +\\S+ +\\S+( +\\S+){0,2}|^学习 +\\S+( +\\S+){0,2}";
         String queryStudyPattern = "^xx\\\\?[:：](\\S+)?|^查询( +\\S+)?";
-        String addsStudyPattern = "^%xx|^学习对话";
+        String addsStudyPattern = "^%xx|^机器人，学习对话";//小D添加的代码
         String deleteStudyPattern = "^-xx\\\\?[:：](\\S+)|^删除( +\\S+)";
         String deleteDialogueStudyPattern = "^-%xx|^删除对话";
 

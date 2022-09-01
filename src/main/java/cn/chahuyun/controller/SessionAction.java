@@ -252,6 +252,12 @@ public class SessionAction {
             return;
         }
         String key = nextMessageEventFromUser.getMessage().serializeToMiraiCode();
+        //小D加入的代码
+        if(!key.contains("机器人，")){
+            nextMessageEventFromUser.getSubject()
+                    .sendMessage("没学会，请以\"机器人，\"为前缀让我学习对话！");
+            return;
+        }
 
 
         subject.sendMessage("请发送回复消息:");
@@ -287,10 +293,11 @@ public class SessionAction {
                 case "结尾":
                     mate = Mate.END;
                     break;
-                case "0":
-                case "全局":
-                    scope = new Scope(bot.getId(), "全局", true, false, subject.getId(), -1);
-                    break;
+                    //小D删去的代码，防止群友乱用参数
+//                case "0":
+//                case "全局":
+//                    scope = new Scope(bot.getId(), "全局", true, false, subject.getId(), -1);
+//                    break;
                 default:
                     String listPattern = "gr\\d+|群组\\d+";
                     if (Pattern.matches(listPattern, s)) {
