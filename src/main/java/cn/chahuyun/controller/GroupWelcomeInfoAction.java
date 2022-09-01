@@ -69,11 +69,11 @@ public class GroupWelcomeInfoAction {
         boolean random = false;
 
         subject.sendMessage("请发送参数(一次发送，多参数中间隔开):");
-        MessageEvent nextMessageEventFromUser1 = ShareUtils.getNextMessageEventFromUser(user);
-        if (ShareUtils.isQuit(nextMessageEventFromUser1)) {
+        MessageEvent nextParamMessageEventFromUser = ShareUtils.getNextMessageEventFromUser(user);
+        if (ShareUtils.isQuit(nextParamMessageEventFromUser)) {
             return;
         }
-        String param = nextMessageEventFromUser.getMessage().serializeToMiraiCode();
+        String param = nextParamMessageEventFromUser.getMessage().serializeToMiraiCode();
 
         Scope scope = new Scope(bot.getId(), "当前", false, false, subject.getId(), 0);
 
