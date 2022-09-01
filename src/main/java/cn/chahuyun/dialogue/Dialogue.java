@@ -1,6 +1,5 @@
 package cn.chahuyun.dialogue;
 
-import cn.chahuyun.HuYanSession;
 import cn.chahuyun.controller.GroupWelcomeInfoAction;
 import cn.chahuyun.controller.ManySessionAction;
 import cn.chahuyun.entity.*;
@@ -16,11 +15,12 @@ import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.code.MiraiCode;
 import net.mamoe.mirai.message.data.Image;
 import net.mamoe.mirai.message.data.MessageChain;
-import net.mamoe.mirai.utils.MiraiLogger;
 
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
+
+import static cn.chahuyun.HuYanSession.log;
 
 /**
  * 说明
@@ -32,12 +32,17 @@ import java.util.List;
 public class Dialogue {
 
     public static final Dialogue INSTANCE = new Dialogue();
-    private final static MiraiLogger l = HuYanSession.INSTANCE.getLogger();
 
 
     private Dialogue() {
     }
 
+    /**
+     * 案例
+     *
+     * @author Moyuyanli
+     * @date 2022/9/1 23:38
+     */
     private void test(MessageEvent event) {
         Image image;
         try {
@@ -59,34 +64,19 @@ public class Dialogue {
      */
     public void dialogueSession(MessageEvent event, SessionInfo sessionInfo) {
         Contact subject = event.getSubject();
-        try {
-            if (sessionInfo.getType() == 5) {
-                subject.sendMessage(MessageChain.deserializeFromJsonString(sessionInfo.getReply()));
-            } else if (sessionInfo.isDynamic()) {
-                MessageChain messages = DynamicMessageUtil.parseMessageParameter(event, sessionInfo.getReply(), sessionInfo);
-                if (messages == null) {
-                    return;
-                }
-                subject.sendMessage(messages);
-            } else {
-                subject.sendMessage(MiraiCode.deserializeMiraiCode(sessionInfo.getReply()));
+
+        if (sessionInfo.getType() == 5) {
+            subject.sendMessage(MessageChain.deserializeFromJsonString(sessionInfo.getReply()));
+        } else if (sessionInfo.isDynamic()) {
+            MessageChain messages = DynamicMessageUtil.parseMessageParameter(event, sessionInfo.getReply(), sessionInfo);
+            if (messages == null) {
+                return;
             }
-        } catch (EventCancelledException e) {
-            l.error("发送消息被取消:" + e.getMessage());
-            e.printStackTrace();
-        } catch (BotIsBeingMutedException e) {
-            l.error("你的机器人被禁言:" + e.getMessage());
-            e.printStackTrace();
-        } catch (MessageTooLargeException e) {
-            l.error("发送消息过长:" + e.getMessage());
-            e.printStackTrace();
-        } catch (IllegalArgumentException e) {
-            l.error("发送消息为空:" + e.getMessage());
-            e.printStackTrace();
-        } catch (Exception e) {
-            l.error("发送消息错误!!!!:" + e.getMessage());
-            e.printStackTrace();
+            subject.sendMessage(messages);
+        } else {
+            subject.sendMessage(MiraiCode.deserializeMiraiCode(sessionInfo.getReply()));
         }
+
     }
 
     /**
@@ -108,35 +98,20 @@ public class Dialogue {
             int pollingNumber = session.getPollingNumber();
             reply = manySessions.get(pollingNumber < size ? pollingNumber : pollingNumber % size);
         }
-        try {
-            if (reply.isOther()) {
-                subject.sendMessage(MessageChain.deserializeFromJsonString(reply.getReply()));
-            } else if (reply.isDynamic()) {
-                MessageChain messages = DynamicMessageUtil.parseMessageParameter(event, reply.getReply(), session);
-                if (messages == null) {
-                    return;
-                }
-                subject.sendMessage(messages);
-            } else {
-                subject.sendMessage(MiraiCode.deserializeMiraiCode(reply.getReply()));
+
+        if (reply.isOther()) {
+            subject.sendMessage(MessageChain.deserializeFromJsonString(reply.getReply()));
+        } else if (reply.isDynamic()) {
+            MessageChain messages = DynamicMessageUtil.parseMessageParameter(event, reply.getReply(), session);
+            if (messages == null) {
+                return;
             }
-            ManySessionAction.increase(session);
-        } catch (EventCancelledException e) {
-            l.error("发送消息被取消:" + e.getMessage());
-            e.printStackTrace();
-        } catch (BotIsBeingMutedException e) {
-            l.error("你的机器人被禁言:" + e.getMessage());
-            e.printStackTrace();
-        } catch (MessageTooLargeException e) {
-            l.error("发送消息过长:" + e.getMessage());
-            e.printStackTrace();
-        } catch (IllegalArgumentException e) {
-            l.error("发送消息为空:" + e.getMessage());
-            e.printStackTrace();
-        } catch (Exception e) {
-            l.error("发送消息错误!!!!:" + e.getMessage());
-            e.printStackTrace();
+            subject.sendMessage(messages);
+        } else {
+            subject.sendMessage(MiraiCode.deserializeMiraiCode(reply.getReply()));
         }
+        ManySessionAction.increase(session);
+
     }
 
 
@@ -180,20 +155,15 @@ public class Dialogue {
             }
 
         } catch (EventCancelledException e) {
-            l.error("发送消息被取消:" + e.getMessage());
-            e.printStackTrace();
+            log.error("发送消息被取消:", e);
         } catch (BotIsBeingMutedException e) {
-            l.error("你的机器人被禁言:" + e.getMessage());
-            e.printStackTrace();
+            log.error("你的机器人被禁言:", e);
         } catch (MessageTooLargeException e) {
-            l.error("发送消息过长:" + e.getMessage());
-            e.printStackTrace();
+            log.error("发送消息过长:", e);
         } catch (IllegalArgumentException e) {
-            l.error("发送消息为空:" + e.getMessage());
-            e.printStackTrace();
+            log.error("发送消息为空:", e);
         } catch (Exception e) {
-            l.error("发送消息错误!!!!:" + e.getMessage());
-            e.printStackTrace();
+            log.error("发送消息错误!!!!:", e);
         } finally {
             GroupManager.map.remove(mark);
         }

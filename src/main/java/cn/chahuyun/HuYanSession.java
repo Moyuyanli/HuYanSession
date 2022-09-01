@@ -13,6 +13,7 @@ import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescriptionBuilder;
 import net.mamoe.mirai.event.Event;
 import net.mamoe.mirai.event.EventChannel;
 import net.mamoe.mirai.event.GlobalEventChannel;
+import net.mamoe.mirai.utils.MiraiLogger;
 import xyz.cssxsh.mirai.hibernate.MiraiHibernateConfiguration;
 
 
@@ -28,6 +29,9 @@ public final class HuYanSession extends JavaPlugin {
      */
     public static final HuYanSession INSTANCE = new HuYanSession();
 
+    public static final MiraiLogger log = INSTANCE.getLogger();
+
+
     private HuYanSession() {
         super(new JvmPluginDescriptionBuilder("cn.chahuyun.HuYanSession", "2.0")
                 .name("HuYanSession")
@@ -40,7 +44,7 @@ public final class HuYanSession extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        getLogger().info("HuYanSession2 当前版本: v2.0.0.3-alpha");
+        getLogger().info("HuYanSession2 当前版本: v2.0.0.4-alpha");
 
         getLogger().info("===================HuYanSession2===================");
         MiraiHibernateConfiguration configuration = new MiraiHibernateConfiguration(this);

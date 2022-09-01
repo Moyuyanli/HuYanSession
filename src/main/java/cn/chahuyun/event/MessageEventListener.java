@@ -24,6 +24,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import static cn.chahuyun.HuYanSession.log;
+
 /**
  * 说明
  *
@@ -52,7 +54,7 @@ public class MessageEventListener extends SimpleListenerHost {
     }
 
 
-    @EventHandler
+    @EventHandler()
     public void onMessage(@NotNull MessageEvent event) throws Exception { // 可以抛出任何异常, 将在 handleException 处理
         String code = event.getMessage().serializeToMiraiCode();
         Contact subject = event.getSubject();
@@ -85,19 +87,18 @@ public class MessageEventListener extends SimpleListenerHost {
         //是否是有权限的用户 true 是有权限的用户
         boolean powerUser = powerMap.containsKey(powerString);
 
-        //是否触发违禁词
-        boolean prohibited = false;
+        BlackListAction blackListAction = new BlackListAction();
 
         if (!owner) {
-            BlackListAction.isBlackUser(event);
+            blackListAction.isBlackUser(event);
             if (powerUser) {
                 if (!powerMap.get(powerString).isGroupManage() && !powerMap.get(powerString).isGroupWjc()) {
-                    if (GroupManager.isProhibited(event)) {
+                    if (GroupManager.INSTANCE.isProhibited(event)) {
                         return;
                     }
                 }
             } else {
-                if (GroupManager.isProhibited(event)) {
+                if (GroupManager.INSTANCE.isProhibited(event)) {
                     return;
                 }
             }
@@ -125,7 +126,7 @@ public class MessageEventListener extends SimpleListenerHost {
         没有触发违禁词
         → 直接跳过指令判断
          */
-        if (!owner && !powerUser && !prohibited) {
+        if (!owner && !powerUser) {
             isSessionMessage(event);
             return;
         }
@@ -168,17 +169,18 @@ public class MessageEventListener extends SimpleListenerHost {
         String deleteListPattern = "^-gr\\\\?[：:]\\d+( +\\d+)?|^删除群组\\\\?[:：]\\d+( +\\d+)?";
 
         if (owner || admin || power.isGroupList()) {
+            ListAction listAction = new ListAction();
             if (Pattern.matches(addListPattern, code)) {
                 l.info("添加群组指令");
-                ListAction.addGroupListInfo(event);
+                listAction.addGroupListInfo(event);
                 return;
             } else if (Pattern.matches(queryListPattern, code)) {
                 l.info("查询群组指令");
-                ListAction.queryGroupListInfo(event);
+                listAction.queryGroupListInfo(event);
                 return;
             } else if (Pattern.matches(deleteListPattern, code)) {
                 l.info("删除群组指令");
-                ListAction.deleteGroupListInfo(event);
+                listAction.deleteGroupListInfo(event);
                 return;
             }
 
@@ -194,25 +196,26 @@ public class MessageEventListener extends SimpleListenerHost {
         String deleteDialogueStudyPattern = "^-%xx|^删除对话";
 
         if (owner || admin || power.isSession() || power.isSessionX()) {
+            SessionAction sessionAction = new SessionAction();
             if (Pattern.matches(addStudyPattern, code)) {
                 l.info("学习会话指令");
-                SessionAction.studySession(event);
+                sessionAction.studySession(event);
                 return;
             } else if (Pattern.matches(queryStudyPattern, code)) {
                 l.info("查询会话指令");
-                SessionAction.querySession(event);
+                sessionAction.querySession(event);
                 return;
             } else if (Pattern.matches(addsStudyPattern, code)) {
                 l.info("添加会话指令");
-                SessionAction.studyDialogue(event);
+                sessionAction.studyDialogue(event);
                 return;
             } else if (Pattern.matches(deleteStudyPattern, code)) {
                 l.info("删除会话指令");
-                SessionAction.deleteSession(event);
+                sessionAction.deleteSession(event);
                 return;
             } else if (Pattern.matches(deleteDialogueStudyPattern, code)) {
                 l.info("删除会话指令");
-                SessionAction.deleteInformationSession(event);
+                sessionAction.deleteInformationSession(event);
                 return;
             }
         }
@@ -225,17 +228,18 @@ public class MessageEventListener extends SimpleListenerHost {
         String queryPowerPattern = "^[!！]power( \\S+)?|^权限列表\\\\:( \\S+)?";
 
         if (owner || admin) {
+            PowerAction powerAction = new PowerAction();
             if (Pattern.matches(addPowerPattern, code)) {
                 l.info("添加权限指令");
-                PowerAction.addOrUpdatePower(event, true);
+                powerAction.addOrUpdatePower(event, true);
                 return;
             } else if (Pattern.matches(deletePowerPattern, code)) {
                 l.info("删除权限指令");
-                PowerAction.addOrUpdatePower(event, false);
+                powerAction.addOrUpdatePower(event, false);
                 return;
             } else if (Pattern.matches(queryPowerPattern, code)) {
                 l.info("查询权限指令");
-                PowerAction.queryPower(event);
+                powerAction.queryPower(event);
                 return;
             }
         }
@@ -248,7 +252,7 @@ public class MessageEventListener extends SimpleListenerHost {
         if ((owner || admin || power.isGroupManage() || power.isGroupJy()) && (isGroupAdmin || isGroupOwner)) {
             if (Pattern.matches(groupProhibitPattern, code)) {
                 l.info("禁言指令");
-                GroupManager.prohibit(event);
+                GroupManager.INSTANCE.prohibit(event);
                 return;
             }
         }
@@ -262,7 +266,7 @@ public class MessageEventListener extends SimpleListenerHost {
         if ((owner || admin || power.isGroupManage() || power.isGroupCh()) && (isGroupAdmin || isGroupOwner)) {
             if (Pattern.matches(groupRecallPattern, code)) {
                 l.info("撤回消息指令");
-                GroupManager.recall(event);
+                GroupManager.INSTANCE.recall(event);
                 return;
             }
         }
@@ -271,7 +275,7 @@ public class MessageEventListener extends SimpleListenerHost {
          * 踢人正则
          */
         String kickPattern = "^tr?\\[mirai:at:\\d+] ?(hmd)?|^踢人\\[mirai:at:\\d+] ?(hmd)?";
-        if ((owner || admin || power.isGroupManage() || power.isGroupTr()) && (isGroupAdmin || isGroupOwner ) ) {
+        if ((owner || admin || power.isGroupManage() || power.isGroupTr()) && (isGroupAdmin || isGroupOwner)) {
             if (Pattern.matches(kickPattern, code)) {
                 l.info("踢人指令");
                 GroupManager.kick(event);
@@ -286,7 +290,7 @@ public class MessageEventListener extends SimpleListenerHost {
         if (owner || admin || power.isGroupManage()) {
             if (Pattern.matches(editGroupUserTitlePattern, code)) {
                 l.info("设置头衔指令");
-                GroupManager.editUserTitle(event);
+                GroupManager.INSTANCE.editUserTitle(event);
                 return;
             }
         }
@@ -302,17 +306,18 @@ public class MessageEventListener extends SimpleListenerHost {
         String queryProhibitedPattern = "^\\wjc\\\\?[:：]|^查询违禁词";
 
         if (owner || admin || power.isGroupManage() || power.isGroupWjc()) {
+            GroupProhibitedAction groupProhibitedAction = new GroupProhibitedAction();
             if (Pattern.matches(addProhibitedPattern, code)) {
                 l.info("添加违禁词指令");
-                GroupProhibitedAction.addProhibited(event);
+                groupProhibitedAction.addProhibited(event);
                 return;
             } else if (Pattern.matches(deleteProhibitedPattern, code)) {
                 l.info("删除违禁词指令");
-                GroupProhibitedAction.deleteProhibited(event);
+                groupProhibitedAction.deleteProhibited(event);
                 return;
             } else if (Pattern.matches(queryProhibitedPattern, code)) {
                 l.info("查询违禁词指令");
-                GroupProhibitedAction.queryGroupProhibited(event);
+                groupProhibitedAction.queryGroupProhibited(event);
                 return;
             }
         }
@@ -322,20 +327,21 @@ public class MessageEventListener extends SimpleListenerHost {
          */
         String addGroupWelcomeMessagePattern = "^%hyc|^添加欢迎词";
         String queryGroupWelcomeMessagePattern = "^hyc\\\\?[：:]|^查询欢迎词";
-        String deleteGroupWelcomeMessagePattern = "^-hyc\\\\?[：:]\\d+( +\\d+)|^删除欢迎词\\\\?[：:]\\d+( +\\d+)";
+        String deleteGroupWelcomeMessagePattern = "^-hyc[:：]\\d+( +\\d+)?|^删除欢迎词\\\\?[：:]\\d+( +\\d+)?";
 
         if (owner || admin || power.isGroupManage() || power.isGroupHyc()) {
+            GroupWelcomeInfoAction groupWelcomeInfoAction = new GroupWelcomeInfoAction();
             if (Pattern.matches(addGroupWelcomeMessagePattern, code)) {
                 l.info("添加欢迎词指令");
-                GroupWelcomeInfoAction.addGroupWelcomeInfo(event);
+                groupWelcomeInfoAction.addGroupWelcomeInfo(event);
                 return;
             } else if (Pattern.matches(queryGroupWelcomeMessagePattern, code)) {
                 l.info("查询欢迎词指令");
-                GroupWelcomeInfoAction.queryGroupWelcomeInfo(event);
+                groupWelcomeInfoAction.queryGroupWelcomeInfo(event);
                 return;
             } else if (Pattern.matches(deleteGroupWelcomeMessagePattern, code)) {
                 l.info("删除欢迎词指令");
-                GroupWelcomeInfoAction.deleteGroupWelcomeInfo(event);
+                groupWelcomeInfoAction.deleteGroupWelcomeInfo(event);
                 return;
             }
         }
@@ -351,15 +357,15 @@ public class MessageEventListener extends SimpleListenerHost {
         if (owner || admin || power.isGroupManage() || power.isGroupHmd()) {
             if (Pattern.matches(addBlackListPattern, code)) {
                 l.info("添加黑名单指令");
-                BlackListAction.addBlackList(event);
+                blackListAction.addBlackList(event);
                 return;
             } else if (Pattern.matches(queryBlackListPattern, code)) {
                 l.info("查询黑名单指令");
-                BlackListAction.queryBlackList(event);
+                blackListAction.queryBlackList(event);
                 return;
             } else if (Pattern.matches(deleteBlackListPattern, code)) {
                 l.info("删除黑名单指令");
-                BlackListAction.deleteBlackList(event);
+                blackListAction.deleteBlackList(event);
                 return;
             }
         }
@@ -372,17 +378,18 @@ public class MessageEventListener extends SimpleListenerHost {
         String deleteManySessionPattern = "^-dct\\\\?[:：]\\d+( +\\d+)*?|^删除多词条\\\\?[:：]\\d+( +\\d+)*?";
 
         if (owner || admin || power.isSession() || power.isSessionDct()) {
+            ManySessionAction manySessionAction = new ManySessionAction();
             if (Pattern.matches(addManySessionPattern, code)) {
                 l.info("添加多词条指令");
-                ManySessionAction.addManySession(event);
+                manySessionAction.addManySession(event);
                 return;
             } else if (Pattern.matches(queryManySessionPattern, code)) {
                 l.info("查询多词条指令");
-                ManySessionAction.queryManySession(event);
+                manySessionAction.queryManySession(event);
                 return;
             } else if (Pattern.matches(deleteManySessionPattern, code)) {
                 l.info("删除多词条指令");
-                ManySessionAction.deleteManySession(event);
+                manySessionAction.deleteManySession(event);
                 return;
             }
         }
@@ -395,30 +402,30 @@ public class MessageEventListener extends SimpleListenerHost {
         String deleteQuartzPattern = "^-ds\\\\?[:：]\\d+|^删除定时任务\\\\?[:：]\\d+|^删除定时器\\\\?[:：]\\d+";
         String switchQuartzPattern = "^%ds\\\\?[:：]\\d+|^切换定时任务\\\\?[:：]\\d+|^切换定时器\\\\?[:：]\\d+";
 
+        QuartzAction quartzAction = new QuartzAction();
+
         if (owner || admin || power.isDs() || power.isDscz()) {
             if (Pattern.matches(switchQuartzPattern, code)) {
                 l.info("切换定时器指令");
-                QuartzAction.switchQuartz(event);
+                quartzAction.switchQuartz(event);
                 return;
             } else if (Pattern.matches(queryQuartzPattern, code)) {
                 l.info("查询定时器指令");
-                QuartzAction.queryQuartz(event);
+                quartzAction.queryQuartz(event);
                 return;
             }
         }
         if (owner || admin || power.isDs()) {
             if (Pattern.matches(addQuartzPattern, code)) {
                 l.info("添加定时器指令");
-                QuartzAction.addQuartz(event);
+                quartzAction.addQuartz(event);
                 return;
             } else if (Pattern.matches(deleteQuartzPattern, code)) {
                 l.info("删除定时器指令");
-                QuartzAction.deleteQuartz(event);
+                quartzAction.deleteQuartz(event);
                 return;
             }
         }
-
-
 
 
         isSessionMessage(event);

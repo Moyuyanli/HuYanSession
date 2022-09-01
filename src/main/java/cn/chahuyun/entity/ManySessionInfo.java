@@ -47,7 +47,7 @@ public class ManySessionInfo {
      * 多词条消息集合
      */
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, targetEntity = ManySession.class)
-    @JoinColumn(name = "MANYSESSION_ID")
+    @JoinColumn(name = "ManySession_ID")
     private List<ManySession> manySessions = new ArrayList<>();
     /**
      * 作用域标识

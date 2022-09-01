@@ -19,7 +19,6 @@ import net.mamoe.mirai.contact.*;
 import net.mamoe.mirai.event.*;
 import net.mamoe.mirai.event.events.*;
 import net.mamoe.mirai.message.data.*;
-import net.mamoe.mirai.utils.MiraiLogger;
 import org.hibernate.query.criteria.HibernateCriteriaBuilder;
 import org.hibernate.query.criteria.JpaCriteriaQuery;
 import org.hibernate.query.criteria.JpaRoot;
@@ -32,6 +31,8 @@ import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static cn.chahuyun.HuYanSession.log;
+
 
 /**
  * GroupManager
@@ -42,9 +43,9 @@ import java.util.stream.Collectors;
  */
 public class GroupManager {
 
+    public final static GroupManager INSTANCE = new GroupManager();
 
     public final static Map<String, ApplyClusterInfo> map = new HashMap<>();
-    private final static MiraiLogger l = HuYanSession.INSTANCE.getLogger();
     private static int doorNumber = 0;
 
 
@@ -54,7 +55,7 @@ public class GroupManager {
      * @author Moyuyanli
      * @date 2022/6/21 16:44
      */
-    public static void prohibit(MessageEvent event) {
+    public void prohibit(MessageEvent event) {
         Contact subject = event.getSubject();
         String code = event.getMessage().serializeToMiraiCode();
         Bot bot = event.getBot();
@@ -130,7 +131,7 @@ public class GroupManager {
      * @author Moyuyanli
      * @date 2022/8/15 17:15
      */
-    public static void recall(MessageEvent event) {
+    public void recall(MessageEvent event) {
         //!recall 0? - 0?
         String code = event.getMessage().serializeToMiraiCode();
         Contact subject = event.getSubject();
@@ -162,7 +163,7 @@ public class GroupManager {
                 String[] strings = string.split("[~-]");
                 int start = Integer.parseInt(strings[0]);
                 int end = Integer.parseInt(strings[1]);
-                l.info("s-" + start + " e-" + end);
+                log.info("s-" + start + " e-" + end);
                 records = records.subList(start, end);
             } else {
                 int end = Integer.parseInt(split[1]);
@@ -175,12 +176,12 @@ public class GroupManager {
             try {
                 MessageSource.recall(record.toMessageSource());
             } catch (PermissionDeniedException e) {
-                l.warning("消息撤回冲突-无权操作");
+                log.warning("消息撤回冲突-无权操作");
             } catch (IllegalStateException e) {
-                l.warning("消息撤回冲突-已被撤回 或 消息未找到");
+                log.warning("消息撤回冲突-已被撤回 或 消息未找到");
             } catch (Exception e) {
                 subject.sendMessage("消息撤回失败!");
-                l.error("出错啦~", e);
+                log.error("出错啦~", e);
             }
         }
     }
@@ -192,7 +193,7 @@ public class GroupManager {
      * @author Moyuyanli
      * @date 2022/8/27 18:57
      */
-    public static void editUserTitle(MessageEvent event) {
+    public void editUserTitle(MessageEvent event) {
         //%@at xxx
         MessageChain message = event.getMessage();
         String code = message.serializeToMiraiCode();
@@ -237,7 +238,7 @@ public class GroupManager {
      * @author Moyuyanli
      * @date 2022/8/16 17:26
      */
-    public static boolean isProhibited(MessageEvent event) throws IOException {
+    public boolean isProhibited(MessageEvent event) throws IOException {
         String code = event.getMessage().serializeToMiraiCode();
         Contact subject = event.getSubject();
         User sender = event.getSender();
@@ -286,7 +287,7 @@ public class GroupManager {
             try {
                 MessageSource.recall(event.getMessage());
             } catch (PermissionDeniedException e) {
-                l.warning("违禁词撤回失败-权限不足");
+                log.warning("违禁词撤回失败-权限不足");
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -300,8 +301,10 @@ public class GroupManager {
             }
         }
 
+        BlackHouseAction blackHouseAction = new BlackHouseAction();
+
         if (groupProhibited.isAccumulate()) {
-            BlackHouse blackHouse = BlackHouseAction.getBlackHouse(bot, sender.getId());
+            BlackHouse blackHouse = blackHouseAction.getBlackHouse(bot, sender.getId());
             if (blackHouse == null) {
                 blackHouse = new BlackHouse(bot.getId(), sender.getId(), groupProhibited.getId(), 1);
             } else {
@@ -315,7 +318,7 @@ public class GroupManager {
             subject.sendMessage(MessageUtils.newChain()
                     .plus(new At(sender.getId()))
                     .plus(new PlainText("你已经违规 " + blackHouse.getNumber() + " 次，当违规 " + groupProhibited.getAccumulateNumber() + " 次就会被踢出!")));
-            BlackHouseAction.saveOrUpdate(blackHouse);
+            blackHouseAction.saveOrUpdate(blackHouse);
         }
         //回复消息
         MessageChain messages = DynamicMessageUtil.parseMessageParameter(event, groupProhibited.getReply(), groupProhibited);
@@ -361,7 +364,7 @@ public class GroupManager {
                 messageChain.append("\n指路人:").append(group.get(invitorId).getNick()).append("(").append(String.valueOf(invitorId)).append(")");
             }
         } catch (Exception e) {
-            l.warning("新人加群申请-欢迎消息构造失败!");
+            log.warning("新人加群申请-欢迎消息构造失败!");
         }
         assert group != null;
         group.sendMessage(messageChain.build());
@@ -411,7 +414,7 @@ public class GroupManager {
                 return session.createQuery(query).list();
             });
         } catch (Exception e) {
-            l.error("出错啦!", e);
+            log.error("出错啦!", e);
         }
         GroupWelcomeInfo groupWelcomeInfo = null;
         boolean next = true;
@@ -467,7 +470,7 @@ public class GroupManager {
         assert group != null;
         NormalMember member = group.get(userId);
         if (member == null) {
-            l.warning("该群员不存在！");
+            log.warning("该群员不存在！");
             return;
         }
 
@@ -513,7 +516,7 @@ public class GroupManager {
                 return list;
             });
         } catch (Exception e) {
-            l.error("出错啦~", e);
+            log.error("出错啦~", e);
             return false;
         }
         if (blacklists == null || blacklists.isEmpty()) {
@@ -559,7 +562,7 @@ public class GroupManager {
                 return list;
             });
         } catch (Exception e) {
-            l.error("出错啦~", e);
+            log.error("出错啦~", e);
             return false;
         }
         if (blacklists == null || blacklists.isEmpty()) {
@@ -712,7 +715,7 @@ public class GroupManager {
                     messageChain.append("\n指路人:").append(group.get(invitorId).getNick()).append("(").append(String.valueOf(invitorId)).append(")");
                 }
             } catch (Exception e) {
-                l.warning("新人加群申请-欢迎消息构造失败!");
+                log.warning("新人加群申请-欢迎消息构造失败!");
             }
             group.sendMessage(messageChain.build());
         }

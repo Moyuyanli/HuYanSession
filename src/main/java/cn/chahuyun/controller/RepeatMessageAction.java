@@ -1,6 +1,5 @@
 package cn.chahuyun.controller;
 
-import cn.chahuyun.HuYanSession;
 import cn.chahuyun.config.ConfigData;
 import cn.chahuyun.data.RepeatMessage;
 import net.mamoe.mirai.contact.Contact;
@@ -11,7 +10,6 @@ import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.data.At;
 import net.mamoe.mirai.message.data.MessageUtils;
 import net.mamoe.mirai.message.data.PlainText;
-import net.mamoe.mirai.utils.MiraiLogger;
 
 import java.util.Date;
 import java.util.LinkedHashMap;
@@ -19,6 +17,8 @@ import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+
+import static cn.chahuyun.HuYanSession.log;
 
 /**
  * RepeatMessage
@@ -29,7 +29,6 @@ import java.util.concurrent.TimeUnit;
  */
 public class RepeatMessageAction {
 
-    private final static MiraiLogger l = HuYanSession.INSTANCE.getLogger();
     /**
      * 重写linkedHashMp的清除实体机制
      * 当上一条消息的时间
@@ -112,7 +111,7 @@ public class RepeatMessageAction {
             try {
                 group.get(sender.getId()).mute(60);
             } catch (Exception e) {
-                l.error("刷屏处理失败!");
+                log.error("刷屏处理失败!");
                 subject.sendMessage("检测到刷屏,阻止失败!");
             }
             repeatMessageMap.put(mark, repeatMessage);

@@ -1,10 +1,10 @@
 package cn.chahuyun.controller;
 
-import cn.chahuyun.HuYanSession;
 import cn.chahuyun.entity.GroupWelcomeInfo;
 import cn.chahuyun.entity.Scope;
 import cn.chahuyun.entity.WelcomeMessage;
 import cn.chahuyun.utils.HibernateUtil;
+import cn.chahuyun.utils.ListUtil;
 import cn.chahuyun.utils.ScopeUtil;
 import cn.chahuyun.utils.ShareUtils;
 import net.mamoe.mirai.Bot;
@@ -13,7 +13,6 @@ import net.mamoe.mirai.contact.User;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.code.MiraiCode;
 import net.mamoe.mirai.message.data.*;
-import net.mamoe.mirai.utils.MiraiLogger;
 import org.hibernate.query.criteria.HibernateCriteriaBuilder;
 import org.hibernate.query.criteria.JpaCriteriaQuery;
 import org.hibernate.query.criteria.JpaRoot;
@@ -23,6 +22,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
+import static cn.chahuyun.HuYanSession.log;
 import static cn.chahuyun.utils.ShareUtils.DYNAMIC_MESSAGE_PATTERN;
 
 /**
@@ -34,10 +34,8 @@ import static cn.chahuyun.utils.ShareUtils.DYNAMIC_MESSAGE_PATTERN;
  */
 public class GroupWelcomeInfoAction {
 
-    private final static MiraiLogger l = HuYanSession.INSTANCE.getLogger();
 
-
-    public static void addGroupWelcomeInfo(MessageEvent event) {
+    public void addGroupWelcomeInfo(MessageEvent event) {
         Contact subject = event.getSubject();
         User user = event.getSender();
         Bot bot = event.getBot();
@@ -93,7 +91,7 @@ public class GroupWelcomeInfoAction {
                     String listPattern = "gr\\d+|群组\\d+";
                     if (Pattern.matches(listPattern, s)) {
                         int listId = Integer.parseInt(s.substring(2));
-                        if (ListAction.isContainsList(bot, listId)) {
+                        if (ListUtil.isContainsList(bot, listId)) {
                             subject.sendMessage("该群组不存在!");
                             return;
                         }
@@ -117,7 +115,7 @@ public class GroupWelcomeInfoAction {
                 return session.createQuery(query).list();
             });
         } catch (Exception e) {
-            l.error("出错啦!", e);
+            log.error("出错啦!", e);
         }
 
         GroupWelcomeInfo groupWelcomeInfo;
@@ -132,7 +130,7 @@ public class GroupWelcomeInfoAction {
 
         //查询重复
         List<WelcomeMessage> welcomeMessages = groupWelcomeInfo.getWelcomeMessages();
-        WelcomeMessage welcomeMessage = new WelcomeMessage(bot.getId(), type, value);
+        WelcomeMessage welcomeMessage = new WelcomeMessage(bot.getId(), randomMark, type, value);
         if (welcomeMessages.contains(welcomeMessage)) {
             subject.sendMessage("这条欢迎消息已经存在");
             return;
@@ -153,7 +151,7 @@ public class GroupWelcomeInfoAction {
                 return 0;
             });
         } catch (Exception e) {
-            l.error("出错啦！", e);
+            log.error("出错啦！", e);
             subject.sendMessage("欢迎词保存失败!");
             return;
         }
@@ -167,7 +165,7 @@ public class GroupWelcomeInfoAction {
      * @author Moyuyanli
      * @date 2022/8/23 9:00
      */
-    public static void queryGroupWelcomeInfo(MessageEvent event) {
+    public void queryGroupWelcomeInfo(MessageEvent event) {
         Contact subject = event.getSubject();
         Bot bot = event.getBot();
 
@@ -189,7 +187,7 @@ public class GroupWelcomeInfoAction {
                 return list;
             });
         } catch (Exception e) {
-            l.error("出错啦!", e);
+            log.error("出错啦!", e);
         }
 
         if (welcomeInfoList == null || welcomeInfoList.isEmpty()) {
@@ -228,7 +226,7 @@ public class GroupWelcomeInfoAction {
      * @author Moyuyanli
      * @date 2022/8/23 9:37
      */
-    public static void deleteGroupWelcomeInfo(MessageEvent event) {
+    public void deleteGroupWelcomeInfo(MessageEvent event) {
         String code = event.getMessage().serializeToMiraiCode();
         Contact subject = event.getSubject();
         Bot bot = event.getBot();
@@ -239,9 +237,9 @@ public class GroupWelcomeInfoAction {
         if (split.length > 1) {
             toKey = Integer.parseInt(split[1]);
         }
-        List<GroupWelcomeInfo> groupWelcomeInfos = null;
+        GroupWelcomeInfo groupWelcomeInfo = null;
         try {
-            groupWelcomeInfos = HibernateUtil.factory.fromTransaction(session -> {
+            groupWelcomeInfo = HibernateUtil.factory.fromTransaction(session -> {
                 HibernateCriteriaBuilder builder = session.getCriteriaBuilder();
                 JpaCriteriaQuery<GroupWelcomeInfo> query = builder.createQuery(GroupWelcomeInfo.class);
                 JpaRoot<GroupWelcomeInfo> from = query.from(GroupWelcomeInfo.class);
@@ -249,25 +247,25 @@ public class GroupWelcomeInfoAction {
                 query.select(from);
                 query.where(builder.equal(from.get("bot"), bot.getId()));
                 query.where(builder.equal(from.get("randomMark"), key));
-                return session.createQuery(query).list();
+                return session.createQuery(query).getSingleResult();
             });
         } catch (Exception e) {
-            l.error("出错啦!", e);
+            log.error("出错啦!", e);
         }
 
-        if (groupWelcomeInfos == null) {
+        if (groupWelcomeInfo == null) {
             subject.sendMessage("没有要删除的欢迎词!");
             return;
         }
         if (toKey != 0) {
-            List<WelcomeMessage> welcomeMessages = groupWelcomeInfos.get(0).getWelcomeMessages();
+            List<WelcomeMessage> welcomeMessages = groupWelcomeInfo.getWelcomeMessages();
             int finalToKey = toKey;
             Optional<WelcomeMessage> first = welcomeMessages.stream().filter(it -> it.getId() == finalToKey).findFirst();
             if (first.isPresent()) {
                 WelcomeMessage welcomeMessage = first.get();
                 welcomeMessages.remove(welcomeMessage);
             }
-            GroupWelcomeInfo finalGroupWelcomeInfos = groupWelcomeInfos.get(0);
+            GroupWelcomeInfo finalGroupWelcomeInfos = groupWelcomeInfo;
             try {
                 HibernateUtil.factory.fromTransaction(session -> {
                     session.merge(finalGroupWelcomeInfos);
@@ -275,20 +273,20 @@ public class GroupWelcomeInfoAction {
                 });
             } catch (Exception e) {
                 subject.sendMessage("欢迎词删除失败!");
-                l.error("欢迎词删除失败!", e);
+                log.error("欢迎词删除失败!", e);
                 return;
             }
             subject.sendMessage("欢迎词删除成功!");
         } else {
-            List<GroupWelcomeInfo> finalGroupWelcomeInfos = groupWelcomeInfos;
             try {
+                GroupWelcomeInfo finalGroupWelcomeInfo = groupWelcomeInfo;
                 HibernateUtil.factory.fromTransaction(session -> {
-                    session.remove(finalGroupWelcomeInfos);
+                    session.remove(finalGroupWelcomeInfo);
                     return 0;
                 });
             } catch (Exception e) {
                 subject.sendMessage("欢迎词集合删除失败!");
-                l.error("欢迎词集合删除失败!", e);
+                log.error("欢迎词集合删除失败!", e);
                 return;
             }
             subject.sendMessage("欢迎词集合删除成功!");

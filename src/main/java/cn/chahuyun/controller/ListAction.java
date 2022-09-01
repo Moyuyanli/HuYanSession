@@ -1,6 +1,5 @@
 package cn.chahuyun.controller;
 
-import cn.chahuyun.HuYanSession;
 import cn.chahuyun.config.ConfigData;
 import cn.chahuyun.data.StaticData;
 import cn.chahuyun.entity.GroupInfo;
@@ -11,13 +10,14 @@ import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.Contact;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.data.ForwardMessageBuilder;
-import net.mamoe.mirai.utils.MiraiLogger;
 import org.hibernate.query.criteria.HibernateCriteriaBuilder;
 import org.hibernate.query.criteria.JpaCriteriaQuery;
 import org.hibernate.query.criteria.JpaRoot;
 
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static cn.chahuyun.HuYanSession.log;
 
 /**
  * 说明
@@ -28,7 +28,6 @@ import java.util.stream.Collectors;
  */
 public class ListAction {
 
-    private final static MiraiLogger l = HuYanSession.INSTANCE.getLogger();
 
     /**
      * 加载或者更新群组数据-Hibernate
@@ -53,11 +52,11 @@ public class ListAction {
         StaticData.setGroupListMap(parseList);
 
         if (type) {
-            l.info("数据库群组信息初始化成功!");
+            log.info("数据库群组信息初始化成功!");
             return;
         }
         if (ConfigData.INSTANCE.getDebugSwitch()) {
-            l.info("群组信息更新成功!");
+            log.info("群组信息更新成功!");
         }
 
     }
@@ -69,14 +68,14 @@ public class ListAction {
      * @author Moyuyanli
      * @date 2022/7/10 0:25
      */
-    public static void addGroupListInfo(MessageEvent event) {
+    public void addGroupListInfo(MessageEvent event) {
         //gr:id id id...
         String code = event.getMessage().serializeToMiraiCode();
         Contact subject = event.getSubject();
         Bot bot = event.getBot();
 
         if (ConfigData.INSTANCE.getDebugSwitch()) {
-            l.info("code-" + code);
+            log.info("code-" + code);
         }
 
         String[] split = code.split("\\s+");
@@ -116,7 +115,7 @@ public class ListAction {
                 return 0;
             });
         } catch (Exception e) {
-            l.error("数据库添加群组失败:", e);
+            log.error("数据库添加群组失败:", e);
             subject.sendMessage("群组" + key + "添加失败！");
             return;
         }
@@ -141,7 +140,7 @@ public class ListAction {
      * @author Moyuyanli
      * @date 2022/7/10 0:25
      */
-    public static void queryGroupListInfo(MessageEvent event) {
+    public void queryGroupListInfo(MessageEvent event) {
         //gr:id?
         String code = event.getMessage().serializeToMiraiCode();
         Contact subject = event.getSubject();
@@ -207,7 +206,7 @@ public class ListAction {
      * @author Moyuyanli
      * @date 2022/7/10 0:55
      */
-    public static void deleteGroupListInfo(MessageEvent event) {
+    public void deleteGroupListInfo(MessageEvent event) {
         //-gr:id id?
         String code = event.getMessage().serializeToMiraiCode();
         Contact subject = event.getSubject();
@@ -263,9 +262,9 @@ public class ListAction {
             });
         } catch (Exception e) {
             if (e instanceof PersistenceException) {
-                l.error("不允许群组为空群组！");
+                log.error("不允许群组为空群组！");
             } else {
-                l.error("数据库删除群组失败:", e);
+                log.error("数据库删除群组失败:", e);
             }
         }
         if (Boolean.FALSE.equals(aBoolean)) {
@@ -276,29 +275,6 @@ public class ListAction {
         init(false);
     }
 
-
-    /**
-     * 判断这个群组是否存在
-     *
-     * @param bot    所属机器人
-     * @param listId 群组编号
-     * @return boolean 不存在 true
-     * @author Moyuyanli
-     * @date 2022/7/11 12:13
-     */
-    public static boolean isContainsList(Bot bot, int listId) {
-        Map<Integer, GroupList> groupListMap;
-        try {
-            groupListMap = StaticData.getGroupListMap(bot);
-            if (groupListMap == null || groupListMap.isEmpty()) {
-                return true;
-            }
-        } catch (NullPointerException e) {
-            e.printStackTrace();
-            return true;
-        }
-        return !groupListMap.containsKey(listId);
-    }
 
     //==========================================================================================
 

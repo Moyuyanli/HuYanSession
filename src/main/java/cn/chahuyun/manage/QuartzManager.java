@@ -1,13 +1,13 @@
 package cn.chahuyun.manage;
 
-import cn.chahuyun.HuYanSession;
 import cn.chahuyun.data.StaticData;
 import cn.chahuyun.entity.QuartzInfo;
 import cn.chahuyun.job.TimingJob;
-import net.mamoe.mirai.utils.MiraiLogger;
 import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
 import org.quartz.impl.triggers.CronTriggerImpl;
+
+import static cn.chahuyun.HuYanSession.log;
 
 /**
  * @author huobing
@@ -16,7 +16,7 @@ import org.quartz.impl.triggers.CronTriggerImpl;
  **/
 public class QuartzManager {
 
-    private final static MiraiLogger l = HuYanSession.INSTANCE.getLogger();
+    public final static QuartzManager INSTANCE = new QuartzManager();
 
     private static Scheduler scheduler = null;
 
@@ -27,7 +27,7 @@ public class QuartzManager {
             // 启动调度
             scheduler.start();
         } catch (SchedulerException e) {
-            l.error("定时任务调度器加载失败", e);
+            log.error("定时任务调度器加载失败", e);
         }
     }
 
@@ -40,7 +40,7 @@ public class QuartzManager {
         try {
             JobDataMap jobDataMap = new JobDataMap();
             jobDataMap.put("data", quartzInfo);
-            jobDataMap.put("logger", l);
+            jobDataMap.put("logger", log);
             jobDataMap.put("groupList", StaticData.getGroupListMap(quartzInfo.getBot()));
             // 创建jobDetail实例，绑定Job实现类
             // 指明job的名称，所在组的名称，以及绑定job类
@@ -49,7 +49,7 @@ public class QuartzManager {
                     .usingJobData(jobDataMap)
                     .build();
             // 定义调度触发规则
-            Trigger trigger = null;
+            Trigger trigger;
             if (quartzInfo.getCronString() == null) {
                 //使用simpleTrigger规则
                 trigger = TriggerBuilder.newTrigger().withIdentity(String.valueOf(quartzInfo.getId()))
@@ -65,7 +65,7 @@ public class QuartzManager {
             scheduler.scheduleJob(job, trigger);
             return true;
         } catch (Exception e) {
-            l.error("定时任务调度器加载失败", e);
+            log.error("定时任务调度器加载失败", e);
             return false;
         }
     }
@@ -80,11 +80,11 @@ public class QuartzManager {
         //获取triggerKey
         TriggerKey triggerKey = new TriggerKey(String.valueOf(quartzInfo.getId()));
         //先看调度器内部有没有
-        CronTriggerImpl trigger = null;
+        CronTriggerImpl trigger;
         try {
             trigger = (CronTriggerImpl) scheduler.getTrigger(triggerKey);
         } catch (SchedulerException e) {
-            l.warning("不存在该定时任务", e);
+            log.warning("不存在该定时任务", e);
             return false;
         }
         //有就删除
@@ -93,7 +93,7 @@ public class QuartzManager {
                 scheduler.unscheduleJob(triggerKey);
                 return true;
             } catch (SchedulerException e) {
-                l.error("定时任务删除失败", e);
+                log.error("定时任务删除失败", e);
                 return false;
             }
         }

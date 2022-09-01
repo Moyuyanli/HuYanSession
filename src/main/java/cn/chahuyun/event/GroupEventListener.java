@@ -15,6 +15,8 @@ import net.mamoe.mirai.event.events.MemberLeaveEvent;
 import net.mamoe.mirai.utils.MiraiLogger;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Objects;
+
 /**
  * GroupEventListener
  * 群事件
@@ -36,8 +38,7 @@ public class GroupEventListener extends SimpleListenerHost {
      * 其他群事件
      */
     @EventHandler
-    public void onMessage(@NotNull GroupEvent event) throws Exception { // 可以抛出任何异常, 将在 handleException 处理
-        long groupId = event.getGroup().getId();
+    public void onMessage(@NotNull GroupEvent event) { // 可以抛出任何异常, 将在 handleException 处理
         MemberPermission botPermission = event.getGroup().getBotPermission();
         if (botPermission == MemberPermission.MEMBER) {
             return;
@@ -57,9 +58,9 @@ public class GroupEventListener extends SimpleListenerHost {
      * 申请加入事件
      */
     @EventHandler
-    public void onMessageTwo(@NotNull MemberJoinRequestEvent event) throws Exception { // 可以抛出任何异常, 将在 handleException 处理
+    public void onMessageTwo(@NotNull MemberJoinRequestEvent event)  { // 可以抛出任何异常, 将在 handleException 处理
         long groupId = event.getGroupId();
-        MemberPermission botPermission = event.getGroup().getBotPermission();
+        MemberPermission botPermission = Objects.requireNonNull(event.getGroup()).getBotPermission();
         if (botPermission == MemberPermission.MEMBER) {
             return;
         }
@@ -76,7 +77,7 @@ public class GroupEventListener extends SimpleListenerHost {
      * 退群事件
      */
     @EventHandler
-    public void onMessageThree(@NotNull MemberLeaveEvent event) throws Exception { // 可以抛出任何异常, 将在 handleException 处理
+    public void onMessageThree(@NotNull MemberLeaveEvent event)  { // 可以抛出任何异常, 将在 handleException 处理
         long groupId = event.getGroupId();
         MemberPermission botPermission = event.getGroup().getBotPermission();
         if (botPermission == MemberPermission.MEMBER) {

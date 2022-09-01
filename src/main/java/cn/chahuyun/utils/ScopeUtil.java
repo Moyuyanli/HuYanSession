@@ -1,8 +1,6 @@
 package cn.chahuyun.utils;
 
-import cn.chahuyun.HuYanSession;
 import cn.chahuyun.entity.Scope;
-import net.mamoe.mirai.utils.MiraiLogger;
 import org.hibernate.query.criteria.HibernateCriteriaBuilder;
 import org.hibernate.query.criteria.JpaCriteriaQuery;
 import org.hibernate.query.criteria.JpaRoot;
@@ -18,13 +16,12 @@ import java.util.List;
  */
 public class ScopeUtil {
 
-    private final static MiraiLogger l = HuYanSession.INSTANCE.getLogger();
 
     /**
      * 判断该作用是是否存在
      *
      * @param scope 作用域
-     * @return boolean  t 不存在
+     * @return boolean  true 不存在
      * @author Moyuyanli
      * @date 2022/8/12 15:57
      */
@@ -38,10 +35,7 @@ public class ScopeUtil {
             query.where(builder.equal(from.get("id"), id));
             return session.createQuery(query).list();
         });
-        if (scopeList == null || scopeList.isEmpty()) {
-            return true;
-        }
-        return false;
+        return scopeList == null || scopeList.isEmpty();
     }
 
     /**

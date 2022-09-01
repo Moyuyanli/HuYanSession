@@ -1,11 +1,11 @@
 package cn.chahuyun.controller;
 
-import cn.chahuyun.HuYanSession;
 import cn.chahuyun.entity.ManySession;
 import cn.chahuyun.entity.QuartzInfo;
 import cn.chahuyun.entity.Scope;
 import cn.chahuyun.manage.QuartzManager;
 import cn.chahuyun.utils.HibernateUtil;
+import cn.chahuyun.utils.ListUtil;
 import cn.chahuyun.utils.ScopeUtil;
 import cn.chahuyun.utils.ShareUtils;
 import net.mamoe.mirai.Bot;
@@ -14,7 +14,6 @@ import net.mamoe.mirai.contact.User;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.code.MiraiCode;
 import net.mamoe.mirai.message.data.*;
-import net.mamoe.mirai.utils.MiraiLogger;
 import org.hibernate.query.criteria.HibernateCriteriaBuilder;
 import org.hibernate.query.criteria.JpaCriteriaQuery;
 import org.hibernate.query.criteria.JpaRoot;
@@ -23,6 +22,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static cn.chahuyun.HuYanSession.log;
 import static cn.chahuyun.utils.ShareUtils.DYNAMIC_MESSAGE_PATTERN;
 
 /**
@@ -32,8 +32,6 @@ import static cn.chahuyun.utils.ShareUtils.DYNAMIC_MESSAGE_PATTERN;
  * @Date 2022/8/27 18:50
  */
 public class QuartzAction {
-
-    private final static MiraiLogger l = HuYanSession.INSTANCE.getLogger();
 
 
     /**
@@ -62,7 +60,7 @@ public class QuartzAction {
                 }
             }
         }
-        l.info("定时器加载成功!");
+        log.info("定时器加载成功!");
     }
 
     /**
@@ -72,7 +70,7 @@ public class QuartzAction {
      * @author Moyuyanli
      * @date 2022/8/27 20:06
      */
-    public static void addQuartz(MessageEvent event) {
+    public void addQuartz(MessageEvent event) {
         User user = event.getSender();
         Contact subject = event.getSubject();
         Bot bot = event.getBot();
@@ -140,7 +138,7 @@ public class QuartzAction {
                     String listPattern = "gr\\d+|群组\\d+";
                     if (Pattern.matches(listPattern, param)) {
                         int listId = Integer.parseInt(param.substring(2));
-                        if (ListAction.isContainsList(bot, listId)) {
+                        if (ListUtil.isContainsList(bot, listId)) {
                             subject.sendMessage("该群组不存在!");
                             return;
                         }
@@ -230,7 +228,7 @@ public class QuartzAction {
         subject.sendMessage(String.format("定时任务 %s 添加失败!", name));
     }
 
-    public static void queryQuartz(MessageEvent event) {
+    public void queryQuartz(MessageEvent event) {
         Bot bot = event.getBot();
         Contact subject = event.getSubject();
 
@@ -247,7 +245,7 @@ public class QuartzAction {
                 return session.createQuery(query).list();
             });
         } catch (Exception e) {
-            l.error("出错拉~", e);
+            log.error("出错拉~", e);
             subject.sendMessage("查询定时任务出错!");
             return;
         }
@@ -301,7 +299,7 @@ public class QuartzAction {
      * @author Moyuyanli
      * @date 2022/8/27 22:29
      */
-    public static void deleteQuartz(MessageEvent event) {
+    public void deleteQuartz(MessageEvent event) {
         //-ds:id
         Bot bot = event.getBot();
         Contact subject = event.getSubject();
@@ -321,7 +319,7 @@ public class QuartzAction {
                 return session.createQuery(query).list();
             });
         } catch (Exception e) {
-            l.error("出错拉~", e);
+            log.error("出错拉~", e);
             subject.sendMessage("查询定时任务出错!");
             return;
         }
@@ -337,14 +335,14 @@ public class QuartzAction {
             });
         } catch (Exception e) {
             subject.sendMessage("定时任务删除失败!");
-            l.error("出错啦~", e);
+            log.error("出错啦~", e);
             return;
         }
         subject.sendMessage("定时任务删除成功!");
     }
 
 
-    public static void switchQuartz(MessageEvent event) {
+    public void switchQuartz(MessageEvent event) {
         //-ds:id
         Bot bot = event.getBot();
         Contact subject = event.getSubject();
@@ -364,7 +362,7 @@ public class QuartzAction {
                 return session.createQuery(query).list();
             });
         } catch (Exception e) {
-            l.error("出错拉~", e);
+            log.error("出错拉~", e);
             subject.sendMessage("查询定时任务出错!");
             return;
         }
@@ -417,7 +415,7 @@ public class QuartzAction {
      * @author Moyuyanli
      * @date 2022/8/27 21:53
      */
-    private static boolean saveQuartz(QuartzInfo quartzInfo, Scope scope) {
+    private boolean saveQuartz(QuartzInfo quartzInfo, Scope scope) {
         try {
             HibernateUtil.factory.fromTransaction(session -> {
                 if (ScopeUtil.isScopeEmpty(scope)) {
@@ -427,7 +425,7 @@ public class QuartzAction {
                 return true;
             });
         } catch (Exception e) {
-            l.error("出错啦~", e);
+            log.error("出错啦~", e);
             return false;
         }
         return true;

@@ -1,13 +1,13 @@
 package cn.chahuyun.controller;
 
-import cn.chahuyun.HuYanSession;
 import cn.chahuyun.entity.BlackHouse;
 import cn.chahuyun.utils.HibernateUtil;
 import net.mamoe.mirai.Bot;
-import net.mamoe.mirai.utils.MiraiLogger;
 import org.hibernate.query.criteria.HibernateCriteriaBuilder;
 import org.hibernate.query.criteria.JpaCriteriaQuery;
 import org.hibernate.query.criteria.JpaRoot;
+
+import static cn.chahuyun.HuYanSession.log;
 
 /**
  * BlackHouseUtil
@@ -18,7 +18,6 @@ import org.hibernate.query.criteria.JpaRoot;
  */
 public class BlackHouseAction {
 
-    private final static MiraiLogger l = HuYanSession.INSTANCE.getLogger();
 
     /**
      * 获取小黑屋
@@ -29,7 +28,7 @@ public class BlackHouseAction {
      * @author Moyuyanli
      * @date 2022/8/19 11:23
      */
-    public static BlackHouse getBlackHouse(Bot bot, long qq) {
+    public BlackHouse getBlackHouse(Bot bot, long qq) {
         try {
             return HibernateUtil.factory.fromTransaction(session -> {
                 HibernateCriteriaBuilder builder = session.getCriteriaBuilder();
@@ -41,10 +40,10 @@ public class BlackHouseAction {
                 return session.createQuery(query).list().get(0);
             });
         } catch (IndexOutOfBoundsException e) {
-            l.warning("暂时没有小黑屋成员!");
+            log.warning("暂时没有小黑屋成员!");
             return null;
         } catch (Exception e) {
-            l.error("小黑屋查询失败~", e);
+            log.error("小黑屋查询失败~", e);
         }
         return null;
     }
@@ -56,14 +55,14 @@ public class BlackHouseAction {
      * @author Moyuyanli
      * @date 2022/8/19 11:18
      */
-    public static boolean saveOrUpdate(BlackHouse blackHouse) {
+    public boolean saveOrUpdate(BlackHouse blackHouse) {
         try {
             return HibernateUtil.factory.fromTransaction(session -> {
                 session.merge(blackHouse);
                 return true;
             });
         } catch (Exception e) {
-            l.error("小黑屋更新失败:", e);
+            log.error("小黑屋更新失败:", e);
         }
         return false;
     }

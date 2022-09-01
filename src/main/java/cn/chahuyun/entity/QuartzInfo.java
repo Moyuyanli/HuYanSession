@@ -73,7 +73,7 @@ public class QuartzInfo {
      * 多词条消息集合
      */
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, targetEntity = ManySession.class)
-    @JoinColumn(name = "QUARTZINFO_ID")
+    @JoinColumn(name = "QuartzMessage_ID")
     private List<ManySession> manySessions = new ArrayList<>();
 
     public QuartzInfo() {

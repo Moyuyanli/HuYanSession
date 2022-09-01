@@ -1,6 +1,5 @@
 package cn.chahuyun.controller;
 
-import cn.chahuyun.HuYanSession;
 import cn.chahuyun.config.ConfigData;
 import cn.chahuyun.data.StaticData;
 import cn.chahuyun.entity.GroupProhibited;
@@ -16,7 +15,6 @@ import net.mamoe.mirai.message.code.MiraiCode;
 import net.mamoe.mirai.message.data.ForwardMessageBuilder;
 import net.mamoe.mirai.message.data.MessageUtils;
 import net.mamoe.mirai.message.data.PlainText;
-import net.mamoe.mirai.utils.MiraiLogger;
 import org.hibernate.query.criteria.HibernateCriteriaBuilder;
 import org.hibernate.query.criteria.JpaCriteriaQuery;
 import org.hibernate.query.criteria.JpaRoot;
@@ -27,6 +25,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import static cn.chahuyun.HuYanSession.log;
+
 /**
  * GroupProhibitedUtil
  * 违禁词工具
@@ -36,7 +36,6 @@ import java.util.regex.Pattern;
  */
 public class GroupProhibitedAction {
 
-    private final static MiraiLogger l = HuYanSession.INSTANCE.getLogger();
 
     /**
      * 初始化或加载违禁词
@@ -56,17 +55,17 @@ public class GroupProhibitedAction {
                 return session.createQuery(query).list();
             });
         } catch (Exception e) {
-            l.error("出错啦~", e);
+            log.error("数据库违禁词信息初始化失败!", e);
         }
 
         StaticData.setProhibitedMap(parseList(groupProhibits));
 
         if (ConfigData.INSTANCE.getDebugSwitch() && type) {
-            l.info("数据库违禁词信息初始化成功!");
+            log.info("数据库违禁词信息初始化成功!");
             return;
         }
         if (ConfigData.INSTANCE.getDebugSwitch()) {
-            l.info("违禁词数据更新成功!");
+            log.info("违禁词数据更新成功!");
         }
 
     }
@@ -78,7 +77,7 @@ public class GroupProhibitedAction {
      * @author Moyuyanli
      * @date 2022/8/17 19:12
      */
-    public static void addProhibited(MessageEvent event) {
+    public void addProhibited(MessageEvent event) {
         //+wjc:body [3h|gr1|%(重设回复消息)|ch|jy|hmd3|0|全局|1|2|3|4]
         String code = event.getMessage().serializeToMiraiCode();
         Contact subject = event.getSubject();
@@ -196,7 +195,7 @@ public class GroupProhibitedAction {
             });
         } catch (Exception e) {
             subject.sendMessage("违禁词添加失败!");
-            l.error("出错啦~", e);
+            log.error("出错啦~", e);
             return;
         }
 
@@ -213,7 +212,7 @@ public class GroupProhibitedAction {
      * @author Moyuyanli
      * @date 2022/8/17 19:14
      */
-    public static void queryGroupProhibited(MessageEvent event) {
+    public void queryGroupProhibited(MessageEvent event) {
         //wjc：
         Contact subject = event.getSubject();
         Bot bot = event.getBot();
@@ -254,7 +253,7 @@ public class GroupProhibitedAction {
      * @author Moyuyanli
      * @date 2022/8/18 14:20
      */
-    public static void deleteProhibited(MessageEvent event) {
+    public void deleteProhibited(MessageEvent event) {
         //-wjc:id
         String code = event.getMessage().serializeToMiraiCode();
         Contact subject = event.getSubject();
@@ -288,7 +287,7 @@ public class GroupProhibitedAction {
                 return 0;
             });
         } catch (Exception e) {
-            l.error("出错啦~", e);
+            log.error("出错啦~", e);
             subject.sendMessage("违禁词 " + MiraiCode.deserializeMiraiCode(groupProhibited.getTrigger()) + " 删除失败");
             return;
         }

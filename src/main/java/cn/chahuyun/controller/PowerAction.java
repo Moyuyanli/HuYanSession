@@ -14,7 +14,6 @@ import net.mamoe.mirai.event.EventPriority;
 import net.mamoe.mirai.event.GlobalEventChannel;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.data.*;
-import net.mamoe.mirai.utils.MiraiLogger;
 import org.hibernate.query.criteria.HibernateCriteriaBuilder;
 import org.hibernate.query.criteria.JpaCriteriaQuery;
 import org.hibernate.query.criteria.JpaRoot;
@@ -23,6 +22,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static cn.chahuyun.HuYanSession.log;
 
 /**
  * 权限工具
@@ -33,7 +34,6 @@ import java.util.Map;
  */
 public class PowerAction {
 
-    private final static MiraiLogger l = HuYanSession.INSTANCE.getLogger();
 
     /**
      * 加载或更新权限数据!
@@ -59,11 +59,11 @@ public class PowerAction {
         StaticData.setPowerMap(map);
 
         if (ConfigData.INSTANCE.getDebugSwitch() && type) {
-            l.info("数据库权限信息初始化成功!");
+            log.info("数据库权限信息初始化成功!");
             return;
         }
         if (ConfigData.INSTANCE.getDebugSwitch()) {
-            l.info("权限信息更新成功!");
+            log.info("权限信息更新成功!");
         }
 
     }
@@ -76,7 +76,7 @@ public class PowerAction {
      * @author Moyuyanli
      * @date 2022/8/14 19:58
      */
-    public static void addOrUpdatePower(MessageEvent event, boolean type) {
+    public void addOrUpdatePower(MessageEvent event, boolean type) {
         //+@\d+ \S+
         String code = event.getMessage().serializeToMiraiCode();
         Contact subject = event.getSubject();
@@ -104,102 +104,50 @@ public class PowerAction {
         String value = code.split(" +")[1];
         switch (value) {
             case "admin":
-                if (type) {
-                    power.setAdmin(true);
-                } else {
-                    power.setAdmin(false);
-                }
+                power.setAdmin(type);
                 break;
             case "list":
-                if (type) {
-                    power.setGroupList(true);
-                } else {
-                    power.setGroupList(false);
-                }
+                power.setGroupList(type);
                 break;
             case "session":
-                if (type) {
-                    power.setSession(true);
-                } else {
-                    power.setSession(false);
-                }
+                power.setSession(type);
                 break;
             case "sessionX":
             case "sessionx":
-                if (type) {
-                    power.setSessionX(true);
-                } else {
-                    power.setSessionX(false);
-                }
+                power.setSessionX(type);
                 break;
             case "sessionDct":
             case "sessiondct":
-                if (type) {
-                    power.setSessionDct(true);
-                } else {
-                    power.setSessionDct(false);
-                }
+                power.setSessionDct(type);
                 break;
             case "ds":
-                if (type) {
-                    power.setDs(true);
-                } else {
-                    power.setDs(false);
-                }
+                power.setDs(type);
                 break;
             case "dscz":
-                if (type) {
-                    power.setDscz(true);
-                } else {
-                    power.setDscz(false);
-                }
+                power.setDscz(type);
                 break;
             case "group":
-                if (type) {
-                    power.setGroupManage(true);
-                } else {
-                    power.setGroupManage(false);
-                }
+                power.setGroupManage(type);
                 break;
             case "grouphyc":
             case "groupHyc":
-                if (type) {
-                    power.setGroupHyc(true);
-                } else {
-                    power.setGroupHyc(false);
-                }
+                power.setGroupHyc(type);
                 break;
             case "groupjy":
             case "groupJy":
-                if (type) {
-                    power.setGroupJy(true);
-                } else {
-                    power.setGroupJy(false);
-                }
+                power.setGroupJy(type);
                 break;
             case "groupHmd":
             case "grouphmd":
-                if (type) {
-                    power.setGroupHmd(true);
-                } else {
-                    power.setGroupHmd(false);
-                }
+                power.setGroupHmd(type);
                 break;
             case "groupch":
             case "groupCh":
-                if (type) {
-                    power.setGroupCh(true);
-                } else {
-                    power.setGroupCh(false);
-                }
+                power.setGroupCh(type);
                 break;
             case "groupTr":
             case "grouptr":
-                if (type) {
-                    power.setGroupTr(true);
-                } else {
-                    power.setGroupTr(false);
-                }
+                power.setGroupTr(type);
                 break;
             case "all":
                 if (type) {
@@ -245,7 +193,7 @@ public class PowerAction {
      * @author Moyuyanli
      * @date 2022/8/14 22:24
      */
-    public static void queryPower(MessageEvent event) {
+    public void queryPower(MessageEvent event) {
         //power:id?
         String code = event.getMessage().serializeToMiraiCode();
         Contact subject = event.getSubject();
@@ -320,7 +268,7 @@ public class PowerAction {
      * @author Moyuyanli
      * @date 2022/8/14 22:23
      */
-    private static void paginationQueryAll(MessageEvent event, int pageNo) {
+    private void paginationQueryAll(MessageEvent event, int pageNo) {
         Contact subject = event.getSubject();
         User user = event.getSender();
         Bot bot = event.getBot();

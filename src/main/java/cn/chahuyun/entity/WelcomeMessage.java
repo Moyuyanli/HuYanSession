@@ -38,8 +38,9 @@ public class WelcomeMessage {
     public WelcomeMessage() {
     }
 
-    public WelcomeMessage(long bot, int type, String welcomeMessage) {
+    public WelcomeMessage(long bot,int randomMark ,int type, String welcomeMessage) {
         this.bot = bot;
+        this.mark = bot+"."+randomMark;
         this.type = type;
         this.welcomeMessage = welcomeMessage;
     }

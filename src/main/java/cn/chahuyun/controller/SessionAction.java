@@ -1,12 +1,12 @@
 package cn.chahuyun.controller;
 
-import cn.chahuyun.HuYanSession;
 import cn.chahuyun.config.ConfigData;
 import cn.chahuyun.data.StaticData;
 import cn.chahuyun.entity.Scope;
 import cn.chahuyun.entity.SessionInfo;
 import cn.chahuyun.enums.Mate;
 import cn.chahuyun.utils.HibernateUtil;
+import cn.chahuyun.utils.ListUtil;
 import cn.chahuyun.utils.ScopeUtil;
 import cn.chahuyun.utils.ShareUtils;
 import net.mamoe.mirai.Bot;
@@ -15,7 +15,6 @@ import net.mamoe.mirai.contact.User;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.code.MiraiCode;
 import net.mamoe.mirai.message.data.*;
-import net.mamoe.mirai.utils.MiraiLogger;
 import org.hibernate.query.criteria.HibernateCriteriaBuilder;
 import org.hibernate.query.criteria.JpaCriteriaQuery;
 import org.hibernate.query.criteria.JpaRoot;
@@ -26,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import static cn.chahuyun.HuYanSession.log;
 import static cn.chahuyun.utils.ShareUtils.DYNAMIC_MESSAGE_PATTERN;
 
 /**
@@ -36,8 +36,6 @@ import static cn.chahuyun.utils.ShareUtils.DYNAMIC_MESSAGE_PATTERN;
  * @Date 2022/7/9 17:14
  */
 public class SessionAction {
-
-    private final static MiraiLogger l = HuYanSession.INSTANCE.getLogger();
 
 
     /**
@@ -59,7 +57,7 @@ public class SessionAction {
                 return session.createQuery(query).list();
             });
         } catch (Exception e) {
-            l.error("会话数据加载失败:", e);
+            log.error("会话数据加载失败:", e);
             return;
         }
 
@@ -83,11 +81,11 @@ public class SessionAction {
             StaticData.setSessionMap(sessionAll);
         }
         if (ConfigData.INSTANCE.getDebugSwitch() && type) {
-            l.info("数据库会话信息初始化成功!");
+            log.info("数据库会话信息初始化成功!");
             return;
         }
         if (ConfigData.INSTANCE.getDebugSwitch()) {
-            l.info("会话数据更新成功!");
+            log.info("会话数据更新成功!");
         }
 
     }
@@ -100,7 +98,7 @@ public class SessionAction {
      * @author Moyuyanli
      * @date 2022/7/29 22:27
      */
-    public static void studySession(MessageEvent event) {
+    public void studySession(MessageEvent event) {
         //xx a b [p1] [p2]
         String code = event.getMessage().serializeToMiraiCode();
         Contact subject = event.getSubject();
@@ -159,7 +157,8 @@ public class SessionAction {
                         String listPattern = "gr\\d+|群组\\d+";
                         if (Pattern.matches(listPattern, s)) {
                             int listId = Integer.parseInt(s.substring(2));
-                            if (ListAction.isContainsList(bot, listId)) {
+
+                            if (ListUtil.isContainsList(bot, listId)) {
                                 subject.sendMessage("该群组不存在!");
                                 return;
                             }
@@ -185,7 +184,7 @@ public class SessionAction {
      * @author Moyuyanli
      * @date 2022/7/13 21:21
      */
-    public static void querySession(MessageEvent event) {
+    public void querySession(MessageEvent event) {
         //xx:key?
         String code = event.getMessage().serializeToMiraiCode();
         Contact subject = event.getSubject();
@@ -239,7 +238,7 @@ public class SessionAction {
      * @author Moyuyanli
      * @date 2022/7/29 15:05
      */
-    public static void studyDialogue(MessageEvent event) {
+    public void studyDialogue(MessageEvent event) {
         //%xx|学习对话
         Contact subject = event.getSubject();
         User user = event.getSender();
@@ -295,7 +294,7 @@ public class SessionAction {
                     String listPattern = "gr\\d+|群组\\d+";
                     if (Pattern.matches(listPattern, s)) {
                         int listId = Integer.parseInt(s.substring(2));
-                        if (ListAction.isContainsList(bot, listId)) {
+                        if (ListUtil.isContainsList(bot, listId)) {
                             subject.sendMessage("该群组不存在!");
                             return;
                         }
@@ -341,7 +340,7 @@ public class SessionAction {
      * @author Moyuyanli
      * @date 2022/7/29 15:08
      */
-    public static void deleteSession(MessageEvent event) {
+    public void deleteSession(MessageEvent event) {
         //^-xx\\?[:：](\S+)|^删除( +\S+)
         String code = event.getMessage().serializeToMiraiCode();
         Contact subject = event.getSubject();
@@ -363,7 +362,7 @@ public class SessionAction {
      * @author Moyuyanli
      * @date 2022/8/20 12:31
      */
-    public static void deleteInformationSession(MessageEvent event) {
+    public void deleteInformationSession(MessageEvent event) {
         Contact subject = event.getSubject();
         Bot bot = event.getBot();
         User user = event.getSender();
@@ -389,7 +388,7 @@ public class SessionAction {
      * @author Moyuyanli
      * @date 2022/8/20 12:31
      */
-    private static void deleteMessage(Contact subject, Bot bot, String key) {
+    private void deleteMessage(Contact subject, Bot bot, String key) {
         Map<String, SessionInfo> sessionMap = StaticData.getSessionMap(bot);
         SessionInfo sessionInfo;
         if (sessionMap.containsKey(key)) {
@@ -428,7 +427,7 @@ public class SessionAction {
      * @author Moyuyanli
      * @date 2022/7/29 15:03
      */
-    private static void saveSession(Contact subject, Bot bot, String key, String value, Mate mate, Scope scope, int type, boolean dynamic) {
+    private void saveSession(Contact subject, Bot bot, String key, String value, Mate mate, Scope scope, int type, boolean dynamic) {
         try {
             HibernateUtil.factory.fromTransaction(session -> {
                 SessionInfo sessionInfoEntity = new SessionInfo(bot.getId(), type, key, value, mate, scope, dynamic);
@@ -441,7 +440,7 @@ public class SessionAction {
                 return 0;
             });
         } catch (Exception e) {
-            l.error("添加对话失败:" + e.getMessage());
+            log.error("添加对话失败:" + e.getMessage());
             subject.sendMessage("学不废!");
             e.printStackTrace();
             return;
@@ -454,14 +453,14 @@ public class SessionAction {
     /**
      * 判断作用域
      *
-     * @param event   消息事件
-     * @param subject 发送者
+     * @param event       消息事件
+     * @param subject     发送者
      * @param sessionInfo 消息
      * @return java.lang.String
      * @author Moyuyanli
      * @date 2022/7/13 12:25
      */
-    private static String judgeScope(MessageEvent event, Contact subject, SessionInfo sessionInfo) {
+    private String judgeScope(MessageEvent event, Contact subject, SessionInfo sessionInfo) {
         String trigger = "其他群触发";
         long groupId = event.getSubject().getId();
         Scope scopeInfo = sessionInfo.getScope();
@@ -483,7 +482,7 @@ public class SessionAction {
      * @author Moyuyanli
      * @date 2022/7/13 12:16
      */
-    private static ForwardMessage parseMessage(MessageEvent event) {
+    private ForwardMessage parseMessage(MessageEvent event) {
         Contact group = event.getSubject();
         Bot bot = event.getBot();
         ForwardMessageBuilder nodes = new ForwardMessageBuilder(group);

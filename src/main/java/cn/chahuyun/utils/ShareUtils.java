@@ -20,7 +20,6 @@ import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.data.At;
 import net.mamoe.mirai.message.data.MessageChain;
 import net.mamoe.mirai.message.data.SingleMessage;
-import net.mamoe.mirai.utils.MiraiLogger;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
@@ -31,6 +30,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static cn.chahuyun.HuYanSession.log;
+
 /**
  * ShareUtils
  *
@@ -40,7 +41,6 @@ import java.util.regex.Pattern;
  */
 public class ShareUtils {
 
-    private final static MiraiLogger l = HuYanSession.INSTANCE.getLogger();
 
     private static final Map<String, Integer> map = new HashMap<>();
     /**
@@ -122,7 +122,7 @@ public class ShareUtils {
 
         if (map.containsKey(mark)) {
             Integer integer = map.get(mark);
-            l.info("integer-" + integer);
+            log.info("integer-" + integer);
             if (integer > 0) {
                 map.put(mark, integer - 1);
                 return true;
@@ -249,15 +249,18 @@ public class ShareUtils {
         CompletableFuture<MessageEvent> future = new CompletableFuture<>();
 
         channel.subscribeOnce(MessageEvent.class, EmptyCoroutineContext.INSTANCE,
-                ConcurrencyKind.LOCKED, EventPriority.HIGH, future::complete);
+                ConcurrencyKind.LOCKED, EventPriority.HIGH, event -> {
+                    event.intercept();
+                    future.complete(event);
+                }
+        );
         MessageEvent event = null;
         try {
             event = future.get();
         } catch (InterruptedException | ExecutionException e) {
-            l.error("获取下一条消息出错!", e);
+            log.error("获取下一条消息出错!", e);
         }
         assert event != null;
-        event.intercept();
         return event;
     }
 

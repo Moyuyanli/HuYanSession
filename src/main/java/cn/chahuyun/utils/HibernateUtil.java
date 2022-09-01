@@ -1,10 +1,10 @@
 package cn.chahuyun.utils;
 
-import cn.chahuyun.HuYanSession;
-import net.mamoe.mirai.utils.MiraiLogger;
 import org.hibernate.HibernateException;
 import org.hibernate.SessionFactory;
 import xyz.cssxsh.mirai.hibernate.MiraiHibernateConfiguration;
+
+import static cn.chahuyun.HuYanSession.log;
 
 /**
  * 说明
@@ -15,8 +15,6 @@ import xyz.cssxsh.mirai.hibernate.MiraiHibernateConfiguration;
  */
 public class HibernateUtil {
 
-
-    private final static MiraiLogger l = HuYanSession.INSTANCE.getLogger();
 
     /**
      * 数据库连接前缀
@@ -42,10 +40,10 @@ public class HibernateUtil {
         try {
             factory = configuration.buildSessionFactory();
         } catch (HibernateException e) {
-            l.error("请删除data中的HuYan.mv.db后重新启动！",e);
+            log.error("请删除data中的HuYan.mv.db后重新启动！", e);
             return;
         }
-        l.info("H2数据库初始化成功!");
+        log.info("H2数据库初始化成功!");
     }
 
 
