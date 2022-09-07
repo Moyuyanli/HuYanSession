@@ -261,7 +261,7 @@ public class PowerAction {
     /**
      * 分也查询所有用户权限
      * 整个类的精髓所在地
-     * todo 多个方法的案例所在地
+     * 多个方法的案例所在地
      *
      * @param event  消息事件
      * @param pageNo 当前页数

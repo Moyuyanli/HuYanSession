@@ -8,6 +8,7 @@ import net.mamoe.mirai.contact.Contact;
 import net.mamoe.mirai.contact.Group;
 import net.mamoe.mirai.contact.NormalMember;
 import net.mamoe.mirai.contact.User;
+import net.mamoe.mirai.data.GroupActiveData;
 import net.mamoe.mirai.event.events.GroupEvent;
 import net.mamoe.mirai.event.events.MemberJoinEvent;
 import net.mamoe.mirai.event.events.MessageEvent;
@@ -221,7 +222,12 @@ public class DynamicMessageUtil {
                     case "avatar":
                         return Contact.uploadImage(event.getSubject(), new URL(event.getSender().getAvatarUrl()).openConnection().getInputStream());
                     case "title":
-                        return new PlainText(((NormalMember) event.getSender()).getSpecialTitle());
+                        String specialTitle = ((NormalMember) event.getSender()).getSpecialTitle();
+                        if (specialTitle != null) {
+                            return new PlainText(specialTitle);
+                        }
+                        //todo 获取群活跃度头衔
+                        ((NormalMember) event.getSender()).getSpecialTitle();
                     case "info":
                         return new PlainText((event.getSender()).queryProfile().toString());
                     default:
