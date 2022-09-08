@@ -28,11 +28,6 @@ public class GroupEventListener extends SimpleListenerHost {
 
     private static final MiraiLogger l = HuYanSession.INSTANCE.getLogger();
 
-    @Override
-    public void handleException(@NotNull CoroutineContext context, @NotNull Throwable exception) {
-        // 处理事件处理时抛出的异常
-        l.error("出错啦~", exception);
-    }
 
     /**
      * 其他群事件

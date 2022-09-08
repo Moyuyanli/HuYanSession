@@ -24,8 +24,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import static cn.chahuyun.HuYanSession.log;
-
 /**
  * 说明
  *
@@ -142,7 +140,6 @@ public class MessageEventListener extends SimpleListenerHost {
         /*
         特殊匹配
          */
-
         String pauseEventPattern = "^[!！]pause +\\[mirai:at:\\d+]( +\\d+)?";
 
         //是否忽略下一条消息
@@ -183,7 +180,6 @@ public class MessageEventListener extends SimpleListenerHost {
                 listAction.deleteGroupListInfo(event);
                 return;
             }
-
         }
 
         /*
