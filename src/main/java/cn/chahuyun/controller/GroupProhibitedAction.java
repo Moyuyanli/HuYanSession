@@ -217,6 +217,7 @@ public class GroupProhibitedAction {
         Contact subject = event.getSubject();
         Bot bot = event.getBot();
 
+        init(false);
         ForwardMessageBuilder builder = new ForwardMessageBuilder(subject);
         builder.add(bot, new PlainText("以下是本群触发的所有违禁词↓"));
 

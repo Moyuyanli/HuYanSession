@@ -41,10 +41,12 @@ public final class HuYanSession extends JavaPlugin {
                 .build());
     }
 
+    public static final String VERSION = "v2.0.0.5-alpha";
+
 
     @Override
     public void onEnable() {
-        getLogger().info("HuYanSession2 当前版本: v2.0.0.4-alpha");
+        getLogger().info("HuYanSession2 当前版本: " + VERSION);
 
         getLogger().info("===================HuYanSession2===================");
         MiraiHibernateConfiguration configuration = new MiraiHibernateConfiguration(this);

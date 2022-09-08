@@ -563,6 +563,7 @@ public class SessionAction {
                 default:
                     break;
             }
+
         }
         nodes.add(bot, accurate.build());
         nodes.add(bot, vague.build());

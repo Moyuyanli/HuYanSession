@@ -31,4 +31,11 @@ object Command : CompositeCommand(
         sendMessage(messageChain)
     }
 
+    @SubCommand("v") // 可以设置多个子指令名。此时函数名会被忽略。
+    @Description("查询当前插件版本")
+    suspend fun CommandSender.version() {
+        val version = HuYanSession.VERSION
+        sendMessage("壶言会话当前版本: $version")
+    }
+
 }

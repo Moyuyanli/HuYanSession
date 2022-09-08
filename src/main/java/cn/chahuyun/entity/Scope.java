@@ -76,6 +76,7 @@ public class Scope {
 
     public void setBot(long bot) {
         this.bot = bot;
+        setId();
     }
 
     public String getScopeName() {
@@ -84,6 +85,7 @@ public class Scope {
 
     public void setScopeName(String scopeName) {
         this.scopeName = scopeName;
+        setId();
     }
 
     public boolean getGlobal() {
@@ -99,6 +101,7 @@ public class Scope {
     }
 
     public void setGroupNumber(long groupNumber) {
+        setId();
         this.groupNumber = groupNumber;
     }
 
@@ -108,6 +111,7 @@ public class Scope {
 
     public void setListId(int listId) {
         this.listId = listId;
+        setId();
     }
 
     public String getMark() {
@@ -115,6 +119,7 @@ public class Scope {
     }
 
     public void setMark(String mark) {
+        setId();
         this.mark = mark;
     }
 
@@ -124,6 +129,7 @@ public class Scope {
 
     public void setGlobal(boolean global) {
         isGlobal = global;
+        setId();
     }
 
     public boolean isGroupInfo() {
@@ -132,6 +138,7 @@ public class Scope {
 
     public void setGroupInfo(boolean isGroupInfo) {
         this.isGroupInfo = isGroupInfo;
+        setId();
     }
 
     @Override
@@ -154,4 +161,9 @@ public class Scope {
         }
         return false;
     }
+
+    private void setId() {
+        this.id = bot + "." + isGlobal + "." + isGroupInfo + "." + groupNumber + "." + listId;
+    }
+
 }

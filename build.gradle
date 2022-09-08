@@ -10,7 +10,7 @@ tasks.withType(JavaCompile) {
 }
 group = 'cn.chahuyun'
 
-version = 'v2.0.0.4-alpha'
+version = 'v2.0.0.5-alpha'
 
 
 repositories {
