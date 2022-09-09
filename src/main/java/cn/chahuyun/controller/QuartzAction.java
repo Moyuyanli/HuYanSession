@@ -103,7 +103,7 @@ public class QuartzAction {
             if (ShareUtils.isQuit(nextCronStringSure)) {
                 return;
             }
-            String nextCronStringSureCode = nextCronStringEvent.getMessage().serializeToMiraiCode();
+            String nextCronStringSureCode = nextCronStringSure.getMessage().serializeToMiraiCode();
             if (Pattern.matches("!|！|1|ok|确认", nextCronStringSureCode)) {
                 cronSure = false;
             }

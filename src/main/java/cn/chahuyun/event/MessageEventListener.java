@@ -185,7 +185,7 @@ public class MessageEventListener extends SimpleListenerHost {
         /*
         会话正则
          */
-        String addStudyPattern = "^xx +\\S+ +\\S+( +\\S+){0,2}|^学习 +\\S+( +\\S+){0,2}";
+        String addStudyPattern = "^xx( +\\S+){2,4}|^学习( +\\S+){2,4}";
         String queryStudyPattern = "^xx\\\\?[:：](\\S+)?|^查询( +\\S+)?";
         String addsStudyPattern = "^%xx|^学习对话";
         String deleteStudyPattern = "^-xx\\\\?[:：](\\S+)|^删除( +\\S+)";
