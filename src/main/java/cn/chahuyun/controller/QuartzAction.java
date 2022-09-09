@@ -91,7 +91,7 @@ public class QuartzAction {
                 return;
             }
             String cronString = nextCronStringEvent.getMessage().contentToString();
-            Matcher matcher = Pattern.compile("^\\?$cron\\(\\S+?( +\\S+){5}?\\)").matcher(cronString);
+            Matcher matcher = Pattern.compile("^\\$cron\\(\\S+?( +\\S+){5}?\\)").matcher(cronString);
             if (matcher.find()) {
                 cron = matcher.group().split("\\(")[1].split("\\)")[0];
                 subject.sendMessage(String.format("识别到cron表达式-> %s <- 是否确认", cron));
