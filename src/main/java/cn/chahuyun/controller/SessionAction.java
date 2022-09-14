@@ -527,6 +527,7 @@ public class SessionAction {
                     switch (base.getMate()) {
                         case ACCURATE:
                             accurate.append(base.getTerm()).append(" ==> ").append(base.getReply()).append(" -> ").append(trigger).append("\n");
+                            log.info("accurate->"+accurate.build().toString().length());
                             break;
                         case VAGUE:
                             vague.append(base.getTerm()).append(" ==> ").append(base.getReply()).append(" -> ").append(trigger).append("\n");
