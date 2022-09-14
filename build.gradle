@@ -1,40 +1,40 @@
 plugins {
-    id 'org.jetbrains.kotlin.jvm' version '1.6.21'
-    id 'org.jetbrains.kotlin.plugin.serialization' version '1.6.21'
+    id 'org.jetbrains.kotlin.jvm' version '1.7.10'
+    id 'org.jetbrains.kotlin.plugin.serialization' version '1.7.10'
 
-    id 'net.mamoe.mirai-console' version '2.12.2'
+    id 'net.mamoe.mirai-console' version '2.12.3'
+    id 'me.him188.maven-central-publish' version "1.0.0-dev-3"
 }
 
-tasks.withType(JavaCompile) {
-    options.encoding = "UTF-8"
-}
 group = 'cn.chahuyun'
-
 version = 'v2.0.0.5-alpha'
 
-
 repositories {
-    maven { url 'https://maven.aliyun.com/repository/public' }
-    maven {
-        url 'https://maven.pkg.jetbrains.space/public/p/ktor/eap'
-        name 'ktor-eap'
-    }
-    maven { url "https://maven.appspector.com/artifactory/android-sdk" }
     mavenCentral()
 }
 
 dependencies {
-    compileOnly("xyz.cssxsh.mirai:mirai-hibernate-plugin:2.4.3")
-
-
+    compileOnly 'xyz.cssxsh.mirai:mirai-hibernate-plugin:2.4.4'
     implementation 'org.quartz-scheduler:quartz:2.3.2'
-    implementation 'cn.hutool:hutool-all:5.8.5'
-
-    testImplementation('junit:junit:4.13.2')
-    testImplementation("xyz.cssxsh.mirai:mirai-hibernate-plugin:2.4.3")
+    implementation 'cn.hutool:hutool-all:5.8.6'
+    testImplementation 'org.jetbrains.kotlin:kotlin-test:1.7.10'
+    testImplementation 'xyz.cssxsh.mirai:mirai-hibernate-plugin:2.4.4'
 }
-
 
 mirai {
     jvmTarget = JavaVersion.VERSION_11
 }
+
+mavenCentralPublish {
+    useCentralS01()
+    singleDevGithubProject("Moyuyanli", "HuYanSession")
+    licenseFromGitHubProject("AGPL-3.0", "main")
+    def temp = System.getenv("PUBLICATION_TEMP")
+    if (temp != null) {
+        workingDir = file(temp + "/" + projectName)
+    }
+    publication {
+        artifact(tasks.getByName("buildPlugin"))
+    }
+}
+
