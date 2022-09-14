@@ -25,16 +25,16 @@ mirai {
     jvmTarget = JavaVersion.VERSION_11
 }
 
-//mavenCentralPublish {
-//    useCentralS01()
-//    singleDevGithubProject("Moyuyanli", "HuYanSession")
-//    licenseFromGitHubProject("AGPL-3.0", "main")
-//    def temp = System.getenv("PUBLICATION_TEMP")
-//    if (temp != null) {
-//        workingDir = file(temp + "/" + projectName)
-//    }
-//    publication {
-//        artifact(tasks.getByName("buildPlugin"))
-//    }
-//}
+mavenCentralPublish {
+    useCentralS01()
+    singleDevGithubProject("Moyuyanli", "HuYanSession")
+    licenseFromGitHubProject("AGPL-3.0", "main")
+    def temp = System.getenv("PUBLICATION_TEMP")
+    if (temp != null) {
+        workingDir = file(temp + "/" + projectName)
+    }
+    publication {
+        artifact(tasks.getByName("buildPlugin"))
+    }
+}
 
