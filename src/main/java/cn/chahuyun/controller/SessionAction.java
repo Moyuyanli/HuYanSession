@@ -188,6 +188,7 @@ public class SessionAction {
         //xx:key?
         String code = event.getMessage().serializeToMiraiCode();
         Contact subject = event.getSubject();
+        User user = event.getSender();
         Bot bot = event.getBot();
         init(false);
         //匹配是否查询单条
@@ -223,10 +224,30 @@ public class SessionAction {
             subject.sendMessage("我不是很会讲发~");
             return;
         }
-
-        ForwardMessage forwardMessage = parseMessage(event);
-        if (forwardMessage != null) {
-            subject.sendMessage(forwardMessage);
+        int startIndex = -1;
+        while (true) {
+            Map<String, Object> stringObjectMap = parseMessage(event, startIndex);
+            assert stringObjectMap != null;
+            ForwardMessage build = (ForwardMessage) stringObjectMap.get("build");
+            if (build != null) {
+                subject.sendMessage(build);
+            }
+            int start = (int) stringObjectMap.get("start");
+            int end = (int) stringObjectMap.get("end");
+            boolean up = (boolean) stringObjectMap.get("up");
+            boolean down = (boolean) stringObjectMap.get("down");
+            MessageEvent nextMessageEventFromUser = ShareUtils.getNextMessageEventFromUser(user);
+            if (ShareUtils.isQuit(nextMessageEventFromUser)) {
+                return;
+            }
+            String string = nextMessageEventFromUser.getMessage().contentToString();
+            if (up && string.equals("上一页")) {
+                startIndex = start - 1;
+            } else if (down && string.equals("下一页")) {
+                startIndex = end;
+            } else {
+                return;
+            }
         }
 
     }
@@ -482,7 +503,7 @@ public class SessionAction {
      * @author Moyuyanli
      * @date 2022/7/13 12:16
      */
-    private ForwardMessage parseMessage(MessageEvent event) {
+    private Map<String, Object> parseMessage(MessageEvent event, int startIndex) {
         Contact group = event.getSubject();
         Bot bot = event.getBot();
         ForwardMessageBuilder nodes = new ForwardMessageBuilder(group);
@@ -515,9 +536,15 @@ public class SessionAction {
         end.append("所有的结尾匹配触发消息:\n");
         other.append("所有的其他匹配触发消息:\n");
         special.append("所有的特殊匹配触发消息:\n");
+
+        int nodesLength = 929;
+
         //获取全部消息
         ArrayList<SessionInfo> values = new ArrayList<>(sessionMap.values());
-        for (SessionInfo base : values) {
+        int size = values.size();
+        int endIndex = 0;
+        for (int i = startIndex += 1; i < size; i++) {
+            SessionInfo base = values.get(i);
             //判断触发类别
             String trigger = judgeScope(event, group, base);
             //判断消息类别
@@ -527,15 +554,24 @@ public class SessionAction {
                     switch (base.getMate()) {
                         case ACCURATE:
                             accurate.append(base.getTerm()).append(" ==> ").append(base.getReply()).append(" -> ").append(trigger).append("\n");
+                            int accurateLength = accurate.build().toString().length();
+                            nodesLength += accurateLength;
+                            log.debug("accurate.toString.length->" + accurateLength);
                             break;
                         case VAGUE:
                             vague.append(base.getTerm()).append(" ==> ").append(base.getReply()).append(" -> ").append(trigger).append("\n");
+                            int vagueLength = vague.build().toString().length();
+                            log.debug("vague.toString.length->" + vagueLength);
                             break;
                         case START:
                             start.append(base.getTerm()).append(" ==> ").append(base.getReply()).append(" -> ").append(trigger).append("\n");
+                            int startLength = start.build().toString().length();
+                            log.debug("start.toString.length->" + startLength);
                             break;
                         case END:
                             end.append(base.getTerm()).append(" ==> ").append(base.getReply()).append(" -> ").append(trigger).append("\n");
+                            int endLength = end.build().toString().length();
+                            log.debug("end.toString.length->" + endLength);
                             break;
                         default:
                             break;
@@ -550,6 +586,9 @@ public class SessionAction {
                             .append(":")
                             .append(base.getMate().getMateName())
                             .append("\n");
+                    int OtherLength = other.build().toString().length();
+                    log.debug("other.toString.length->" + OtherLength);
+
                     break;
                 case 5:
                     special.append(MiraiCode.deserializeMiraiCode(base.getTerm()))
@@ -560,10 +599,16 @@ public class SessionAction {
                             .append(":")
                             .append(base.getMate().getMateName())
                             .append("\n");
+                    int specialLength = special.build().toString().length();
+                    log.debug("other.toString.length->" + specialLength);
                 default:
                     break;
             }
-
+            endIndex = i;
+            if (nodesLength > 4000) {
+                log.debug("endIndex->" + endIndex);
+                break;
+            }
         }
         nodes.add(bot, accurate.build());
         nodes.add(bot, vague.build());
@@ -572,7 +617,20 @@ public class SessionAction {
         nodes.add(bot, other.build());
         nodes.add(bot, special.build());
 
-        return nodes.build();
+        nodes.add(bot, new PlainText(String.format("----- 当前条数: %d ~ %d /总条数: %d  -----", startIndex + 1, endIndex + 1, size)));
+        Map<String, Object> map = new HashMap<>();
+        map.put("start", startIndex);
+        map.put("end", endIndex);
+        map.put("size", endIndex);
+        //是否能上一页
+        map.put("up", startIndex > -1);
+        //能否下一页
+        map.put("down", endIndex < size);
+
+        ForwardMessage build = nodes.build();
+        log.debug("session.toString.length->" + build.toString().length());
+        map.put("build", build);
+        return map;
     }
 
 }

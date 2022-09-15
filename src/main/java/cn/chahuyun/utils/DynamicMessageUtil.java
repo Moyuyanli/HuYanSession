@@ -8,7 +8,6 @@ import net.mamoe.mirai.contact.Contact;
 import net.mamoe.mirai.contact.Group;
 import net.mamoe.mirai.contact.NormalMember;
 import net.mamoe.mirai.contact.User;
-import net.mamoe.mirai.data.GroupActiveData;
 import net.mamoe.mirai.event.events.GroupEvent;
 import net.mamoe.mirai.event.events.MemberJoinEvent;
 import net.mamoe.mirai.event.events.MessageEvent;
