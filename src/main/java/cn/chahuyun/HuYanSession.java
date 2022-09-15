@@ -33,7 +33,7 @@ public final class HuYanSession extends JavaPlugin {
 
 
     private HuYanSession() {
-        super(new JvmPluginDescriptionBuilder("cn.chahuyun.HuYanSession", "2.0")
+        super(new JvmPluginDescriptionBuilder("cn.chahuyun.HuYanSession", "2.0.0")
                 .name("HuYanSession")
                 .info("壶言会话-服务于你的群聊!")
                 .author("Moyuyanli")
@@ -41,7 +41,7 @@ public final class HuYanSession extends JavaPlugin {
                 .build());
     }
 
-    public static final String VERSION = "v2.0.0.5-alpha";
+    public static final String VERSION = "v2.0.0-alpha-6";
 
 
     @Override
