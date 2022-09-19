@@ -26,16 +26,10 @@ public class ScopeUtil {
      * @date 2022/8/12 15:57
      */
     public static boolean isScopeEmpty(Scope scope) {
-        List<Scope> scopeList = HibernateUtil.factory.fromTransaction(session -> {
+        return HibernateUtil.factory.fromTransaction(session -> {
             String id = scope.getId();
-            HibernateCriteriaBuilder builder = session.getCriteriaBuilder();
-            JpaCriteriaQuery<Scope> query = builder.createQuery(Scope.class);
-            JpaRoot<Scope> from = query.from(Scope.class);
-            query.select(from);
-            query.where(builder.equal(from.get("id"), id));
-            return session.createQuery(query).list();
+            return session.get(Scope.class, id) == null;
         });
-        return scopeList == null || scopeList.isEmpty();
     }
 
     /**

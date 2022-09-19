@@ -396,7 +396,7 @@ public class MessageEventListener extends SimpleListenerHost {
         String addQuartzPattern = "^%ds|^添加定时任务|^添加定时器";
         String queryQuartzPattern = "^ds\\\\?[:：]|^查询定时任务|^查询定时器";
         String deleteQuartzPattern = "^-ds\\\\?[:：]\\d+|^删除定时任务\\\\?[:：]\\d+|^删除定时器\\\\?[:：]\\d+";
-        String switchQuartzPattern = "^%ds\\\\?[:：]\\d+|^切换定时任务\\\\?[:：]\\d+|^切换定时器\\\\?[:：]\\d+";
+        String switchQuartzPattern = "^%ds\\\\?[:：]\\S+|^切换定时任务\\\\?[:：]\\S+|^切换定时器\\\\?[:：]\\S+";
 
         QuartzAction quartzAction = new QuartzAction();
 

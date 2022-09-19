@@ -7,7 +7,7 @@ plugins {
 }
 
 group = 'cn.chahuyun'
-version = '2.0.0-alpha-6'
+version = '2.1.6'
 
 repositories {
     mavenCentral()
@@ -18,7 +18,6 @@ repositories {
 
 dependencies {
     compileOnly 'xyz.cssxsh.mirai:mirai-hibernate-plugin:2.4.4'
-    implementation 'org.quartz-scheduler:quartz:2.3.2'
     implementation 'cn.hutool:hutool-all:5.8.6'
     testImplementation 'org.jetbrains.kotlin:kotlin-test:1.7.10'
     testImplementation 'xyz.cssxsh.mirai:mirai-hibernate-plugin:2.4.4'
