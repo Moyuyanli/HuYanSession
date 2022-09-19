@@ -30,10 +30,12 @@ public final class HuYanSession extends JavaPlugin {
     public static final HuYanSession INSTANCE = new HuYanSession();
 
     public static final MiraiLogger log = INSTANCE.getLogger();
+    public static final String VERSION = "v2.1.6";
+
 
 
     private HuYanSession() {
-        super(new JvmPluginDescriptionBuilder("cn.chahuyun.HuYanSession", "2.0.0")
+        super(new JvmPluginDescriptionBuilder("cn.chahuyun.HuYanSession", "2.1.6")
                 .name("HuYanSession")
                 .info("壶言会话-服务于你的群聊!")
                 .author("Moyuyanli")
@@ -41,14 +43,12 @@ public final class HuYanSession extends JavaPlugin {
                 .build());
     }
 
-    public static final String VERSION = "v2.0.0-alpha-6";
-
 
     @Override
     public void onEnable() {
-        getLogger().info("HuYanSession2 当前版本: " + VERSION);
+        log.info("HuYanSession2 当前版本: " + VERSION);
 
-        getLogger().info("===================HuYanSession2===================");
+        log.info("===================HuYanSession2===================");
         MiraiHibernateConfiguration configuration = new MiraiHibernateConfiguration(this);
         HibernateUtil.init(configuration);
 
@@ -60,27 +60,27 @@ public final class HuYanSession extends JavaPlugin {
         if (ConfigData.INSTANCE.getOwner() == 0) {
             getLogger().warning("主人还没有设置，请设置主人!");
         }
-        getLogger().info("主人已设置:" + ConfigData.INSTANCE.getOwner());
+        log.info("主人已设置:" + ConfigData.INSTANCE.getOwner());
 
         CommandManager.INSTANCE.registerCommand(Command.INSTANCE, true);
-        getLogger().info("插件指令已加载！");
+        log.info("插件指令已加载！");
 
         ListAction.init(true);
         SessionAction.init(true);
         PowerAction.init(true);
         GroupProhibitedAction.init(true);
         ManySessionAction.init(true);
-        QuartzAction.init(true);
+        QuartzAction.init();
 
         //注册群消息事件
         channel.registerListenerHost(new MessageEventListener());
-        getLogger().info("群消息监听已注册！");
+        log.info("群消息监听已注册！");
         channel.registerListenerHost(new GroupEventListener());
-        getLogger().info("群动作监听已注册！");
+        log.info("群动作监听已注册！");
 
 
-        getLogger().info("壶言会话插件加载完成!");
-        getLogger().info("===================HuYanSession2===================");
+        log.info("壶言会话插件加载完成!");
+        log.info("===================HuYanSession2===================");
     }
 
     @Override

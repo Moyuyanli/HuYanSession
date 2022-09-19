@@ -3,11 +3,13 @@ package cn.chahuyun.controller;
 import cn.chahuyun.entity.ManySession;
 import cn.chahuyun.entity.QuartzInfo;
 import cn.chahuyun.entity.Scope;
-import cn.chahuyun.manage.QuartzManager;
+import cn.chahuyun.job.TimingJob;
 import cn.chahuyun.utils.HibernateUtil;
 import cn.chahuyun.utils.ListUtil;
 import cn.chahuyun.utils.ScopeUtil;
 import cn.chahuyun.utils.ShareUtils;
+import cn.hutool.cron.CronUtil;
+import cn.hutool.cron.task.CronTask;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.Contact;
 import net.mamoe.mirai.contact.User;
@@ -41,7 +43,9 @@ public class QuartzAction {
      * @author Moyuyanli
      * @date 2022/8/27 19:12
      */
-    public static void init(boolean type) {
+    public static void init() {
+        CronUtil.setMatchSecond(true);
+        CronUtil.start(true);
         List<QuartzInfo> quartzInfos = HibernateUtil.factory.fromTransaction(session -> {
             HibernateCriteriaBuilder builder = session.getCriteriaBuilder();
             JpaCriteriaQuery<QuartzInfo> query = builder.createQuery(QuartzInfo.class);
@@ -52,12 +56,17 @@ public class QuartzAction {
         });
         //加载时遍历定时器，对启动中的定时添加到调度器中
         for (QuartzInfo quartzInfo : quartzInfos) {
-            if (!quartzInfo.isStatus()) {
-                boolean addSchedulerJob = QuartzManager.addSchedulerJob(quartzInfo);
-                if (addSchedulerJob) {
-                    quartzInfo.setStatus(true);
-                    updateQuartz(quartzInfo);
+            if (quartzInfo.isStatus()) {
+                String id = quartzInfo.getId() + "." + quartzInfo.getName();
+                CronTask timingJob = TimingJob.createTask(id, quartzInfo.getCronString());
+                try {
+                    CronUtil.schedule(id, quartzInfo.getCronString(), timingJob);
+                } catch (Exception e) {
+                    log.error("!!!∑(ﾟДﾟノ)ノ 添加定时任务出错:" + quartzInfo.getName(), e);
+                    continue;
                 }
+                quartzInfo.setStatus(true);
+                updateQuartz(quartzInfo);
             }
         }
         log.info("定时器加载成功!");
@@ -218,6 +227,7 @@ public class QuartzAction {
             }
             ManySession manySession = new ManySession(bot.getId(), dynamic, other, miraiCode);
             manySessions.add(manySession);
+            if (isQuit) break;
             subject.sendMessage("添加成功!");
         }
 
@@ -228,10 +238,16 @@ public class QuartzAction {
         subject.sendMessage(String.format("定时任务 %s 添加失败!", name));
     }
 
+    /**
+     * 查询定时任务
+     *
+     * @param event 消息事件
+     * @author Moyuyanli
+     * @date 2022/9/19 9:52
+     */
     public void queryQuartz(MessageEvent event) {
         Bot bot = event.getBot();
         Contact subject = event.getSubject();
-
 
         List<QuartzInfo> quartzInfos;
         try {
@@ -262,9 +278,9 @@ public class QuartzAction {
             List<ManySession> manySessions = value.getManySessions();
             MessageChainBuilder chainBuilder = new MessageChainBuilder();
             chainBuilder.add(new PlainText(String.format("定时器条编号:%d%n定时器名称:%s%n定时器频率: %s%n", value.getId(), value.getName(), value.getCronString())));
-            new PlainText(String.format("定时器是否开启:%s%n", value.isStatus() ? "开启" : "关闭"));
-            new PlainText(String.format("作用域:%s%n", value.getScope().getScopeName()));
-            new PlainText(String.format("当前群是否触发:%b", ShareUtils.mateScope(event, value.getScope()) ? "是" : "否"));
+            chainBuilder.add(new PlainText(String.format("定时器是否开启:%s%n", value.isStatus() ? "开启" : "关闭")));
+            chainBuilder.add(new PlainText(String.format("作用域:%s%n", value.getScope().getScopeName())));
+            chainBuilder.add(new PlainText(String.format("当前群是否触发:%b", ShareUtils.mateScope(event, value.getScope()) ? "是" : "否")));
             if (value.isPolling() && value.isRandom()) {
                 chainBuilder.add(new PlainText("定时器回复内容:"));
                 chainBuilder.add(MiraiCode.deserializeMiraiCode(value.getReply()));
@@ -289,7 +305,7 @@ public class QuartzAction {
                 messageBuilder.add(bot, messageChainBuilder.build());
             }
         }
-
+        subject.sendMessage(builder.build());
     }
 
     /**
@@ -328,6 +344,10 @@ public class QuartzAction {
             return;
         }
         QuartzInfo quartzInfo = quartzInfos.get(0);
+        String quartzId = quartzInfo.getId() + "." + quartzInfo.getName();
+        try {
+            CronUtil.remove(quartzId);
+        } catch (Exception ignored) {}
         try {
             HibernateUtil.factory.fromTransaction(session -> {
                 session.remove(quartzInfo);
@@ -341,44 +361,74 @@ public class QuartzAction {
         subject.sendMessage("定时任务删除成功!");
     }
 
-
+    /**
+     * 切换定时任务
+     *
+     * @param event 消息事件
+     * @author Moyuyanli
+     * @date 2022/9/19 9:52
+     */
     public void switchQuartz(MessageEvent event) {
-        //-ds:id
+        //%ds:(id|name)
         Bot bot = event.getBot();
         Contact subject = event.getSubject();
         String code = event.getMessage().serializeToMiraiCode();
 
         String id = code.split("[:：]")[1];
-        List<QuartzInfo> quartzInfos;
+        QuartzInfo quartzInfo;
         try {
-            quartzInfos = HibernateUtil.factory.fromTransaction(session -> {
-                HibernateCriteriaBuilder builder = session.getCriteriaBuilder();
-                JpaCriteriaQuery<QuartzInfo> query = builder.createQuery(QuartzInfo.class);
-                JpaRoot<QuartzInfo> from = query.from(QuartzInfo.class);
-
-                query.select(from);
-                query.where(builder.equal(from.get("bot"), bot.getId()));
-                query.where(builder.equal(from.get("id"), id));
-                return session.createQuery(query).list();
+            quartzInfo = HibernateUtil.factory.fromTransaction(session -> {
+                try {
+                    int i = Integer.parseInt(id);
+                    return session.get(QuartzInfo.class, i);
+                } catch (NumberFormatException e) {
+                    HibernateCriteriaBuilder builder = session.getCriteriaBuilder();
+                    JpaCriteriaQuery<QuartzInfo> query = builder.createQuery(QuartzInfo.class);
+                    JpaRoot<QuartzInfo> from = query.from(QuartzInfo.class);
+                    query.select(from);
+                    query.where(builder.equal(from.get("bot"), bot.getId()));
+                    query.where(builder.equal(from.get("name"), id));
+                    return session.createQuery(query).getSingleResult();
+                }
             });
         } catch (Exception e) {
             log.error("出错拉~", e);
             subject.sendMessage("查询定时任务出错!");
             return;
         }
-        if (quartzInfos == null || quartzInfos.isEmpty()) {
+        if (quartzInfo == null) {
             subject.sendMessage("该定时任务不存在");
             return;
         }
-        QuartzInfo quartzInfo = quartzInfos.get(0);
+        String timingId = quartzInfo.getId() + "." + quartzInfo.getName();
+        CronTask timingJob = TimingJob.createTask(id, quartzInfo.getCronString());
         quartzInfo.setStatus(!quartzInfo.isStatus());
-        //todo 定时任务切换没做完
-        if (QuartzManager.addSchedulerJob(quartzInfo)) {
-            subject.sendMessage(String.format("定时器 %s %s成功!", quartzInfo.getName(), quartzInfo.isStatus() ? "开启" : "关闭"));
-            updateQuartz(quartzInfo);
-            return;
+        if (quartzInfo.isStatus()) {
+            CronUtil.schedule(timingId, quartzInfo.getCronString(), timingJob);
+        } else {
+            try {
+                CronUtil.remove(timingId);
+            } catch (Exception e) {
+                log.warning("定时器未启用!");
+                subject.sendMessage(String.format("定时器 %s %s失败!", quartzInfo.getName(), !quartzInfo.isStatus() ? "开启" : "关闭"));
+                updateQuartz(quartzInfo);
+                return;
+            }
         }
-        subject.sendMessage(String.format("定时器 %s %s失败!", quartzInfo.getName(), !quartzInfo.isStatus() ? "开启" : "关闭"));
+        subject.sendMessage(String.format("定时器 %s %s成功!", quartzInfo.getName(), quartzInfo.isStatus() ? "开启" : "关闭"));
+        updateQuartz(quartzInfo);
+    }
+
+    /**
+     * 通过id获取定时任务信息
+     *
+     * @param id 定时任务的信息类id
+     * @return cn.chahuyun.entity.QuartzInfo
+     * @author Moyuyanli
+     * @date 2022/9/19 9:44
+     */
+    public static QuartzInfo getQuartzInfo(int id) {
+        return HibernateUtil.factory.fromTransaction(session -> session.get(QuartzInfo.class, id));
     }
 
     /**
@@ -419,7 +469,7 @@ public class QuartzAction {
         try {
             HibernateUtil.factory.fromTransaction(session -> {
                 if (ScopeUtil.isScopeEmpty(scope)) {
-                    session.persist(session);
+                    session.persist(scope);
                 }
                 session.persist(quartzInfo);
                 return true;

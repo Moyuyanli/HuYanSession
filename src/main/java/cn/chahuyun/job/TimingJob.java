@@ -1,18 +1,20 @@
 package cn.chahuyun.job;
 
+import cn.chahuyun.HuYanSession;
 import cn.chahuyun.config.ConfigData;
 import cn.chahuyun.controller.QuartzAction;
+import cn.chahuyun.data.StaticData;
 import cn.chahuyun.entity.*;
 import cn.chahuyun.utils.DynamicMessageUtil;
+import cn.hutool.cron.pattern.CronPattern;
+import cn.hutool.cron.task.CronTask;
+import cn.hutool.cron.task.Task;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.ContactList;
 import net.mamoe.mirai.contact.Group;
 import net.mamoe.mirai.message.code.MiraiCode;
 import net.mamoe.mirai.message.data.MessageChain;
 import net.mamoe.mirai.utils.MiraiLogger;
-import org.quartz.Job;
-import org.quartz.JobDataMap;
-import org.quartz.JobExecutionContext;
 
 import java.util.List;
 import java.util.Map;
@@ -24,19 +26,43 @@ import java.util.Objects;
  * @author Moyuyanli
  * @Date 2022/8/27 19:20
  */
-public class TimingJob implements Job {
+public class TimingJob implements Task {
+
+    private final String id;
+
+
+    public TimingJob(String id) {
+        this.id = id;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    /**
+     * 获取cron任务类
+     *
+     * @param id   id
+     * @param cron cron表达式
+     * @return cn.hutool.cron.task.CronTask
+     * @author Moyuyanli
+     * @date 2022/9/19 17:46
+     */
+    public static CronTask createTask(String id, String cron) {
+        TimingJob timingJob = new TimingJob(id);
+        return new CronTask(id, CronPattern.of(cron), timingJob);
+    }
+
     @Override
-    public void execute(JobExecutionContext context) {
-        JobDataMap jobDataMap = context.getJobDetail().getJobDataMap();
-        QuartzInfo base = (QuartzInfo) jobDataMap.get("data");
-        Map<Integer, GroupList> groupList = (Map<Integer, GroupList>) jobDataMap.get("groupList");
-
-
-        MiraiLogger l = (MiraiLogger) jobDataMap.get("logger");
+    public void execute() {
+        MiraiLogger log = HuYanSession.log;
+        int id = Integer.parseInt(getId().split("\\.")[0]);
+        QuartzInfo base = QuartzAction.getQuartzInfo(id);
+        Map<Integer, GroupList> groupList = StaticData.getGroupListMap(base.getBot());
 
         Scope scope = base.getScope();
         if (ConfigData.INSTANCE.getDebugSwitch()) {
-            l.info("定时器" + base.getId() + "-" + base.getName() + "执行!");
+            log.info("定时器" + base.getId() + "-" + base.getName() + "执行!");
         }
         long botQq = base.getBot();
         Bot bot = Bot.getInstance(botQq);
@@ -51,14 +77,15 @@ public class TimingJob implements Job {
             for (GroupInfo groupInfo : groups) {
                 Group group = bot.getGroup(groupInfo.getGroupId());
                 if (group == null) {
-                    l.warning(String.format("群 %d 不存在！", groupInfo.getGroupId()));
+                    log.warning(String.format("群 %d 不存在！", groupInfo.getGroupId()));
                     continue;
                 }
                 dialogue(base, group);
             }
         }
+        Group group = bot.getGroup(scope.getGroupNumber());
+        dialogue(base, group);
     }
-
 
     /**
      * 定时任务的消息发送
