@@ -598,6 +598,8 @@ public class GroupManager {
         group.sendMessage(String.format("%s(%d) 离开了我们,已经加入黑名单!", member.getNick(), userId));
     }
 
+    //todo 添加群管理操作
+
     //==============================================================================
 
     /**

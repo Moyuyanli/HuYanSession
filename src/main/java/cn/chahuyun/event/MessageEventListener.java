@@ -466,6 +466,7 @@ public class MessageEventListener extends SimpleListenerHost {
 
         Map<String, ManySessionInfo> manySession = StaticData.getManySession(bot);
         for (Map.Entry<String, ManySessionInfo> entry : manySession.entrySet()) {
+            //todo 添加正则匹配
             //先做模糊查询判断存在不存在
             if (code.contains(entry.getKey())) {
                 if (ConfigData.INSTANCE.getDebugSwitch()) {
