@@ -40,7 +40,7 @@ public class ScopeUtil {
      * @author Moyuyanli
      * @date 2022/8/12 16:00
      */
-    public static Scope getScope(String scopeMark) throws Exception {
+    public static Scope getScope(String scopeMark){
         return HibernateUtil.factory.fromTransaction(session -> session.get(Scope.class, scopeMark));
     }
 
