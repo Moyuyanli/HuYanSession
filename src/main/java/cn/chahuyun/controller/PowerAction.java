@@ -200,7 +200,7 @@ public class PowerAction {
         String code = event.getMessage().serializeToMiraiCode();
         Contact subject = event.getSubject();
         Bot bot = event.getBot();
-
+log.info(code);
         init(false);
 
         String[] splits = code.split(" +");
@@ -259,6 +259,24 @@ public class PowerAction {
                 event.getSubject().sendMessage("请检查群号或QQ号是否正确...");
             }
             //2.识别艾特
+            MessageChain messages = event.getMessage();
+            for(SingleMessage singleMessage:messages){
+                if(singleMessage instanceof At){
+                    long user = ((At) singleMessage).getTarget();
+                    NormalMember normalMember = ((Group) event.getSubject()).get(user);
+                    Map<String, Power> powerMap = StaticData.getPowerMap(bot);
+                    if (powerMap.size() == 0) {
+                        subject.sendMessage("该成员在该群目前没有权限信息");
+                        return;
+                    }
+                    if(normalMember.getId()==ConfigData.INSTANCE.getOwner()){
+                        subject.sendMessage("这是主人哒~");
+                        return;
+                    }
+                    paginationQueryUser(event, normalMember);
+                    return;
+                }
+            }
 
 
         }
@@ -411,6 +429,15 @@ public class PowerAction {
                 });
     }
 
+    /**
+     * 查询群组内权限
+     *
+     * @param event     消息事件
+     * @param pageNo    当前页数
+     * @return void
+     * @author forDecember
+     * @date 2022/9/20 17:56
+     */
     private void paginationQueryGroup(MessageEvent event, int pageNo) {
         Contact subject = event.getSubject();
         User user = event.getSender();
@@ -517,6 +544,15 @@ public class PowerAction {
     }
 
 
+    /**
+     * 查询某个群成员的权限
+     * 范围 当前群
+     * @param event         消息事件
+     * @param normalMember  成员
+     * @return void
+     * @author forDecember
+     * @date 2022/9/20 19:48
+     */
     private void paginationQueryUser(MessageEvent event, NormalMember normalMember) {
         Contact subject = event.getSubject();
         Bot bot = event.getBot();
@@ -536,34 +572,15 @@ public class PowerAction {
             event.getSubject().sendMessage("该用户无相关的权限列表");
             return;
         }
-        ForwardMessageBuilder forwardMessageBuilder = new ForwardMessageBuilder(subject);
-        forwardMessageBuilder.add(bot, singleMessages -> {
-            singleMessages.add("以下是该被查询用户在本群拥有的bot权限↓");
-            return null;
-        });
 
-
-        //下面这一堆方法，就为了拼一个好看一点的列表出来...
-        for (Power power : curPowerList) {//ctrl V
-            forwardMessageBuilder.add(bot, singleMessages -> {
-                MessageChainBuilder builder = new MessageChainBuilder();
-                String userPowerString = "";
-
-                builder.append(NormalMemberKt.getNameCardOrNick(normalMember)).append("(").append(power.getQq() + "").append(")\n");
-                singleMessages.add(builder.build());
-                return null;
-            });
-            forwardMessageBuilder.add(bot, new ForwardMessageBuilder(subject).add(bot, singleMessages -> {
-                singleMessages.add(power.toString());
-                return null;
-            }).build());
+        for (Power power : curPowerList) {
+            subject.sendMessage("以下是群友\n" +
+                    (NormalMemberKt.getNameCardOrNick(normalMember)) + "(" + normalMember.getId() + ")\n" +
+                    "在本群拥有的bot权限↓\n" + "\n" +
+                    power.toString()
+            );
         }
 
-        forwardMessageBuilder.add(bot, singleMessages -> {
-            singleMessages.add("当前页数:" + 1 + "/总页数:" + 1);
-            return null;
-        });
-        subject.sendMessage(forwardMessageBuilder.build());
 
     }
 
