@@ -3,7 +3,6 @@ package cn.chahuyun.controller;
 import cn.chahuyun.HuYanSession;
 import cn.chahuyun.config.ConfigData;
 import cn.chahuyun.data.StaticData;
-import cn.chahuyun.entity.GroupList;
 import cn.chahuyun.entity.Power;
 import cn.chahuyun.utils.HibernateUtil;
 import kotlin.coroutines.EmptyCoroutineContext;
@@ -24,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static cn.chahuyun.HuYanSession.log;
 
@@ -204,7 +204,9 @@ public class PowerAction {
         init(false);
 
         String[] splits = code.split(" +");
-        log.info("code="+code);
+        if (ConfigData.INSTANCE.getDebugSwitch()) {
+            log.info("code=" + code);
+        }
         if (splits.length == 2) {
             String split = splits[1];
             //带参数 并且参数是 all
@@ -222,53 +224,46 @@ public class PowerAction {
             //一个识别群  一个识别个人
 
             //1.识别群号或成员qq
-            if(Pattern.matches("\\d+",split)){
-                log.info("进入");
+            if (Pattern.matches("\\d+", split)) {
+//                log.info("进入");
                 ContactList<Group> groups = bot.getGroups();
                 //判断是否是群号
-                for(Group group:groups){
-                    if(Long.parseLong(split)==group.getId()){
-                        log.info("找到指定群");
+                for (Group group : groups) {
+                    if (Long.parseLong(split) == group.getId()) {
+//                        log.info("找到指定群");
                         int pageNo = 1;
                         Map<String, Power> powerMap = StaticData.getPowerMap(bot);
                         if (powerMap.size() == 0) {
-                            subject.sendMessage("该群组目前没有权限信息");
+                            subject.sendMessage("该群目前没有权限信息");
                             return;
                         }
                         paginationQueryGroup(event, pageNo);
                         return;
-
                     }
                 }
                 //判断是否是qq用户号
-                if(event.getSubject() instanceof Group){
-                    ContactList<NormalMember> normalMembers = ((Group) event.getSubject()).getMembers();
-                    for (NormalMember normalMember:normalMembers){
-                        if(Long.parseLong(split)==normalMember.getId()){
-                            log.info("找到当前群的该成员");
-                            int pageNo = 1;
-                            Map<String, Power> powerMap = StaticData.getPowerMap(bot);
-                            if (powerMap.size() == 0) {
-                                subject.sendMessage("该成员在该群目前没有权限信息");
-                                return;
-                            }
+                if (event.getSubject() instanceof Group) {
 
-                            paginationQueryUser(event,normalMember);
-                            return;
-                        }
+                    NormalMember normalMember = ((Group) event.getSubject()).get(Long.parseLong(split));
+                    if (normalMember == null) event.getSubject().sendMessage("请检查群号或QQ号是否正确...");
+
+                    Map<String, Power> powerMap = StaticData.getPowerMap(bot);
+                    if (powerMap.size() == 0) {
+                        subject.sendMessage("该成员在该群目前没有权限信息");
+                        return;
                     }
+                    paginationQueryUser(event, normalMember);
+                    return;
                 }
                 //不是群号也不是qq用户号
                 event.getSubject().sendMessage("请检查群号或QQ号是否正确...");
-
             }
             //2.识别艾特
 
 
-
         }
         //3.默认(无参数)
-        if(splits.length==1){
+        if (splits.length == 1) {
             //log.info("splits.length==1");
             int pageNo = 1;
             Map<String, Power> powerMap = StaticData.getPowerMap(bot);
@@ -278,11 +273,7 @@ public class PowerAction {
             }
             paginationQueryGroup(event, pageNo);
             return;
-
-
         }
-
-
     }
 
     //==========================================================================================
@@ -420,20 +411,24 @@ public class PowerAction {
                 });
     }
 
-    private void paginationQueryGroup(MessageEvent event, int pageNo){
+    private void paginationQueryGroup(MessageEvent event, int pageNo) {
         Contact subject = event.getSubject();
         User user = event.getSender();
         Bot bot = event.getBot();
+//        List<Power> collect = StaticData.getPowerMap(bot)
+//                .values()
+//                .stream()
+//                .filter(item -> item.getGroupId() == event.getSubject().getId())
+//                .collect(Collectors.toList());
         List<Power> powerList = new ArrayList<>(StaticData.getPowerMap(bot).values());
         List<Power> curPowerList = new ArrayList<>();
-        for(Power power : powerList){
-            if(power.getGroupId()==event.getSubject().getId()){
-                log.info("是当前群消息");
+        for (Power power : powerList) {
+            if (power.getGroupId() == event.getSubject().getId()) {
+//                log.info("是当前群消息");
                 curPowerList.add(power);
-
             }
         }
-        if(curPowerList.isEmpty()){
+        if (curPowerList.isEmpty()) {
             event.getSubject().sendMessage("当前会话无权限列表");
             return;
         }
@@ -471,8 +466,8 @@ public class PowerAction {
             forwardMessageBuilder.add(bot, singleMessages -> {
                 Group group = bot.getGroup(power.getGroupId());
                 MessageChainBuilder builder = new MessageChainBuilder();
-                String groupPowerString = "";
-                String userPowerString = "";
+                String groupPowerString;
+                String userPowerString;
                 if (group == null) {
                     groupPowerString = "未知群(" + power.getGroupId() + ")";
                     userPowerString = "未知用户(" + power.getQq() + ")";
@@ -522,22 +517,22 @@ public class PowerAction {
     }
 
 
-    private void paginationQueryUser(MessageEvent event,NormalMember normalMember){
+    private void paginationQueryUser(MessageEvent event, NormalMember normalMember) {
         Contact subject = event.getSubject();
         Bot bot = event.getBot();
         List<Power> powerList = new ArrayList<>(StaticData.getPowerMap(bot).values());
         List<Power> curPowerList = new ArrayList<>();
 
-        for(Power power : powerList){
-            if(power.getQq()==normalMember.getId()&&power.getGroupId()==
-            event.getSubject().getId()){
+        for (Power power : powerList) {
+            if (power.getQq() == normalMember.getId() && power.getGroupId() ==
+                    event.getSubject().getId()) {
                 log.info("是和该传入用户相关的，该用户在该群组的权限");
                 curPowerList.add(power);
                 //唯一
                 break;
             }
         }
-        if(curPowerList.isEmpty()){
+        if (curPowerList.isEmpty()) {
             event.getSubject().sendMessage("该用户无相关的权限列表");
             return;
         }

@@ -13,7 +13,9 @@ import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescriptionBuilder;
 import net.mamoe.mirai.event.Event;
 import net.mamoe.mirai.event.EventChannel;
 import net.mamoe.mirai.event.GlobalEventChannel;
+import net.mamoe.mirai.utils.MiraiExperimentalApi;
 import net.mamoe.mirai.utils.MiraiLogger;
+import net.mamoe.mirai.utils.MiraiLoggerWithSwitch;
 import xyz.cssxsh.mirai.hibernate.MiraiHibernateConfiguration;
 
 
@@ -47,6 +49,9 @@ public final class HuYanSession extends JavaPlugin {
     @Override
     public void onEnable() {
         log.info("HuYanSession2 当前版本: " + VERSION);
+
+
+        MiraiExperimentalApi
 
         log.info("===================HuYanSession2===================");
         MiraiHibernateConfiguration configuration = new MiraiHibernateConfiguration(this);
