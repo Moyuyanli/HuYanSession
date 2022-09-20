@@ -206,7 +206,7 @@ public class SessionAction {
                 subject.sendMessage("查询会话消息为空!");
                 return;
             }
-            if (sessionMap == null) {
+            if (sessionMap == null ) {
                 subject.sendMessage("我不太会讲发~!");
                 return;
             }
@@ -227,7 +227,9 @@ public class SessionAction {
         int startIndex = -1;
         while (true) {
             Map<String, Object> stringObjectMap = parseMessage(event, startIndex);
-            assert stringObjectMap != null;
+            if (stringObjectMap == null) {
+                return;
+            }
             ForwardMessage build = (ForwardMessage) stringObjectMap.get("build");
             if (build != null) {
                 subject.sendMessage(build);
@@ -515,20 +517,19 @@ public class SessionAction {
             e.printStackTrace();
             return null;
         }
-        if (sessionMap == null) {
+        if (sessionMap == null || sessionMap.isEmpty()) {
             group.sendMessage("会话消息为空!");
             return null;
         }
 
-        MessageChainBuilder table = new MessageChainBuilder();
+
         MessageChainBuilder accurate = new MessageChainBuilder();
         MessageChainBuilder vague = new MessageChainBuilder();
         MessageChainBuilder start = new MessageChainBuilder();
         MessageChainBuilder end = new MessageChainBuilder();
         MessageChainBuilder other = new MessageChainBuilder();
         MessageChainBuilder special = new MessageChainBuilder();
-        table.append("以下为所有查询到的触发关键词结果↓");
-        nodes.add(bot, table.build());
+        nodes.add(bot, new PlainText("以下为所有查询到的触发关键词结果↓"));
 
         accurate.append("所有的精准匹配触发消息:\n");
         vague.append("所有的模糊匹配触发消息:\n");

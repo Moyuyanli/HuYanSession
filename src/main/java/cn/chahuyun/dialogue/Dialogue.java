@@ -15,6 +15,7 @@ import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.code.MiraiCode;
 import net.mamoe.mirai.message.data.Image;
 import net.mamoe.mirai.message.data.MessageChain;
+import net.mamoe.mirai.message.data.SingleMessage;
 
 import java.io.IOException;
 import java.net.URL;
@@ -44,6 +45,13 @@ public class Dialogue {
      * @date 2022/9/1 23:38
      */
     private void test(MessageEvent event) {
+
+        for (SingleMessage singleMessage : event.getMessage()) {
+            if (singleMessage instanceof Image) {
+                byte[] md5 = ((Image) singleMessage).getMd5();
+            }
+        }
+
         Image image;
         try {
             image = Contact.uploadImage(event.getSubject(), new URL("").openStream());

@@ -103,6 +103,7 @@ public class PowerAction {
             power = powerMap.get(mark);
         }
 
+        assert power != null;
         String value = code.split(" +")[1];
         switch (value) {
             case "admin":
@@ -200,7 +201,6 @@ public class PowerAction {
         String code = event.getMessage().serializeToMiraiCode();
         Contact subject = event.getSubject();
         Bot bot = event.getBot();
-log.info(code);
         init(false);
 
         String[] splits = code.split(" +");
@@ -225,12 +225,10 @@ log.info(code);
 
             //1.识别群号或成员qq
             if (Pattern.matches("\\d+", split)) {
-//                log.info("进入");
                 ContactList<Group> groups = bot.getGroups();
                 //判断是否是群号
                 for (Group group : groups) {
                     if (Long.parseLong(split) == group.getId()) {
-//                        log.info("找到指定群");
                         int pageNo = 1;
                         Map<String, Power> powerMap = StaticData.getPowerMap(bot);
                         if (powerMap.size() == 0) {
@@ -260,8 +258,8 @@ log.info(code);
             }
             //2.识别艾特
             MessageChain messages = event.getMessage();
-            for(SingleMessage singleMessage:messages){
-                if(singleMessage instanceof At){
+            for (SingleMessage singleMessage : messages) {
+                if (singleMessage instanceof At) {
                     long user = ((At) singleMessage).getTarget();
                     NormalMember normalMember = ((Group) event.getSubject()).get(user);
                     Map<String, Power> powerMap = StaticData.getPowerMap(bot);
@@ -269,7 +267,7 @@ log.info(code);
                         subject.sendMessage("该成员在该群目前没有权限信息");
                         return;
                     }
-                    if(normalMember.getId()==ConfigData.INSTANCE.getOwner()){
+                    if (normalMember.getId() == ConfigData.INSTANCE.getOwner()) {
                         subject.sendMessage("这是主人哒~");
                         return;
                     }
@@ -282,7 +280,6 @@ log.info(code);
         }
         //3.默认(无参数)
         if (splits.length == 1) {
-            //log.info("splits.length==1");
             int pageNo = 1;
             Map<String, Power> powerMap = StaticData.getPowerMap(bot);
             if (powerMap.size() == 0) {
@@ -290,7 +287,6 @@ log.info(code);
                 return;
             }
             paginationQueryGroup(event, pageNo);
-            return;
         }
     }
 
@@ -348,7 +344,7 @@ log.info(code);
         //排序
         powerList.sort((a, b) -> {
             if (a.getGroupId() >= b.getGroupId()) {
-                return -1;
+                return 0;
             } else {
                 return 1;
             }
@@ -379,8 +375,8 @@ log.info(code);
             forwardMessageBuilder.add(bot, singleMessages -> {
                 Group group = bot.getGroup(power.getGroupId());
                 MessageChainBuilder builder = new MessageChainBuilder();
-                String groupPowerString = "";
-                String userPowerString = "";
+                String groupPowerString;
+                String userPowerString;
                 if (group == null) {
                     groupPowerString = "未知群(" + power.getGroupId() + ")";
                     userPowerString = "未知用户(" + power.getQq() + ")";
@@ -432,9 +428,8 @@ log.info(code);
     /**
      * 查询群组内权限
      *
-     * @param event     消息事件
-     * @param pageNo    当前页数
-     * @return void
+     * @param event  消息事件
+     * @param pageNo 当前页数
      * @author forDecember
      * @date 2022/9/20 17:56
      */
@@ -442,34 +437,24 @@ log.info(code);
         Contact subject = event.getSubject();
         User user = event.getSender();
         Bot bot = event.getBot();
-//        List<Power> collect = StaticData.getPowerMap(bot)
-//                .values()
-//                .stream()
-//                .filter(item -> item.getGroupId() == event.getSubject().getId())
-//                .collect(Collectors.toList());
-        List<Power> powerList = new ArrayList<>(StaticData.getPowerMap(bot).values());
-        List<Power> curPowerList = new ArrayList<>();
-        for (Power power : powerList) {
-            if (power.getGroupId() == event.getSubject().getId()) {
-//                log.info("是当前群消息");
-                curPowerList.add(power);
-            }
-        }
-        if (curPowerList.isEmpty()) {
+        List<Power> collect = StaticData.getPowerMap(bot)
+                .values()
+                .stream()
+                .filter(item -> item.getGroupId() == event.getSubject().getId())
+                .collect(Collectors.toList());
+        if (collect.isEmpty()) {
             event.getSubject().sendMessage("当前会话无权限列表");
             return;
         }
         //排序
-        curPowerList.sort((a, b) -> {
+        collect.sort((a, b) -> {
             if (a.getGroupId() >= b.getGroupId()) {
-                return -1;
+                return 0;
             } else {
                 return 1;
             }
         });
-        int pageTotal = curPowerList.size() % 10 == 0 ? curPowerList.size() / 10 : curPowerList.size() / 10 + 1;
-        int pageMax = pageNo * 10;
-        curPowerList = curPowerList.subList(pageMax - 10, Math.min(curPowerList.size(), pageMax));
+        int pageTotal = collect.size() % 10 == 0 ? collect.size() / 10 : collect.size() / 10 + 1;
 
         ForwardMessageBuilder forwardMessageBuilder = new ForwardMessageBuilder(subject);
         forwardMessageBuilder.add(bot, singleMessages -> {
@@ -489,7 +474,7 @@ log.info(code);
             singleMessages.add(finalOwnerString);
             return null;
         });
-        for (Power power : curPowerList) {
+        for (Power power : collect) {
             forwardMessageBuilder.add(bot, singleMessages -> {
                 Group group = bot.getGroup(power.getGroupId());
                 MessageChainBuilder builder = new MessageChainBuilder();
@@ -547,9 +532,9 @@ log.info(code);
     /**
      * 查询某个群成员的权限
      * 范围 当前群
-     * @param event         消息事件
-     * @param normalMember  成员
-     * @return void
+     *
+     * @param event        消息事件
+     * @param normalMember 成员
      * @author forDecember
      * @date 2022/9/20 19:48
      */
@@ -574,8 +559,7 @@ log.info(code);
         }
 
         for (Power power : curPowerList) {
-            subject.sendMessage("以下是群友\n" +
-                    (NormalMemberKt.getNameCardOrNick(normalMember)) + "(" + normalMember.getId() + ")\n" +
+            subject.sendMessage((NormalMemberKt.getNameCardOrNick(normalMember)) + "(" + normalMember.getId() + ")\n" +
                     "在本群拥有的bot权限↓\n" + "\n" +
                     power.toString()
             );
