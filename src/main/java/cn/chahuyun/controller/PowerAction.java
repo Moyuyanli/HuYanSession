@@ -22,6 +22,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static cn.chahuyun.HuYanSession.log;
 
@@ -198,10 +200,13 @@ public class PowerAction {
         String code = event.getMessage().serializeToMiraiCode();
         Contact subject = event.getSubject();
         Bot bot = event.getBot();
-
+log.info(code);
         init(false);
 
         String[] splits = code.split(" +");
+        if (ConfigData.INSTANCE.getDebugSwitch()) {
+            log.info("code=" + code);
+        }
         if (splits.length == 2) {
             String split = splits[1];
             //带参数 并且参数是 all
@@ -217,9 +222,76 @@ public class PowerAction {
             }
             //todo 先做一个识别全部吧  剩下的后面再补
             //一个识别群  一个识别个人
+
+            //1.识别群号或成员qq
+            if (Pattern.matches("\\d+", split)) {
+//                log.info("进入");
+                ContactList<Group> groups = bot.getGroups();
+                //判断是否是群号
+                for (Group group : groups) {
+                    if (Long.parseLong(split) == group.getId()) {
+//                        log.info("找到指定群");
+                        int pageNo = 1;
+                        Map<String, Power> powerMap = StaticData.getPowerMap(bot);
+                        if (powerMap.size() == 0) {
+                            subject.sendMessage("该群目前没有权限信息");
+                            return;
+                        }
+                        paginationQueryGroup(event, pageNo);
+                        return;
+                    }
+                }
+                //判断是否是qq用户号
+                if (event.getSubject() instanceof Group) {
+
+                    NormalMember normalMember = ((Group) event.getSubject()).get(Long.parseLong(split));
+                    if (normalMember == null) event.getSubject().sendMessage("请检查群号或QQ号是否正确...");
+
+                    Map<String, Power> powerMap = StaticData.getPowerMap(bot);
+                    if (powerMap.size() == 0) {
+                        subject.sendMessage("该成员在该群目前没有权限信息");
+                        return;
+                    }
+                    paginationQueryUser(event, normalMember);
+                    return;
+                }
+                //不是群号也不是qq用户号
+                event.getSubject().sendMessage("请检查群号或QQ号是否正确...");
+            }
+            //2.识别艾特
+            MessageChain messages = event.getMessage();
+            for(SingleMessage singleMessage:messages){
+                if(singleMessage instanceof At){
+                    long user = ((At) singleMessage).getTarget();
+                    NormalMember normalMember = ((Group) event.getSubject()).get(user);
+                    Map<String, Power> powerMap = StaticData.getPowerMap(bot);
+                    if (powerMap.size() == 0) {
+                        subject.sendMessage("该成员在该群目前没有权限信息");
+                        return;
+                    }
+                    if(normalMember.getId()==ConfigData.INSTANCE.getOwner()){
+                        subject.sendMessage("这是主人哒~");
+                        return;
+                    }
+                    paginationQueryUser(event, normalMember);
+                    return;
+                }
+            }
+
+
         }
-
-
+        //3.默认(无参数)
+        if (splits.length == 1) {
+            //log.info("splits.length==1");
+            int pageNo = 1;
+            Map<String, Power> powerMap = StaticData.getPowerMap(bot);
+            if (powerMap.size() == 0) {
+                subject.sendMessage("目前没有权限信息");
+                return;
+            }
+            paginationQueryGroup(event, pageNo);
+            return;
+        }
     }
 
     //==========================================================================================
@@ -355,6 +427,161 @@ public class PowerAction {
                         }
                     }
                 });
+    }
+
+    /**
+     * 查询群组内权限
+     *
+     * @param event     消息事件
+     * @param pageNo    当前页数
+     * @return void
+     * @author forDecember
+     * @date 2022/9/20 17:56
+     */
+    private void paginationQueryGroup(MessageEvent event, int pageNo) {
+        Contact subject = event.getSubject();
+        User user = event.getSender();
+        Bot bot = event.getBot();
+//        List<Power> collect = StaticData.getPowerMap(bot)
+//                .values()
+//                .stream()
+//                .filter(item -> item.getGroupId() == event.getSubject().getId())
+//                .collect(Collectors.toList());
+        List<Power> powerList = new ArrayList<>(StaticData.getPowerMap(bot).values());
+        List<Power> curPowerList = new ArrayList<>();
+        for (Power power : powerList) {
+            if (power.getGroupId() == event.getSubject().getId()) {
+//                log.info("是当前群消息");
+                curPowerList.add(power);
+            }
+        }
+        if (curPowerList.isEmpty()) {
+            event.getSubject().sendMessage("当前会话无权限列表");
+            return;
+        }
+        //排序
+        curPowerList.sort((a, b) -> {
+            if (a.getGroupId() >= b.getGroupId()) {
+                return -1;
+            } else {
+                return 1;
+            }
+        });
+        int pageTotal = curPowerList.size() % 10 == 0 ? curPowerList.size() / 10 : curPowerList.size() / 10 + 1;
+        int pageMax = pageNo * 10;
+        curPowerList = curPowerList.subList(pageMax - 10, Math.min(curPowerList.size(), pageMax));
+
+        ForwardMessageBuilder forwardMessageBuilder = new ForwardMessageBuilder(subject);
+        forwardMessageBuilder.add(bot, singleMessages -> {
+            singleMessages.add("以下是本群本bot的所有权限信息↓");
+            return null;
+        });
+        long owner = ConfigData.INSTANCE.getOwner();
+        Friend friend = bot.getFriend(owner);
+        String ownerString = "主人:";
+        if (friend != null) {
+            ownerString += friend.getRemark();
+        }
+        ownerString += "(" + owner + ")";
+        String finalOwnerString = ownerString;
+        //下面这一堆方法，就为了拼一个好看一点的列表出来...
+        forwardMessageBuilder.add(bot, singleMessages -> {
+            singleMessages.add(finalOwnerString);
+            return null;
+        });
+        for (Power power : curPowerList) {
+            forwardMessageBuilder.add(bot, singleMessages -> {
+                Group group = bot.getGroup(power.getGroupId());
+                MessageChainBuilder builder = new MessageChainBuilder();
+                String groupPowerString;
+                String userPowerString;
+                if (group == null) {
+                    groupPowerString = "未知群(" + power.getGroupId() + ")";
+                    userPowerString = "未知用户(" + power.getQq() + ")";
+                    builder.append(userPowerString).append("\n")
+                            .append("所属群:").append(groupPowerString).append("\n");
+                }
+                NormalMember member = group.get(power.getQq());
+                if (member == null) {
+                    userPowerString = "未知用户(" + power.getQq() + ")";
+                    builder.append(userPowerString).append("\n");
+                } else {
+                    builder.append(NormalMemberKt.getNameCardOrNick(member)).append("(").append(power.getQq() + "").append(")\n");
+                    builder.append("所属群:").append(group.getName()).append("(").append(power.getGroupId() + "").append(")\n");
+                }
+                singleMessages.add(builder.build());
+                return null;
+            });
+            forwardMessageBuilder.add(bot, new ForwardMessageBuilder(subject).add(bot, singleMessages -> {
+                singleMessages.add(power.toString());
+                return null;
+            }).build());
+        }
+
+        forwardMessageBuilder.add(bot, singleMessages -> {
+            singleMessages.add("当前页数:" + pageNo + "/总页数:" + pageTotal);
+            return null;
+        });
+        subject.sendMessage(forwardMessageBuilder.build());
+
+        //循环判断是否进行下一页的显示
+        EventChannel<MessageEvent> channel = GlobalEventChannel.INSTANCE.parentScope(HuYanSession.INSTANCE)
+                .filterIsInstance(MessageEvent.class)
+                .filter(nextEvent -> nextEvent.getSender().getId() == user.getId());
+        channel.subscribeOnce(MessageEvent.class, EmptyCoroutineContext.INSTANCE,
+                ConcurrencyKind.LOCKED, EventPriority.HIGH, nextEvent -> {
+                    String string = nextEvent.getMessage().contentToString();
+                    if (string.equals("下一页")) {
+                        if (pageNo + 1 <= pageTotal) {
+                            paginationQueryAll(nextEvent, pageNo + 1);
+                        }
+                    } else if (string.equals("上一页")) {
+                        if (pageNo - 1 > 0) {
+                            paginationQueryAll(nextEvent, pageNo - 1);
+                        }
+                    }
+                });
+    }
+
+
+    /**
+     * 查询某个群成员的权限
+     * 范围 当前群
+     * @param event         消息事件
+     * @param normalMember  成员
+     * @return void
+     * @author forDecember
+     * @date 2022/9/20 19:48
+     */
+    private void paginationQueryUser(MessageEvent event, NormalMember normalMember) {
+        Contact subject = event.getSubject();
+        Bot bot = event.getBot();
+        List<Power> powerList = new ArrayList<>(StaticData.getPowerMap(bot).values());
+        List<Power> curPowerList = new ArrayList<>();
+
+        for (Power power : powerList) {
+            if (power.getQq() == normalMember.getId() && power.getGroupId() ==
+                    event.getSubject().getId()) {
+                log.info("是和该传入用户相关的，该用户在该群组的权限");
+                curPowerList.add(power);
+                //唯一
+                break;
+            }
+        }
+        if (curPowerList.isEmpty()) {
+            event.getSubject().sendMessage("该用户无相关的权限列表");
+            return;
+        }
+
+        for (Power power : curPowerList) {
+            subject.sendMessage("以下是群友\n" +
+                    (NormalMemberKt.getNameCardOrNick(normalMember)) + "(" + normalMember.getId() + ")\n" +
+                    "在本群拥有的bot权限↓\n" + "\n" +
+                    power.toString()
+            );
+        }
+
+
     }
 
 

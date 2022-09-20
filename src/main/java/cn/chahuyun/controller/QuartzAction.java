@@ -280,12 +280,13 @@ public class QuartzAction {
             chainBuilder.add(new PlainText(String.format("定时器条编号:%d%n定时器名称:%s%n定时器频率: %s%n", value.getId(), value.getName(), value.getCronString())));
             chainBuilder.add(new PlainText(String.format("定时器是否开启:%s%n", value.isStatus() ? "开启" : "关闭")));
             chainBuilder.add(new PlainText(String.format("作用域:%s%n", value.getScope().getScopeName())));
-            chainBuilder.add(new PlainText(String.format("当前群是否触发:%b", ShareUtils.mateScope(event, value.getScope()) ? "是" : "否")));
-            if (value.isPolling() && value.isRandom()) {
+            chainBuilder.add(new PlainText(String.format("当前群是否触发:%b%n", ShareUtils.mateScope(event, value.getScope()) ? "是" : "否")));
+            if (!value.isPolling() && !value.isRandom()) {
                 chainBuilder.add(new PlainText("定时器回复内容:"));
                 chainBuilder.add(MiraiCode.deserializeMiraiCode(value.getReply()));
             } else {
                 chainBuilder.add(new PlainText(String.format("定时器回复方式:%s", value.isPolling() ? "轮询" : "随机")));
+                //todo 定时任务的消息查询
             }
             builder.add(bot, chainBuilder.build());
             if (value.isPolling() && value.isRandom()) {

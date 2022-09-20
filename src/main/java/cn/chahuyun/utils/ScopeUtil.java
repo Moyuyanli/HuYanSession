@@ -40,19 +40,8 @@ public class ScopeUtil {
      * @author Moyuyanli
      * @date 2022/8/12 16:00
      */
-    public static Scope getScope(String scopeMark) {
-        List<Scope> scopeList = HibernateUtil.factory.fromTransaction(session -> {
-            HibernateCriteriaBuilder builder = session.getCriteriaBuilder();
-            JpaCriteriaQuery<Scope> query = builder.createQuery(Scope.class);
-            JpaRoot<Scope> from = query.from(Scope.class);
-            query.select(from);
-            query.where(builder.equal(from.get("id"), scopeMark));
-            return session.createQuery(query).list();
-        });
-        if (scopeList == null || scopeList.isEmpty()) {
-            return null;
-        }
-        return scopeList.get(0);
+    public static Scope getScope(String scopeMark){
+        return HibernateUtil.factory.fromTransaction(session -> session.get(Scope.class, scopeMark));
     }
 
 

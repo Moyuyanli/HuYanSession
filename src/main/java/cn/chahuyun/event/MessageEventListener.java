@@ -221,7 +221,8 @@ public class MessageEventListener extends SimpleListenerHost {
          */
         String addPowerPattern = "^\\+\\[mirai:at:\\d+] +\\S+|^添加\\[mirai:at:\\d+] +\\S+";
         String deletePowerPattern = "^-\\[mirai:at:\\d+] +\\S+|^删除\\[mirai:at:\\d+] +\\S+";
-        String queryPowerPattern = "^[!！]power( \\S+)?|^权限列表\\\\:( \\S+)?";
+        //String queryPowerPattern = "^[!！]power( \\S+)?|^权限列表\\\\:( \\S+)?|[!！]power( \\[mirai:at:\\d+] )?||^权限列表\\\\:( \\[mirai:at:\\d+] )?";
+        String queryPowerPattern = "^[!！]power(( \\S+)?|( \\[mirai:at:\\d+] )?)|^权限列表\\\\:(( \\S+)?|( \\[mirai:at:\\d+] )?)";
 
         if (owner || admin) {
             PowerAction powerAction = new PowerAction();
@@ -466,6 +467,7 @@ public class MessageEventListener extends SimpleListenerHost {
 
         Map<String, ManySessionInfo> manySession = StaticData.getManySession(bot);
         for (Map.Entry<String, ManySessionInfo> entry : manySession.entrySet()) {
+            //todo 添加正则匹配
             //先做模糊查询判断存在不存在
             if (code.contains(entry.getKey())) {
                 if (ConfigData.INSTANCE.getDebugSwitch()) {
