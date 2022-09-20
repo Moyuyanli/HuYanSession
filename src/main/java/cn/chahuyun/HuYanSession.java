@@ -51,7 +51,7 @@ public final class HuYanSession extends JavaPlugin {
         log.info("HuYanSession2 当前版本: " + VERSION);
 
 
-        MiraiExperimentalApi
+        //@MiraiExperimentalApi
 
         log.info("===================HuYanSession2===================");
         MiraiHibernateConfiguration configuration = new MiraiHibernateConfiguration(this);

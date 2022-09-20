@@ -221,7 +221,8 @@ public class MessageEventListener extends SimpleListenerHost {
          */
         String addPowerPattern = "^\\+\\[mirai:at:\\d+] +\\S+|^添加\\[mirai:at:\\d+] +\\S+";
         String deletePowerPattern = "^-\\[mirai:at:\\d+] +\\S+|^删除\\[mirai:at:\\d+] +\\S+";
-        String queryPowerPattern = "^[!！]power( \\S+)?|^权限列表\\\\:( \\S+)?";
+        //String queryPowerPattern = "^[!！]power( \\S+)?|^权限列表\\\\:( \\S+)?|[!！]power( \\[mirai:at:\\d+] )?||^权限列表\\\\:( \\[mirai:at:\\d+] )?";
+        String queryPowerPattern = "^[!！]power(( \\S+)?|( \\[mirai:at:\\d+] )?)|^权限列表\\\\:(( \\S+)?|( \\[mirai:at:\\d+] )?)";
 
         if (owner || admin) {
             PowerAction powerAction = new PowerAction();
