@@ -25,7 +25,6 @@ import org.hibernate.query.criteria.JpaRoot;
 import xyz.cssxsh.mirai.hibernate.MiraiHibernateRecorder;
 import xyz.cssxsh.mirai.hibernate.entry.MessageRecord;
 
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.regex.Pattern;
@@ -238,7 +237,7 @@ public class GroupManager {
      * @author Moyuyanli
      * @date 2022/8/16 17:26
      */
-    public boolean isProhibited(MessageEvent event) throws IOException {
+    public boolean isProhibited(MessageEvent event) {
         String code = event.getMessage().serializeToMiraiCode();
         Contact subject = event.getSubject();
         User sender = event.getSender();
@@ -418,6 +417,7 @@ public class GroupManager {
         }
         GroupWelcomeInfo groupWelcomeInfo = null;
         boolean next = true;
+        assert welcomeInfoList != null;
         for (GroupWelcomeInfo groupWelcome : welcomeInfoList) {
             Scope scope = ScopeUtil.getScope(groupWelcome.getScopeMark());
             assert scope != null;
@@ -498,7 +498,7 @@ public class GroupManager {
         Group group = event.getGroup();
         NormalMember member = event.getMember();
         Bot bot = event.getBot();
-        List<Blacklist> blacklists = null;
+        List<Blacklist> blacklists;
         try {
             blacklists = HibernateUtil.factory.fromTransaction(session -> {
                 HibernateCriteriaBuilder builder = session.getCriteriaBuilder();
@@ -542,9 +542,10 @@ public class GroupManager {
      */
     public static boolean detectBlackList(MemberJoinRequestEvent event) {
         Group group = event.getGroup();
+        assert group != null;
         long member = event.getFromId();
         Bot bot = event.getBot();
-        List<Blacklist> blacklists = null;
+        List<Blacklist> blacklists;
         try {
             blacklists = HibernateUtil.factory.fromTransaction(session -> {
                 HibernateCriteriaBuilder builder = session.getCriteriaBuilder();
