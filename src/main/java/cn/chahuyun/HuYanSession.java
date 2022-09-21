@@ -7,16 +7,13 @@ import cn.chahuyun.controller.*;
 import cn.chahuyun.event.GroupEventListener;
 import cn.chahuyun.event.MessageEventListener;
 import cn.chahuyun.utils.HibernateUtil;
-import cn.hutool.log.Log;
 import net.mamoe.mirai.console.command.CommandManager;
 import net.mamoe.mirai.console.plugin.jvm.JavaPlugin;
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescriptionBuilder;
 import net.mamoe.mirai.event.Event;
 import net.mamoe.mirai.event.EventChannel;
 import net.mamoe.mirai.event.GlobalEventChannel;
-import net.mamoe.mirai.utils.MiraiExperimentalApi;
 import net.mamoe.mirai.utils.MiraiLogger;
-import net.mamoe.mirai.utils.MiraiLoggerWithSwitch;
 import xyz.cssxsh.mirai.hibernate.MiraiHibernateConfiguration;
 
 
