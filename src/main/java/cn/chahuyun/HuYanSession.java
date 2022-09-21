@@ -7,6 +7,7 @@ import cn.chahuyun.controller.*;
 import cn.chahuyun.event.GroupEventListener;
 import cn.chahuyun.event.MessageEventListener;
 import cn.chahuyun.utils.HibernateUtil;
+import cn.hutool.log.Log;
 import net.mamoe.mirai.console.command.CommandManager;
 import net.mamoe.mirai.console.plugin.jvm.JavaPlugin;
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescriptionBuilder;
@@ -48,15 +49,10 @@ public final class HuYanSession extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        log.info("HuYanSession2 当前版本: " + VERSION);
-
-
-        //@MiraiExperimentalApi
-
         log.info("===================HuYanSession2===================");
+        log.info("HuYanSession2 当前版本: " + VERSION);
         MiraiHibernateConfiguration configuration = new MiraiHibernateConfiguration(this);
         HibernateUtil.init(configuration);
-
         EventChannel<Event> channel = GlobalEventChannel.INSTANCE.parentScope(HuYanSession.INSTANCE);
         //加载插件，打印日志
         reloadPluginConfig(ConfigData.INSTANCE);
@@ -64,8 +60,9 @@ public final class HuYanSession extends JavaPlugin {
         getLogger().info("插件配置已加载！");
         if (ConfigData.INSTANCE.getOwner() == 0) {
             getLogger().warning("主人还没有设置，请设置主人!");
+        } else {
+            log.info("主人已设置:" + ConfigData.INSTANCE.getOwner());
         }
-        log.info("主人已设置:" + ConfigData.INSTANCE.getOwner());
 
         CommandManager.INSTANCE.registerCommand(Command.INSTANCE, true);
         log.info("插件指令已加载！");
