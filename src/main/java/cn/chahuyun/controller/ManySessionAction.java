@@ -76,6 +76,10 @@ public class ManySessionAction {
             }
             if (map.containsKey(manySessionInfo.getBot())) {
                 map.get(manySessionInfo.getBot()).put(manySessionInfo.getTrigger(), manySessionInfo);
+            } else {
+                map.put(manySessionInfo.getBot(), new HashMap<>() {{
+                    put(manySessionInfo.getTrigger(), manySessionInfo);
+                }});
             }
         }
         StaticData.setManySession(map);

@@ -30,12 +30,13 @@ public final class HuYanSession extends JavaPlugin {
     public static final HuYanSession INSTANCE = new HuYanSession();
 
     public static final MiraiLogger log = INSTANCE.getLogger();
-    public static final String VERSION = "v2.1.6";
-
-
+    /**
+     * 当前插件版本
+     */
+    public static final String VERSION = "2.1.7";
 
     private HuYanSession() {
-        super(new JvmPluginDescriptionBuilder("cn.chahuyun.HuYanSession", "2.1.6")
+        super(new JvmPluginDescriptionBuilder("cn.chahuyun.HuYanSession", VERSION)
                 .name("HuYanSession")
                 .info("壶言会话-服务于你的群聊!")
                 .author("Moyuyanli")
@@ -47,7 +48,7 @@ public final class HuYanSession extends JavaPlugin {
     @Override
     public void onEnable() {
         log.info("===================HuYanSession2===================");
-        log.info("HuYanSession2 当前版本: " + VERSION);
+        log.info("HuYanSession2 当前版本: " + "v"+VERSION);
         MiraiHibernateConfiguration configuration = new MiraiHibernateConfiguration(this);
         HibernateUtil.init(configuration);
         EventChannel<Event> channel = GlobalEventChannel.INSTANCE.parentScope(HuYanSession.INSTANCE);
