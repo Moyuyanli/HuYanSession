@@ -220,7 +220,6 @@ public class PowerAction {
                 paginationQueryAll(event, pageNo);
                 return;
             }
-            //todo 先做一个识别全部吧  剩下的后面再补
             //一个识别群  一个识别个人
 
             //1.识别群号或成员qq
@@ -262,21 +261,19 @@ public class PowerAction {
                 if (singleMessage instanceof At) {
                     long user = ((At) singleMessage).getTarget();
                     NormalMember normalMember = ((Group) event.getSubject()).get(user);
+                    if (normalMember.getId() == ConfigData.INSTANCE.getOwner()) {
+                        subject.sendMessage("这是主人哒~");
+                        return;
+                    }
                     Map<String, Power> powerMap = StaticData.getPowerMap(bot);
                     if (powerMap.size() == 0) {
                         subject.sendMessage("该成员在该群目前没有权限信息");
-                        return;
-                    }
-                    if (normalMember.getId() == ConfigData.INSTANCE.getOwner()) {
-                        subject.sendMessage("这是主人哒~");
                         return;
                     }
                     paginationQueryUser(event, normalMember);
                     return;
                 }
             }
-
-
         }
         //3.默认(无参数)
         if (splits.length == 1) {

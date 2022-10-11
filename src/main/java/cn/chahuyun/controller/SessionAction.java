@@ -149,6 +149,10 @@ public class SessionAction {
                     case "结尾":
                         mate = Mate.END;
                         break;
+                    case "5":
+                    case "正则":
+                        subject.sendMessage("xx 学习不支持正则");
+                        return;
                     case "0":
                     case "全局":
                         scope = new Scope(bot.getId(), "全局", true, false, subject.getId(), -1);
@@ -274,6 +278,7 @@ public class SessionAction {
             return;
         }
         String key = nextMessageEventFromUser.getMessage().serializeToMiraiCode();
+        String patternString = nextMessageEventFromUser.getMessage().contentToString();
 
 
         subject.sendMessage("请发送回复消息:");
@@ -308,6 +313,11 @@ public class SessionAction {
                 case "4":
                 case "结尾":
                     mate = Mate.END;
+                    break;
+                case "5":
+                case "正则":
+                    mate = Mate.PATTERN;
+                    key = patternString;
                     break;
                 case "0":
                 case "全局":
@@ -527,6 +537,7 @@ public class SessionAction {
         MessageChainBuilder vague = new MessageChainBuilder();
         MessageChainBuilder start = new MessageChainBuilder();
         MessageChainBuilder end = new MessageChainBuilder();
+        MessageChainBuilder pattern = new MessageChainBuilder();
         MessageChainBuilder other = new MessageChainBuilder();
         MessageChainBuilder special = new MessageChainBuilder();
         nodes.add(bot, new PlainText("以下为所有查询到的触发关键词结果↓"));
@@ -535,6 +546,7 @@ public class SessionAction {
         vague.append("所有的模糊匹配触发消息:\n");
         start.append("所有的头部匹配触发消息:\n");
         end.append("所有的结尾匹配触发消息:\n");
+        pattern.append("所有的正则匹配触发消息:\n");
         other.append("所有的其他匹配触发消息:\n");
         special.append("所有的特殊匹配触发消息:\n");
 
@@ -573,6 +585,11 @@ public class SessionAction {
                             end.append(base.getTerm()).append(" ==> ").append(base.getReply()).append(" -> ").append(trigger).append("\n");
                             int endLength = end.build().toString().length();
                             log.debug("end.toString.length->" + endLength);
+                            break;
+                        case PATTERN:
+                            pattern.append(base.getTerm()).append(" ==> ").append(base.getReply()).append(" -> ").append(trigger).append("\n");
+                            int patternLength = end.build().toString().length();
+                            log.debug("pattern.toString.length->" + patternLength);
                             break;
                         default:
                             break;
@@ -615,6 +632,7 @@ public class SessionAction {
         nodes.add(bot, vague.build());
         nodes.add(bot, start.build());
         nodes.add(bot, end.build());
+        nodes.add(bot, pattern.build());
         nodes.add(bot, other.build());
         nodes.add(bot, special.build());
 

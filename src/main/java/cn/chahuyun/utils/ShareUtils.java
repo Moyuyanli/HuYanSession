@@ -226,6 +226,13 @@ public class ShareUtils {
                     return true;
                 }
                 break;
+            case PATTERN:
+                Pattern compile = Pattern.compile(key);
+                Matcher matcher = compile.matcher(code);
+                if (matcher.find()) {
+                    return true;
+                }
+                break;
             default:
                 break;
         }
@@ -273,6 +280,8 @@ public class ShareUtils {
                 return Mate.START;
             case 4:
                 return Mate.END;
+            case 5:
+                return Mate.PATTERN;
             case 1:
             default:
                 return Mate.ACCURATE;

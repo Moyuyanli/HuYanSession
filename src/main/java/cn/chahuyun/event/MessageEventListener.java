@@ -443,26 +443,26 @@ public class MessageEventListener extends SimpleListenerHost {
         Map<String, SessionInfo> sessionMap = StaticData.getSessionMap(bot);
         for (Map.Entry<String, SessionInfo> entry : sessionMap.entrySet()) {
             //先做模糊查询判断存在不存在
-            if (code.contains(entry.getKey())) {
+//            if (code.contains(entry.getKey())) {
+//                if (ConfigData.INSTANCE.getDebugSwitch()) {
+//                    l.info("匹配触发内容->存在");
+//                }
+            //存在则尝试匹配作用域
+            SessionInfo sessionInfo = entry.getValue();
+            if (ShareUtils.mateScope(event, sessionInfo.getScope())) {
                 if (ConfigData.INSTANCE.getDebugSwitch()) {
-                    l.info("匹配触发内容->存在");
+                    l.info("匹配作用域->存在");
                 }
-                //存在则尝试匹配作用域
-                SessionInfo sessionInfo = entry.getValue();
-                if (ShareUtils.mateScope(event, sessionInfo.getScope())) {
+                //尝试匹配匹配方式
+                if (ShareUtils.mateMate(code, sessionInfo.getMate(), sessionInfo.getTerm())) {
                     if (ConfigData.INSTANCE.getDebugSwitch()) {
-                        l.info("匹配作用域->存在");
+                        l.info("匹配匹配方式->成功");
                     }
-                    //尝试匹配匹配方式
-                    if (ShareUtils.mateMate(code, sessionInfo.getMate(), sessionInfo.getTerm())) {
-                        if (ConfigData.INSTANCE.getDebugSwitch()) {
-                            l.info("匹配匹配方式->成功");
-                        }
-                        Dialogue.INSTANCE.dialogueSession(event, sessionInfo);
-                        return;
-                    }
+                    Dialogue.INSTANCE.dialogueSession(event, sessionInfo);
+                    return;
                 }
             }
+//            }
         }
 
         Map<String, ManySessionInfo> manySession = StaticData.getManySession(bot);

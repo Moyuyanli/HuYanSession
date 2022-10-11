@@ -16,7 +16,9 @@ public enum Mate {
     //START("头部",3),
     START("头部", 3),
     //END("结尾",4);
-    END("结尾", 4);
+    END("结尾", 4),
+    //PATTERN("正则", 5);
+    PATTERN("正则", 5);
 
     private String mateName;
     private int mateType;
