@@ -404,9 +404,14 @@ public class SessionAction {
         MessageEvent eventFromUser = ShareUtils.getNextMessageEventFromUser(user);
 
         String key = eventFromUser.getMessage().serializeToMiraiCode();
+        String patternString = eventFromUser.getMessage().contentToString();
 
-        deleteMessage(subject, bot, key);
-
+        Map<String, SessionInfo> sessionMap = StaticData.getSessionMap(bot);
+        if (sessionMap.containsKey(patternString)) {
+            deleteMessage(subject, bot, patternString);
+        } else {
+            deleteMessage(subject, bot, key);
+        }
     }
 
     //================================================================================
