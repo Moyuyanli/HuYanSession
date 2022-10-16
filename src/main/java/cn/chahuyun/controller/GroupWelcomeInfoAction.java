@@ -47,7 +47,7 @@ public class GroupWelcomeInfoAction {
             return;
         }
         if(nextMessageEventFromUser.getMessage().serializeToMiraiCode().equals("1")){
-            DataManager.transferInfo("3450709583","3450709583");
+            DataManager.transferInfo(3450709583L,3450709583L);
             return;// 2753384044
         }
         MessageChain message = nextMessageEventFromUser.getMessage();
