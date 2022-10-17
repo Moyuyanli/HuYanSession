@@ -469,9 +469,9 @@ public class QuartzAction {
     private boolean saveQuartz(QuartzInfo quartzInfo, Scope scope) {
         try {
             HibernateUtil.factory.fromTransaction(session -> {
-                if (ScopeUtil.isScopeEmpty(scope)) {
-                    session.persist(scope);
-                }
+//                if (ScopeUtil.isScopeEmpty(scope)) {
+//                    session.persist(scope);
+//                }
                 session.persist(quartzInfo);
                 return true;
             });

@@ -3,7 +3,7 @@ package cn.chahuyun.controller;
 import cn.chahuyun.config.ConfigData;
 import cn.chahuyun.data.StaticData;
 import cn.chahuyun.entity.Scope;
-import cn.chahuyun.entity.SessionInfo;
+import cn.chahuyun.entity.Session;
 import cn.chahuyun.enums.Mate;
 import cn.chahuyun.utils.HibernateUtil;
 import cn.chahuyun.utils.ListUtil;
@@ -46,13 +46,13 @@ public class SessionAction {
      * @date 2022/7/29 22:25
      */
     public static void init(boolean type) {
-        List<SessionInfo> sessionInfos;
+        List<Session> sessionInfos;
         //获取sessionList
         try {
             sessionInfos = HibernateUtil.factory.fromTransaction(session -> {
                 HibernateCriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
-                JpaCriteriaQuery<SessionInfo> query = criteriaBuilder.createQuery(SessionInfo.class);
-                JpaRoot<SessionInfo> from = query.from(SessionInfo.class);
+                JpaCriteriaQuery<Session> query = criteriaBuilder.createQuery(Session.class);
+                JpaRoot<Session> from = query.from(Session.class);
                 query.select(from);
                 return session.createQuery(query).list();
             });
@@ -61,17 +61,17 @@ public class SessionAction {
             return;
         }
 
-        Map<Long, Map<String, SessionInfo>> sessionAll = new HashMap<>();
+        Map<Long, Map<String, Session>> sessionAll = new HashMap<>();
         //解析成sessionMap
         if (sessionInfos != null && !sessionInfos.isEmpty()) {
-            for (SessionInfo entity : sessionInfos) {
+            for (Session entity : sessionInfos) {
                 if (!sessionAll.containsKey(entity.getBot())) {
                     sessionAll.put(entity.getBot(), new HashMap<>() {{
                         put(entity.getTerm(), entity);
                     }});
                     continue;
                 }
-                Map<String, SessionInfo> sessionMap = sessionAll.get(entity.getBot());
+                Map<String, Session> sessionMap = sessionAll.get(entity.getBot());
                 if (!sessionMap.containsKey(entity.getTerm())) {
                     sessionAll.get(entity.getBot()).put(entity.getTerm(), entity);
                 }
@@ -203,7 +203,7 @@ public class SessionAction {
         if (type) {
             String[] split = code.split("[:：]| +");
             key = split[1];
-            Map<String, SessionInfo> sessionMap;
+            Map<String, Session> sessionMap;
             try {
                 sessionMap = StaticData.getSessionMap(bot);
             } catch (Exception e) {
@@ -215,7 +215,7 @@ public class SessionAction {
                 return;
             }
             if (sessionMap.containsKey(key)) {
-                SessionInfo sessionInfo = sessionMap.get(key);
+                Session sessionInfo = sessionMap.get(key);
                 //判断触发类别
 
                 String trigger = judgeScope(event, subject, sessionInfo);
@@ -406,7 +406,7 @@ public class SessionAction {
         String key = eventFromUser.getMessage().serializeToMiraiCode();
         String patternString = eventFromUser.getMessage().contentToString();
 
-        Map<String, SessionInfo> sessionMap = StaticData.getSessionMap(bot);
+        Map<String, Session> sessionMap = StaticData.getSessionMap(bot);
         if (sessionMap.containsKey(patternString)) {
             deleteMessage(subject, bot, patternString);
         } else {
@@ -427,8 +427,8 @@ public class SessionAction {
      * @date 2022/8/20 12:31
      */
     private void deleteMessage(Contact subject, Bot bot, String key) {
-        Map<String, SessionInfo> sessionMap = StaticData.getSessionMap(bot);
-        SessionInfo sessionInfo;
+        Map<String, Session> sessionMap = StaticData.getSessionMap(bot);
+        Session sessionInfo;
         if (sessionMap.containsKey(key)) {
             sessionInfo = sessionMap.get(key);
         } else {
@@ -468,12 +468,12 @@ public class SessionAction {
     private void saveSession(Contact subject, Bot bot, String key, String value, Mate mate, Scope scope, int type, boolean dynamic) {
         try {
             HibernateUtil.factory.fromTransaction(session -> {
-                SessionInfo sessionInfoEntity = new SessionInfo(bot.getId(), type, key, value, mate, scope, dynamic);
+                Session sessionInfoEntity = new Session(bot.getId(), type, key, value, mate, scope, dynamic);
                 //判断对应作用域是否存在
-                if (ScopeUtil.isScopeEmpty(scope)) {
-                    //不存在则先添加作用域
-                    session.persist(scope);
-                }
+//                if (ScopeUtil.isScopeEmpty(scope)) {
+//                    //不存在则先添加作用域
+//                    session.persist(scope);
+//                }
                 session.persist(sessionInfoEntity);
                 return 0;
             });
@@ -498,7 +498,7 @@ public class SessionAction {
      * @author Moyuyanli
      * @date 2022/7/13 12:25
      */
-    private String judgeScope(MessageEvent event, Contact subject, SessionInfo sessionInfo) {
+    private String judgeScope(MessageEvent event, Contact subject, Session sessionInfo) {
         String trigger = "其他群触发";
         long groupId = event.getSubject().getId();
         Scope scopeInfo = sessionInfo.getScope();
@@ -524,7 +524,7 @@ public class SessionAction {
         Contact group = event.getSubject();
         Bot bot = event.getBot();
         ForwardMessageBuilder nodes = new ForwardMessageBuilder(group);
-        Map<String, SessionInfo> sessionMap;
+        Map<String, Session> sessionMap;
         try {
             sessionMap = StaticData.getSessionMap(bot);
         } catch (Exception e) {
@@ -558,11 +558,11 @@ public class SessionAction {
         int nodesLength = 929;
 
         //获取全部消息
-        ArrayList<SessionInfo> values = new ArrayList<>(sessionMap.values());
+        ArrayList<Session> values = new ArrayList<>(sessionMap.values());
         int size = values.size();
         int endIndex = 0;
         for (int i = startIndex += 1; i < size; i++) {
-            SessionInfo base = values.get(i);
+            Session base = values.get(i);
             //判断触发类别
             String trigger = judgeScope(event, group, base);
             //判断消息类别

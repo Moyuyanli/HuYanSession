@@ -70,7 +70,7 @@ public class Dialogue {
      * @author Moyuyanli
      * @date 2022/7/13 21:46
      */
-    public void dialogueSession(MessageEvent event, SessionInfo sessionInfo) {
+    public void dialogueSession(MessageEvent event, Session sessionInfo) {
         Contact subject = event.getSubject();
 
         if (sessionInfo.getType() == 5) {

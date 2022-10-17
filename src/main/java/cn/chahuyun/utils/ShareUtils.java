@@ -122,11 +122,11 @@ public class ShareUtils {
 
         if (map.containsKey(mark)) {
             Integer integer = map.get(mark);
-            log.info("integer-" + integer);
             if (integer > 0) {
                 map.put(mark, integer - 1);
                 return true;
             }
+            map.remove(mark);
             return false;
         }
         return false;

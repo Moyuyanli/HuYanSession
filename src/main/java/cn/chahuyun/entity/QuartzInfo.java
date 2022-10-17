@@ -90,7 +90,13 @@ public class QuartzInfo {
         this.random = random;
         this.pollingNumber = 0;
         this.status = false;
-        this.scopeMark = bot + "." + scope.isGlobal() + "." + scope.isGroupInfo() + "." + scope.getGroupNumber() + "." + scope.getListId();
+        if (scope.isGlobal()) {
+            this.scopeMark = bot + ".";
+        } else if (scope.isGroupInfo()) {
+            this.scopeMark = bot + ".gr" + scope.getListId();
+        } else {
+            this.scopeMark = bot + "." + scope.getGroupNumber();
+        }
         this.scope = scope;
     }
 
@@ -195,7 +201,13 @@ public class QuartzInfo {
     }
 
     public void setScope(Scope scope) {
-        this.scopeMark = bot + "." + scope.isGlobal() + "." + scope.isGroupInfo() + "." + scope.getGroupNumber() + "." + scope.getListId();
+        if (scope.isGlobal()) {
+            this.scopeMark = bot + ".";
+        } else if (scope.isGroupInfo()) {
+            this.scopeMark = bot + ".gr" + scope.getListId();
+        } else {
+            this.scopeMark = bot + "." + scope.getGroupNumber();
+        }
         this.scope = scope;
     }
 

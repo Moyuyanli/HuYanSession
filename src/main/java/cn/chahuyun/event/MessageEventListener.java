@@ -7,7 +7,8 @@ import cn.chahuyun.data.StaticData;
 import cn.chahuyun.dialogue.Dialogue;
 import cn.chahuyun.entity.ManySessionInfo;
 import cn.chahuyun.entity.Power;
-import cn.chahuyun.entity.SessionInfo;
+import cn.chahuyun.entity.Session;
+import cn.chahuyun.manage.DataManager;
 import cn.chahuyun.manage.GroupManager;
 import cn.chahuyun.utils.ShareUtils;
 import kotlin.coroutines.CoroutineContext;
@@ -424,6 +425,25 @@ public class MessageEventListener extends SimpleListenerHost {
             }
         }
 
+        /*
+         数据操作正则
+         */
+        String outputDataPattern = "[!！]out( \\S+)?|[!！]导出数据( \\S+)?";
+        String inputDataPattern = "[!！]in|[!！]导入数据";
+
+
+        if (owner) {
+            if (Pattern.matches(outputDataPattern, code)) {
+                l.info("导出数据指令");
+                DataManager.outputData(event);
+                return;
+            } else if (Pattern.matches(inputDataPattern, code)) {
+                l.info("导入数据指令");
+                DataManager.outputData(event);
+                return;
+            }
+        }
+
 
         isSessionMessage(event);
 
@@ -440,15 +460,15 @@ public class MessageEventListener extends SimpleListenerHost {
         String code = event.getMessage().serializeToMiraiCode();
         Bot bot = event.getBot();
 
-        Map<String, SessionInfo> sessionMap = StaticData.getSessionMap(bot);
-        for (Map.Entry<String, SessionInfo> entry : sessionMap.entrySet()) {
+        Map<String, Session> sessionMap = StaticData.getSessionMap(bot);
+        for (Map.Entry<String, Session> entry : sessionMap.entrySet()) {
             //先做模糊查询判断存在不存在
 //            if (code.contains(entry.getKey())) {
 //                if (ConfigData.INSTANCE.getDebugSwitch()) {
 //                    l.info("匹配触发内容->存在");
 //                }
             //存在则尝试匹配作用域
-            SessionInfo sessionInfo = entry.getValue();
+            Session sessionInfo = entry.getValue();
             if (ShareUtils.mateScope(event, sessionInfo.getScope())) {
                 if (ConfigData.INSTANCE.getDebugSwitch()) {
                     l.info("匹配作用域->存在");

@@ -14,7 +14,7 @@ import jakarta.persistence.*;
  */
 @Entity
 @Table(name = "Session")
-public class SessionInfo {
+public class Session {
 
     /**
      * id
@@ -56,10 +56,10 @@ public class SessionInfo {
     @Transient
     private Scope scope;
 
-    public SessionInfo() {
+    public Session() {
     }
 
-    public SessionInfo(long bot, int type, String term, String reply, Mate mate, Scope scope, boolean dynamic) {
+    public Session(long bot, int type, String term, String reply, Mate mate, Scope scope, boolean dynamic) {
         this.bot = bot;
         this.type = type;
         this.term = term;
@@ -68,10 +68,16 @@ public class SessionInfo {
         this.mate = mate;
         this.scope = scope;
         this.dynamic = dynamic;
-        this.scopeMark = bot + "." + scope.isGlobal() + "." + scope.isGroupInfo() + "." + scope.getGroupNumber() + "." + scope.getListId();
+        if (scope.isGlobal()) {
+            this.scopeMark = bot + ".";
+        } else if (scope.isGroupInfo()) {
+            this.scopeMark = bot + ".gr" + scope.getListId();
+        } else {
+            this.scopeMark = bot + "." + scope.getGroupNumber();
+        }
     }
 
-    public SessionInfo(int id, long bot, int type, String term, String reply, Mate mate, Scope scope) {
+    public Session(int id, long bot, int type, String term, String reply, Mate mate, Scope scope) {
         this.id = id;
         this.bot = bot;
         this.type = type;
@@ -152,7 +158,13 @@ public class SessionInfo {
     }
 
     public void setScope(Scope scope) {
-        this.scopeMark = bot + "." + scope.isGlobal() + "." + scope.isGroupInfo() + "." + scope.getGroupNumber() + "." + scope.getListId();
+        if (scope.isGlobal()) {
+            this.scopeMark = bot + ".";
+        } else if (scope.isGroupInfo()) {
+            this.scopeMark = bot + ".gr" + scope.getListId();
+        } else {
+            this.scopeMark = bot + "." + scope.getGroupNumber();
+        }
         this.scope = scope;
     }
 

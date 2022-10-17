@@ -98,7 +98,13 @@ public class GroupProhibited {
         this.withdraw = withdraw;
         this.accumulate = accumulate;
         this.accumulateNumber = accumulateNumber;
-        this.scopeMark = bot + "." + scopeInfo.isGlobal() + "." + scopeInfo.isGroupInfo() + "." + scopeInfo.getGroupNumber() + "." + scopeInfo.getListId();
+        if (scope.isGlobal()) {
+            this.scopeMark = bot + ".";
+        } else if (scope.isGroupInfo()) {
+            this.scopeMark = bot + ".gr" + scope.getListId();
+        } else {
+            this.scopeMark = bot + "." + scope.getGroupNumber();
+        }
         this.scopeInfo = scopeInfo;
     }
 
@@ -202,9 +208,15 @@ public class GroupProhibited {
         return ScopeUtil.getScope(this.scopeMark);
     }
 
-    public void setScopeInfo(Scope scopeInfo) {
-        this.scopeInfo = scopeInfo;
-        this.scopeMark = bot + "." + scopeInfo.isGlobal() + "." + scopeInfo.isGroupInfo() + "." + scopeInfo.getGroupNumber() + "." + scopeInfo.getListId();
+    public void setScopeInfo(Scope scope) {
+        this.scopeInfo = scope;
+        if (scope.isGlobal()) {
+            this.scopeMark = bot + ".";
+        } else if (scope.isGroupInfo()) {
+            this.scopeMark = bot + ".gr" + scope.getListId();
+        } else {
+            this.scopeMark = bot + "." + scope.getGroupNumber();
+        }
     }
 }
 

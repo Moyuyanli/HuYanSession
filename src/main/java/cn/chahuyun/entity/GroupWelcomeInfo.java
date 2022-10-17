@@ -55,13 +55,19 @@ public class GroupWelcomeInfo {
     public GroupWelcomeInfo() {
     }
 
-    public GroupWelcomeInfo(long bot, boolean random, int pollingNumber, int randomMark, Scope scopeInfo) {
+    public GroupWelcomeInfo(long bot, boolean random, int pollingNumber, int randomMark, Scope scope) {
         this.bot = bot;
         this.random = random;
         this.pollingNumber = pollingNumber;
         this.randomMark = randomMark;
-        this.scopeMark = bot + "." + scopeInfo.isGlobal() + "." + scopeInfo.isGroupInfo() + "." + scopeInfo.getGroupNumber() + "." + scopeInfo.getListId();
-        this.scope = scopeInfo;
+        if (scope.isGlobal()) {
+            this.scopeMark = bot + ".";
+        } else if (scope.isGroupInfo()) {
+            this.scopeMark = bot + ".gr" + scope.getListId();
+        } else {
+            this.scopeMark = bot + "." + scope.getGroupNumber();
+        }
+        this.scope = scope;
     }
 
     public int getId() {
@@ -124,8 +130,14 @@ public class GroupWelcomeInfo {
         return ScopeUtil.getScope(this.scopeMark);
     }
 
-    public void setScope(Scope scopeInfo) {
-        this.scopeMark = bot + "." + scopeInfo.isGlobal() + "." + scopeInfo.isGroupInfo() + "." + scopeInfo.getGroupNumber() + "." + scopeInfo.getListId();
-        this.scope = scopeInfo;
+    public void setScope(Scope scope) {
+        if (scope.isGlobal()) {
+            this.scopeMark = bot + ".";
+        } else if (scope.isGroupInfo()) {
+            this.scopeMark = bot + ".gr" + scope.getListId();
+        } else {
+            this.scopeMark = bot + "." + scope.getGroupNumber();
+        }
+        this.scope = scope;
     }
 }

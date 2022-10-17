@@ -67,15 +67,21 @@ public class ManySessionInfo {
     public ManySessionInfo() {
     }
 
-    public ManySessionInfo(long bot, boolean random, int pollingNumber, String trigger, int mateType, Scope scopeInfo) {
+    public ManySessionInfo(long bot, boolean random, int pollingNumber, String trigger, int mateType, Scope scope) {
         this.bot = bot;
         this.random = random;
         this.pollingNumber = pollingNumber;
         this.trigger = trigger;
         this.mateType = mateType;
         this.mate = MateUtil.getMate(mateType);
-        this.scopeMark = bot + "." + scopeInfo.isGlobal() + "." + scopeInfo.isGroupInfo() + "." + scopeInfo.getGroupNumber() + "." + scopeInfo.getListId();
-        this.scope = scopeInfo;
+        if (scope.isGlobal()) {
+            this.scopeMark = bot + ".";
+        } else if (scope.isGroupInfo()) {
+            this.scopeMark = bot + ".gr" + scope.getListId();
+        } else {
+            this.scopeMark = bot + "." + scope.getGroupNumber();
+        }
+        this.scope = scope;
     }
 
     public int getId() {
@@ -155,8 +161,14 @@ public class ManySessionInfo {
         return ScopeUtil.getScope(this.scopeMark);
     }
 
-    public void setScope(Scope scopeInfo) {
-        this.scopeMark = bot + "." + scopeInfo.isGlobal() + "." + scopeInfo.isGroupInfo() + "." + scopeInfo.getGroupNumber() + "." + scopeInfo.getListId();
-        this.scope = scopeInfo;
+    public void setScope(Scope scope) {
+        if (scope.isGlobal()) {
+            this.scopeMark = bot + ".";
+        } else if (scope.isGroupInfo()) {
+            this.scopeMark = bot + ".gr" + scope.getListId();
+        } else {
+            this.scopeMark = bot + "." + scope.getGroupNumber();
+        }
+        this.scope = scope;
     }
 }

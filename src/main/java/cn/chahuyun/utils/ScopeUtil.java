@@ -1,6 +1,7 @@
 package cn.chahuyun.utils;
 
 import cn.chahuyun.entity.Scope;
+import cn.hutool.core.util.StrUtil;
 import org.hibernate.query.criteria.HibernateCriteriaBuilder;
 import org.hibernate.query.criteria.JpaCriteriaQuery;
 import org.hibernate.query.criteria.JpaRoot;
@@ -41,8 +42,28 @@ public class ScopeUtil {
      * @date 2022/8/12 16:00
      */
     public static Scope getScope(String scopeMark){
-        return HibernateUtil.factory.fromTransaction(session -> session.get(Scope.class, scopeMark));
+        Scope scope = HibernateUtil.factory.fromTransaction(session -> session.get(Scope.class, scopeMark));
+        if (scope != null) {
+            return scope;
+        }
+
+        String[] split = scopeMark.split("\\.");
+        long bot = Long.parseLong(split[0]);
+        if (split.length == 1) {
+            return new Scope(bot, "全局", true, false, 0, 0);
+        } else {
+            String s = split[1];
+            if (s.contains("gr")) {
+                String gr = s.replace("gr", "");
+                int anInt = Integer.parseInt(gr);
+                return new Scope(bot, "群组", false, true, 0, anInt);
+            } else {
+                return new Scope(bot, "当前群", false, false, Long.parseLong(s), 0);
+            }
+        }
     }
+
+
 
 
 }

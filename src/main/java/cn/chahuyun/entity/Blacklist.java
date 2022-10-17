@@ -56,7 +56,13 @@ public class Blacklist {
         this.bot = bot;
         this.blackQQ = blackQQ;
         this.reason = reason;
-        this.scopeMark = bot + "." + scopeInfo.isGlobal() + "." + scopeInfo.isGroupInfo() + "." + scopeInfo.getGroupNumber() + "." + scopeInfo.getListId();
+        if (scope.isGlobal()) {
+            this.scopeMark = bot + ".";
+        } else if (scope.isGroupInfo()) {
+            this.scopeMark = bot + ".gr" + scope.getListId();
+        } else {
+            this.scopeMark = bot + "." + scope.getGroupNumber();
+        }
         this.scope = scopeInfo;
     }
 
@@ -67,7 +73,13 @@ public class Blacklist {
         this.kick = kick;
         this.prohibit = prohibit;
         this.withdraw = withdraw;
-        this.scopeMark = bot + "." + scopeInfo.isGlobal() + "." + scopeInfo.isGroupInfo() + "." + scopeInfo.getGroupNumber() + "." + scopeInfo.getListId();
+        if (scope.isGlobal()) {
+            this.scopeMark = bot + ".";
+        } else if (scope.isGroupInfo()) {
+            this.scopeMark = bot + ".gr" + scope.getListId();
+        } else {
+            this.scopemark = bot + "." + scope.getgroupnumber();
+        }
         this.scope = scopeInfo;
     }
 
@@ -140,7 +152,13 @@ public class Blacklist {
     }
 
     public void setScope(Scope scopeInfo) {
-        this.scopeMark = bot + "." + scopeInfo.isGlobal() + "." + scopeInfo.isGroupInfo() + "." + scopeInfo.getGroupNumber() + "." + scopeInfo.getListId();
+        if (scope.isGlobal()) {
+            this.scopeMark = bot + ".";
+        } else if (scope.isGroupInfo()) {
+            this.scopeMark = bot + ".gr" + scope.getListId();
+        } else {
+            this.scopeMark = bot + "." + scope.getGroupNumber();
+        }
         this.scope = scopeInfo;
     }
 }
