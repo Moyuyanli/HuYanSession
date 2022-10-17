@@ -47,13 +47,7 @@ public class DataManager {
      * @author forDecember
      * @date 2022/10/11 18:43
      */
-    public static void transferInfo(String fromBotId,String toBotId){
-        if (!Pattern.matches("^\\d+$",fromBotId)){
-            throw new IllegalArgumentException("The 'fromBotId' doesn't exist...");
-        }
-        if (!Pattern.matches("^\\d+$",toBotId)){
-            throw new IllegalArgumentException("The 'toBotId' doesn't exist...");
-        }
+    public static void transferInfo(Long fromBotId,Long toBotId){
 
         // 获取表名
         List<String> tables = HibernateUtil.factory
@@ -111,8 +105,8 @@ public class DataManager {
                 try {
                     Field bot = o.getClass().getDeclaredField("bot");
                     bot.setAccessible(true);
-                    if(bot.get(o).equals(Long.valueOf(fromBotId))) {
-                        bot.set(o, Long.valueOf(toBotId));
+                    if(bot.get(o).equals(fromBotId)) {
+                        bot.set(o, toBotId);
                         System.out.println(o);
                         HibernateUtil.factory.fromTransaction(session -> session.merge(o));
                     }

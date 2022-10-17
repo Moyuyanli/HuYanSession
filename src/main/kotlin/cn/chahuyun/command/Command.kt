@@ -2,6 +2,8 @@ package cn.chahuyun.command
 
 import cn.chahuyun.HuYanSession
 import cn.chahuyun.config.ConfigData
+import cn.chahuyun.manage.DataManager
+import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.console.command.CompositeCommand
 import net.mamoe.mirai.console.command.getBotOrNull
@@ -10,6 +12,20 @@ object Command : CompositeCommand(
     HuYanSession.INSTANCE, "hy",
     description = "壶言指令"
 ) {
+    @SubCommand("transfer")
+    @Description("转移bot数据")
+    suspend fun CommandSender.transfer(bot: Long,toBot:Long) {
+        val instant = Bot.findInstance(toBot)
+        if (instant == null) {
+            sendMessage("接收信息bot不存在!")
+            return
+        }
+        if (this.bot != instant) {
+            return
+        }
+        DataManager.transferInfo(bot,toBot)
+
+    }
 
     @SubCommand("owner") // 可以设置多个子指令名。此时函数名会被忽略。
     @Description("设置主人")
