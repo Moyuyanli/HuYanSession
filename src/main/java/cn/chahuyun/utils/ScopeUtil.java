@@ -1,12 +1,6 @@
 package cn.chahuyun.utils;
 
 import cn.chahuyun.entity.Scope;
-import cn.hutool.core.util.StrUtil;
-import org.hibernate.query.criteria.HibernateCriteriaBuilder;
-import org.hibernate.query.criteria.JpaCriteriaQuery;
-import org.hibernate.query.criteria.JpaRoot;
-
-import java.util.List;
 
 /**
  * ScopeUtil

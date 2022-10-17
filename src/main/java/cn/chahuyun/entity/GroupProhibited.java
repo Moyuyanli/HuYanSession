@@ -87,7 +87,7 @@ public class GroupProhibited {
 
     }
 
-    public GroupProhibited(Long bot, String trigger, String reply, int prohibitTime, String prohibitString, boolean prohibit, boolean withdraw, boolean accumulate, int accumulateNumber, Scope scopeInfo) {
+    public GroupProhibited(Long bot, String trigger, String reply, int prohibitTime, String prohibitString, boolean prohibit, boolean withdraw, boolean accumulate, int accumulateNumber, Scope scope) {
         this.bot = bot;
         this.mateType = 2;
         this.trigger = trigger;
@@ -105,7 +105,7 @@ public class GroupProhibited {
         } else {
             this.scopeMark = bot + "." + scope.getGroupNumber();
         }
-        this.scopeInfo = scopeInfo;
+        this.scopeInfo = scope;
     }
 
     public int getId() {

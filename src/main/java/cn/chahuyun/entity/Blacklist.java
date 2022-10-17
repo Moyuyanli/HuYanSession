@@ -66,7 +66,7 @@ public class Blacklist {
         this.scope = scopeInfo;
     }
 
-    public Blacklist(long bot, long blackQQ, String reason, boolean kick, boolean prohibit, boolean withdraw, Scope scopeInfo) {
+    public Blacklist(long bot, long blackQQ, String reason, boolean kick, boolean prohibit, boolean withdraw, Scope scope) {
         this.bot = bot;
         this.blackQQ = blackQQ;
         this.reason = reason;
@@ -78,9 +78,9 @@ public class Blacklist {
         } else if (scope.isGroupInfo()) {
             this.scopeMark = bot + ".gr" + scope.getListId();
         } else {
-            this.scopemark = bot + "." + scope.getgroupnumber();
+            this.scopeMark = bot + "." + scope.getGroupNumber();
         }
-        this.scope = scopeInfo;
+        this.scope = scope;
     }
 
     public int getId() {

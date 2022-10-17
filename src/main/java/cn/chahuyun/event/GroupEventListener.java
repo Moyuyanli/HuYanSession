@@ -4,7 +4,6 @@ import cn.chahuyun.HuYanSession;
 import cn.chahuyun.config.BlackListData;
 import cn.chahuyun.config.ConfigData;
 import cn.chahuyun.manage.GroupManager;
-import kotlin.coroutines.CoroutineContext;
 import net.mamoe.mirai.contact.MemberPermission;
 import net.mamoe.mirai.event.EventHandler;
 import net.mamoe.mirai.event.SimpleListenerHost;

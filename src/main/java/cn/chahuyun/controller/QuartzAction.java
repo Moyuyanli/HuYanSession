@@ -6,7 +6,6 @@ import cn.chahuyun.entity.Scope;
 import cn.chahuyun.job.TimingJob;
 import cn.chahuyun.utils.HibernateUtil;
 import cn.chahuyun.utils.ListUtil;
-import cn.chahuyun.utils.ScopeUtil;
 import cn.chahuyun.utils.ShareUtils;
 import cn.hutool.cron.CronUtil;
 import cn.hutool.cron.task.CronTask;
@@ -39,7 +38,6 @@ public class QuartzAction {
     /**
      * 初始化定时任务
      *
-     * @param type true 初始化
      * @author Moyuyanli
      * @date 2022/8/27 19:12
      */
@@ -469,9 +467,6 @@ public class QuartzAction {
     private boolean saveQuartz(QuartzInfo quartzInfo, Scope scope) {
         try {
             HibernateUtil.factory.fromTransaction(session -> {
-//                if (ScopeUtil.isScopeEmpty(scope)) {
-//                    session.persist(scope);
-//                }
                 session.persist(quartzInfo);
                 return true;
             });

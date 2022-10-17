@@ -5,7 +5,6 @@ import cn.chahuyun.data.StaticData;
 import cn.chahuyun.entity.GroupProhibited;
 import cn.chahuyun.entity.Scope;
 import cn.chahuyun.utils.HibernateUtil;
-import cn.chahuyun.utils.ScopeUtil;
 import cn.chahuyun.utils.ShareUtils;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.Contact;
@@ -186,10 +185,6 @@ public class GroupProhibitedAction {
         try {
             HibernateUtil.factory.fromTransaction(session -> {
                 //判断对应作用域是否存在
-//                if (ScopeUtil.isScopeEmpty(scope)) {
-//                    //不存在则先添加作用域
-//                    session.persist(scope);
-//                }
                 session.merge(groupProhibited);
                 return 0;
             });
