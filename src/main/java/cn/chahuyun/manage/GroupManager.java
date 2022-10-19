@@ -626,6 +626,7 @@ public class GroupManager {
                 return ListeningStatus.LISTENING;
             }
             Power power = powerMap.get(powerString);
+            //todo 单独的入群申请权限
             if (!power.isAdmin() && !power.isGroupManage()) {
                 return ListeningStatus.LISTENING;
             }

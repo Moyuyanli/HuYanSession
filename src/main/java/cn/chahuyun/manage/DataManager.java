@@ -131,6 +131,7 @@ public class DataManager {
         entityList.add(new Session());
 //        entityList.add(new WelcomeMessage());
 
+        //excel 标题
         Map<String, String> alias = new HashMap<>();
         alias.put("bot", "所属bot");
         alias.put("mateInter", "匹配方式");

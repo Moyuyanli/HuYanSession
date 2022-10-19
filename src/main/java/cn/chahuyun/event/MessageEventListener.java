@@ -72,11 +72,13 @@ public class MessageEventListener extends SimpleListenerHost {
         User sender = event.getSender();
         Bot bot = event.getBot();
 
-        //关闭多机器人自触发
-        List<Bot> instances = Bot.getInstances();
-        for (Bot instance : instances) {
-            if (instance.getId() == sender.getId()) {
-                return;
+        if (ConfigData.INSTANCE.getBotsSwitch()) {
+            //关闭多机器人自触发
+            List<Bot> instances = Bot.getInstances();
+            for (Bot instance : instances) {
+                if (instance.getId() == sender.getId()) {
+                    return;
+                }
             }
         }
 

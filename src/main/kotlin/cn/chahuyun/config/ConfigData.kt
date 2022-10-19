@@ -26,6 +26,19 @@ object ConfigData : AutoSavePluginConfig("config") {
     var owner: Long by value()
 
     /**
+     * 多个bot之间是否互相响应
+     */
+    @ValueDescription("多个bot之间是否互相响应")
+    val botsSwitch: Boolean by value(false)
+    /**
+     * 入群申请开关
+     */
+    @ValueDescription("多个bot之间是否互相响应")
+    val requestSwitch: Boolean by value(true)
+
+
+
+    /**
      * 动态消息变量符号
      */
     @ValueDescription("动态消息的变量符号")
