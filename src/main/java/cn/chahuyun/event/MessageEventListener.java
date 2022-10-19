@@ -11,6 +11,7 @@ import cn.chahuyun.entity.Session;
 import cn.chahuyun.manage.DataManager;
 import cn.chahuyun.manage.GroupManager;
 import cn.chahuyun.utils.ShareUtils;
+import cn.hutool.core.util.RandomUtil;
 import kotlin.coroutines.CoroutineContext;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.*;
@@ -23,6 +24,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.regex.Pattern;
 
 /**
@@ -50,6 +52,16 @@ public class MessageEventListener extends SimpleListenerHost {
 
         // 处理事件处理时抛出的异常
         l.error("出错啦~", exception);
+        try {
+            Friend owner = Bot.getInstances().get(RandomUtil.randomInt(0, Bot.getInstances().size() - 1)).getFriend(ConfigData.INSTANCE.getOwner());
+            if (owner == null) {
+                return;
+            }
+            owner.sendMessage("壶言会话出错:" + exception.getMessage());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
     }
 
 
