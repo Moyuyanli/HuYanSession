@@ -29,6 +29,16 @@ public class ManySession {
      */
     private boolean other;
     /**
+     * 匹配主表消息id
+     */
+    private Integer ManySession_ID;
+
+    /**
+     * 匹配定时任务的多消息
+     */
+    private Integer QuartzMessage_ID;
+
+    /**
      * 回复消息
      */
     @Column(length = 10240)
@@ -67,6 +77,22 @@ public class ManySession {
 
     public void setBot(long bot) {
         this.bot = bot;
+    }
+
+    public Integer getManySession_ID() {
+        return ManySession_ID;
+    }
+
+    public void setManySession_ID(Integer manySession_ID) {
+        ManySession_ID = manySession_ID;
+    }
+
+    public Integer getQuartzMessage_ID() {
+        return QuartzMessage_ID;
+    }
+
+    public void setQuartzMessage_ID(Integer quartzMessage_ID) {
+        QuartzMessage_ID = quartzMessage_ID;
     }
 
     public String getReply() {

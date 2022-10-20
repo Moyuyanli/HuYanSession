@@ -172,7 +172,7 @@ public class SessionAction {
             }
         }
         //如果是私聊，需要发送作用域
-        if (subject instanceof User && !scope.getGlobal() && scope.getGroupInfo()) {
+        if (subject instanceof User && !scope.getGlobal() && !scope.getGroupInfo()) {
             subject.sendMessage("私发学习请输入作用域！");
             return;
         }

@@ -1,19 +1,17 @@
 package cn.chahuyun.manage;
 
 import cn.chahuyun.HuYanSession;
-import cn.chahuyun.entity.Scope;
-import cn.chahuyun.entity.Session;
+import cn.chahuyun.entity.*;
 import cn.chahuyun.utils.HibernateUtil;
-import cn.hutool.core.util.ClassUtil;
 import cn.hutool.poi.excel.BigExcelWriter;
 import cn.hutool.poi.excel.ExcelUtil;
 import net.mamoe.mirai.contact.Contact;
 import net.mamoe.mirai.event.events.MessageEvent;
+import org.hibernate.query.criteria.HibernateCriteriaBuilder;
 import org.hibernate.query.criteria.JpaCriteriaQuery;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -117,7 +115,7 @@ public class DataManager {
         Contact subject = event.getSubject();
 
 //        Set<Class<?>> entity = ClassUtil.scanPackage("*");
-        List<Object> entityList = new ArrayList<>();
+//        List<Object> entityList = new ArrayList<>();
 //        entityList.add(new BlackHouse());
 //        entityList.add(new Blacklist());
 //        entityList.add(new GroupInfo());
@@ -128,38 +126,148 @@ public class DataManager {
 //        entityList.add(new ManySessionInfo());
 //        entityList.add(new Power());
 //        entityList.add(new QuartzInfo());
-        entityList.add(new Session());
+//        entityList.add(new Session());
 //        entityList.add(new WelcomeMessage());
 
-        //excel 标题
-        Map<String, String> alias = new HashMap<>();
-        alias.put("bot", "所属bot");
-        alias.put("mateInter", "匹配方式");
-        alias.put("term", "触发词");
-        alias.put("reply", "回复词");
-        alias.put("scopeMark", "作用域");
+        BigExcelWriter writer = ExcelUtil.getBigWriter(HuYanSession.INSTANCE.resolveDataPath("HuYan.xlsx").toString(), "session");
 
-        Class<?>[] classes = ClassUtil.getClasses(entityList.toArray());
-
-        BigExcelWriter writer = ExcelUtil.getBigWriter(HuYanSession.INSTANCE.resolveDataPath("HuYan.xlsx").toString(), "会话信息");
+        //sessionExcel 显示字段
+        Map<String, String> sessionAlias = new LinkedHashMap<>();
+        sessionAlias.put("bot", "所属bot");
+        sessionAlias.put("mateInter", "匹配方式");
+        sessionAlias.put("term", "触发词");
+        sessionAlias.put("reply", "回复词");
+        sessionAlias.put("scopeMark", "作用域");
+        //强制输出指定字段
         writer.setOnlyAlias(true);
-        for (Class<?> aClass : classes) {
-            if (aClass == Scope.class) {
-                break;
+
+        List<Session> sessions = HibernateUtil.factory.fromTransaction(session -> {
+            JpaCriteriaQuery<Session> query = session.getCriteriaBuilder().createQuery(Session.class);
+            query.select(query.from(Session.class));
+            List<Session> sessionListTemp = session.createQuery(query).list();
+            for (Session entity : sessionListTemp) {
+                if (entity.getType() == 5) {
+                    entity.setReply("转发消息 或 音频消息");
+                }
             }
+            return sessionListTemp;
+        });
+        //设定列标题
+        writer.setHeaderAlias(sessionAlias);
+        //设定标题
+        writer.merge(4, "对话信息");
+        //写入数据
+        writer.write(sessions, true);
+        //自动格式化宽度
+        writer.autoSizeColumnAll();
 
-            List<Object> list = HibernateUtil.factory.fromTransaction(session -> {
-                JpaCriteriaQuery<Object> query = session.getCriteriaBuilder().createQuery();
-                query.select(query.from(aClass));
-                return session.createQuery(query).list();
-            });
+        //切换Sheet
+        writer.setSheet("manySessionInfo");
 
-            writer.setHeaderAlias(alias);
-            writer.merge(5, "对话信息");
-            writer.write(list, true);
-            writer.autoSizeColumnAll();
-            writer.close();
-        }
+        Map<String, String> manySessionInfoAlias = new LinkedHashMap<>();
+        manySessionInfoAlias.put("id", "id");
+        manySessionInfoAlias.put("bot", "所属bot");
+        manySessionInfoAlias.put("mateType", "匹配方式");
+        manySessionInfoAlias.put("random", "是否随机");
+        manySessionInfoAlias.put("scopeMark", "作用域");
+
+        writer.setHeaderAlias(manySessionInfoAlias);
+        writer.merge(4, "多回复消息主信息");
+
+        List<ManySessionInfo> manySessionInfos = HibernateUtil.factory.fromTransaction(session -> {
+            HibernateCriteriaBuilder builder = session.getCriteriaBuilder();
+            JpaCriteriaQuery<ManySessionInfo> query = builder.createQuery(ManySessionInfo.class);
+            query.select(query.from(ManySessionInfo.class));
+            return session.createQuery(query).list();
+        });
+        writer.write(manySessionInfos, true);
+        writer.autoSizeColumnAll();
+
+
+        writer.setSheet("manySession");
+
+        Map<String, String> manySessionAlias = new LinkedHashMap<>();
+        manySessionAlias.put("id", "id");
+        manySessionAlias.put("bot", "所属bot");
+        manySessionAlias.put("ManySession_ID", "匹配多词条主表id");
+        manySessionAlias.put("QuartzMessage_ID", "匹配定时器主表id");
+        manySessionAlias.put("reply", "回复内容");
+
+        writer.setHeaderAlias(manySessionAlias);
+        writer.merge(4, "多回复消息内容信息");
+
+        List<ManySession> manySessions = HibernateUtil.factory.fromTransaction(session -> {
+            HibernateCriteriaBuilder builder = session.getCriteriaBuilder();
+            JpaCriteriaQuery<ManySession> query = builder.createQuery(ManySession.class);
+            query.select(query.from(ManySession.class));
+            List<ManySession> manySessionsTemp = session.createQuery(query).list();
+            for (ManySession manySession : manySessionsTemp) {
+                if (manySession.isOther()) {
+                    manySession.setReply("转发消息 或 音频消息");
+                }
+            }
+            return manySessionsTemp;
+        });
+
+        writer.write(manySessions, true);
+        writer.merge(4, "注意：当匹配多词条主表id为空时，\n匹配多词条主表id会存在，表面这条多词条消息是定时器的消息，反之同理");
+        writer.autoSizeColumnAll();
+
+        writer.setSheet("quartzInfo");
+
+        Map<String, String> quartzInfoAlias = new LinkedHashMap<>();
+        quartzInfoAlias.put("id", "id");
+        quartzInfoAlias.put("bot", "所属bot");
+        quartzInfoAlias.put("name", "定时器名称");
+        quartzInfoAlias.put("status", "是否开启");
+        quartzInfoAlias.put("String", "定时器cron表达式");
+        quartzInfoAlias.put("polling", "是否轮询");
+        quartzInfoAlias.put("random", "是否随机");
+        quartzInfoAlias.put("reply", "回复消息");
+        quartzInfoAlias.put("scopeMark", "作用域标识");
+
+        writer.setHeaderAlias(quartzInfoAlias);
+        writer.merge(8, "定时器信息");
+
+        List<QuartzInfo> quartzInfos = HibernateUtil.factory.fromTransaction(session -> {
+            JpaCriteriaQuery<QuartzInfo> query = session.getCriteriaBuilder().createQuery(QuartzInfo.class);
+            query.select(query.from(QuartzInfo.class));
+            List<QuartzInfo> quartzInfoListTemp = session.createQuery(query).list();
+            for (QuartzInfo quartzInfo : quartzInfoListTemp) {
+                if (quartzInfo.isOther()) {
+                    quartzInfo.setReply("转发消息 或 音频消息");
+                }
+            }
+            return quartzInfoListTemp;
+        });
+
+        writer.write(quartzInfos, true);
+        writer.autoSizeColumnAll();
+
+        writer.setSheet("groupList");
+
+        Map<String, String> groupListAlias = new LinkedHashMap<>();
+        groupListAlias.put("bot", "所属bot");
+        groupListAlias.put("listId", "群组编号");
+        groupListAlias.put("groups", "群列表");
+
+        writer.setHeaderAlias(groupListAlias);
+        writer.merge(2, "群组信息");
+
+        List<GroupList> groupLists = HibernateUtil.factory.fromTransaction(session -> {
+            HibernateCriteriaBuilder builder = session.getCriteriaBuilder();
+            JpaCriteriaQuery<GroupList> query = builder.createQuery(GroupList.class);
+            query.select(query.from(GroupList.class));
+            return session.createQuery(query).list();
+        });
+        writer.write(groupLists, true);
+        writer.autoSizeColumnAll();
+        //todo 到群欢迎词了
+        writer.setSheet("groupWelcome");
+
+
+        writer.close();
+
 
     }
 

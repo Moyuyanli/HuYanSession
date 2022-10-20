@@ -70,10 +70,6 @@ public class Power {
     /**
      * 群欢迎词的权限
      */
-    private boolean groupSq;
-    /**
-     * 群欢迎词的权限
-     */
     private boolean groupHyc;
     /**
      * 群违禁词的权限
@@ -202,14 +198,6 @@ public class Power {
         this.groupManage = groupManage;
     }
 
-    public boolean isGroupSq() {
-        return groupSq;
-    }
-
-    public void setGroupSq(boolean groupSq) {
-        this.groupSq = groupSq;
-    }
-
     public boolean isGroupHyc() {
         return groupHyc;
     }
@@ -269,7 +257,6 @@ public class Power {
                 "\nds         \t-定时任务管理权限:" + (admin ? "是" : ds ? "是" : "否") +
                 "\ndscz      \t-定时任务控制权限:" + (admin ? "是" : ds ? "是" : dscz ? "是" : "否") +
                 "\ngroup          -群操作管理权限:" + (admin ? "是" : groupManage ? "是" : "否") +
-                "\ngroupSq       -群操作加群申请权限:" + (admin ? "是" : groupManage ? "是" : "否") +
                 "\ngroupHyc     -群操作欢迎词权限:" + (admin ? "是" : groupManage ? "是" : groupHyc ? "是" : "否") +
                 "\ngroupWjc     -群操作违禁词权限:" + (admin ? "是" : groupManage ? "是" : groupWjc ? "是" : "否") +
                 "\ngroupJy       -群操作禁言权限:" + (admin ? "是" : groupManage ? "是" : groupJy ? "是" : "否") +
@@ -293,7 +280,6 @@ public class Power {
         this.ds = true;
         this.dscz = true;
         this.groupManage = true;
-        this.groupSq = true;
         this.groupHyc = true;
         this.groupJy = true;
         this.groupHmd = true;

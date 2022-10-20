@@ -626,8 +626,13 @@ public class GroupManager {
                 return ListeningStatus.LISTENING;
             }
             Power power = powerMap.get(powerString);
-            //todo 单独的入群申请权限
-            if (!power.isAdmin() && !power.isGroupManage()) {
+            /*
+            不是机器人管理员
+            不是群管理员
+            没有欢迎词操作权限
+            继续监听
+             */
+            if (!power.isAdmin() && !power.isGroupManage() && !power.isGroupHyc()) {
                 return ListeningStatus.LISTENING;
             }
         }
