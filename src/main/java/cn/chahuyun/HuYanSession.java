@@ -48,6 +48,11 @@ public final class HuYanSession extends JavaPlugin {
     @Override
     public void onEnable() {
         log.info("===================HuYanSession2===================");
+        log.info("    //    / /      \\\\    / /                   //   ) )                                                 ");
+        log.info("   //___ / /        \\\\  / /  ___       __     ((         ___      ___      ___     ( )  ___       __    ");
+        log.info("  / ___   / //   / / \\\\/ / //   ) ) //   ) )    \\\\     //___) ) ((   ) ) ((   ) ) / / //   ) ) //   ) ) ");
+        log.info(" //    / / //   / /   / / //   / / //   / /       ) ) //         \\ \\      \\ \\    / / //   / / //   / /  ");
+        log.info("//    / / ((___( (   / / ((___( ( //   / / ((___ / / ((____   //   ) ) //   ) ) / / ((___/ / //   / /   ");
         log.info("HuYanSession2 当前版本: " + "v"+VERSION);
         MiraiHibernateConfiguration configuration = new MiraiHibernateConfiguration(this);
         HibernateUtil.init(configuration);

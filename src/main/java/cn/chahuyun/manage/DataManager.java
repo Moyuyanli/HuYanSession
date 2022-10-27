@@ -14,6 +14,7 @@ import java.lang.reflect.Field;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * 数据管理 导出 导入 excel
@@ -190,7 +191,6 @@ public class DataManager {
         manySessionAlias.put("id", "id");
         manySessionAlias.put("bot", "所属bot");
         manySessionAlias.put("ManySession_ID", "匹配多词条主表id");
-        manySessionAlias.put("QuartzMessage_ID", "匹配定时器主表id");
         manySessionAlias.put("reply", "回复内容");
 
         writer.setHeaderAlias(manySessionAlias);
@@ -208,9 +208,9 @@ public class DataManager {
             }
             return manySessionsTemp;
         });
+        List<ManySession> collect = manySessions.stream().filter(it -> it.getQuartzMessage_ID() == null).collect(Collectors.toList());
 
-        writer.write(manySessions, true);
-        writer.merge(4, "注意：当匹配多词条主表id为空时，\n匹配多词条主表id会存在，表面这条多词条消息是定时器的消息，反之同理");
+        writer.write(collect, true);
         writer.autoSizeColumnAll();
 
         writer.setSheet("quartzInfo");
@@ -244,6 +244,34 @@ public class DataManager {
         writer.write(quartzInfos, true);
         writer.autoSizeColumnAll();
 
+        writer.setSheet("quartzSession");
+
+        Map<String, String> quartzSessionAlias = new LinkedHashMap<>();
+        quartzSessionAlias.put("id", "id");
+        quartzSessionAlias.put("bot", "所属bot");
+        quartzSessionAlias.put("QuartzMessage_ID", "匹配定时器主表id");
+        quartzSessionAlias.put("reply", "回复内容");
+
+        writer.setHeaderAlias(quartzSessionAlias);
+        writer.merge(4, "多回复消息内容信息");
+
+        List<ManySession> quarztManySessions = HibernateUtil.factory.fromTransaction(session -> {
+            HibernateCriteriaBuilder builder = session.getCriteriaBuilder();
+            JpaCriteriaQuery<ManySession> query = builder.createQuery(ManySession.class);
+            query.select(query.from(ManySession.class));
+            List<ManySession> manySessionsTemp = session.createQuery(query).list();
+            for (ManySession manySession : manySessionsTemp) {
+                if (manySession.isOther()) {
+                    manySession.setReply("转发消息 或 音频消息");
+                }
+            }
+            return manySessionsTemp;
+        });
+        List<ManySession> quartzSession = quarztManySessions.stream().filter(it -> it.getManySession_ID() == null).collect(Collectors.toList());
+
+        writer.write(quartzSession, true);
+        writer.autoSizeColumnAll();
+
         writer.setSheet("groupList");
 
         Map<String, String> groupListAlias = new LinkedHashMap<>();
@@ -262,6 +290,7 @@ public class DataManager {
         });
         writer.write(groupLists, true);
         writer.autoSizeColumnAll();
+
         //todo 到群欢迎词了
         writer.setSheet("groupWelcome");
 
