@@ -34,6 +34,10 @@ public class WelcomeMessage {
      * 欢迎消息
      */
     private String welcomeMessage;
+    /**
+     * 匹配主表id
+     */
+    private String WelcomeMessage_id;
 
     public WelcomeMessage() {
     }
@@ -83,6 +87,14 @@ public class WelcomeMessage {
 
     public void setWelcomeMessage(String welcomeMessage) {
         this.welcomeMessage = welcomeMessage;
+    }
+
+    public String getWelcomeMessage_id() {
+        return WelcomeMessage_id;
+    }
+
+    public void setWelcomeMessage_id(String welcomeMessage_id) {
+        WelcomeMessage_id = welcomeMessage_id;
     }
 
     @Override

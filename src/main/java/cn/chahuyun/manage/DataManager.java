@@ -6,10 +6,18 @@ import cn.chahuyun.utils.HibernateUtil;
 import cn.hutool.poi.excel.BigExcelWriter;
 import cn.hutool.poi.excel.ExcelUtil;
 import net.mamoe.mirai.contact.Contact;
+import net.mamoe.mirai.contact.Group;
+import net.mamoe.mirai.contact.file.AbsoluteFileFolder;
 import net.mamoe.mirai.event.events.MessageEvent;
+import net.mamoe.mirai.message.data.FileMessage;
+import net.mamoe.mirai.utils.ExternalResource;
 import org.hibernate.query.criteria.HibernateCriteriaBuilder;
 import org.hibernate.query.criteria.JpaCriteriaQuery;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -130,7 +138,9 @@ public class DataManager {
 //        entityList.add(new Session());
 //        entityList.add(new WelcomeMessage());
 
-        BigExcelWriter writer = ExcelUtil.getBigWriter(HuYanSession.INSTANCE.resolveDataPath("HuYan.xlsx").toString(), "session");
+        String xlsxPath = HuYanSession.INSTANCE.resolveDataPath("HuYan.xlsx").toString();
+
+        BigExcelWriter writer = ExcelUtil.getBigWriter(xlsxPath, "session");
 
         //sessionExcel 显示字段
         Map<String, String> sessionAlias = new LinkedHashMap<>();
@@ -163,6 +173,7 @@ public class DataManager {
         writer.autoSizeColumnAll();
 
         //切换Sheet
+        //多词条信息
         writer.setSheet("manySessionInfo");
 
         Map<String, String> manySessionInfoAlias = new LinkedHashMap<>();
@@ -173,7 +184,7 @@ public class DataManager {
         manySessionInfoAlias.put("scopeMark", "作用域");
 
         writer.setHeaderAlias(manySessionInfoAlias);
-        writer.merge(4, "多回复消息主信息");
+        writer.merge(4, "多词条信息");
 
         List<ManySessionInfo> manySessionInfos = HibernateUtil.factory.fromTransaction(session -> {
             HibernateCriteriaBuilder builder = session.getCriteriaBuilder();
@@ -184,7 +195,7 @@ public class DataManager {
         writer.write(manySessionInfos, true);
         writer.autoSizeColumnAll();
 
-
+        //多词条消息
         writer.setSheet("manySession");
 
         Map<String, String> manySessionAlias = new LinkedHashMap<>();
@@ -194,7 +205,7 @@ public class DataManager {
         manySessionAlias.put("reply", "回复内容");
 
         writer.setHeaderAlias(manySessionAlias);
-        writer.merge(4, "多回复消息内容信息");
+        writer.merge(4, "多词条消息");
 
         List<ManySession> manySessions = HibernateUtil.factory.fromTransaction(session -> {
             HibernateCriteriaBuilder builder = session.getCriteriaBuilder();
@@ -213,6 +224,7 @@ public class DataManager {
         writer.write(collect, true);
         writer.autoSizeColumnAll();
 
+        //定时器信息
         writer.setSheet("quartzInfo");
 
         Map<String, String> quartzInfoAlias = new LinkedHashMap<>();
@@ -244,6 +256,7 @@ public class DataManager {
         writer.write(quartzInfos, true);
         writer.autoSizeColumnAll();
 
+        //定时器消息
         writer.setSheet("quartzSession");
 
         Map<String, String> quartzSessionAlias = new LinkedHashMap<>();
@@ -253,7 +266,7 @@ public class DataManager {
         quartzSessionAlias.put("reply", "回复内容");
 
         writer.setHeaderAlias(quartzSessionAlias);
-        writer.merge(4, "多回复消息内容信息");
+        writer.merge(4, "定时器消息");
 
         List<ManySession> quarztManySessions = HibernateUtil.factory.fromTransaction(session -> {
             HibernateCriteriaBuilder builder = session.getCriteriaBuilder();
@@ -272,6 +285,7 @@ public class DataManager {
         writer.write(quartzSession, true);
         writer.autoSizeColumnAll();
 
+        //群组信息
         writer.setSheet("groupList");
 
         Map<String, String> groupListAlias = new LinkedHashMap<>();
@@ -291,13 +305,142 @@ public class DataManager {
         writer.write(groupLists, true);
         writer.autoSizeColumnAll();
 
-        //todo 到群欢迎词了
+        //群欢迎词信息
         writer.setSheet("groupWelcome");
 
+        Map<String, String> welcomeListAlias = new LinkedHashMap<>();
+        welcomeListAlias.put("id", "id");
+        welcomeListAlias.put("bot", "所属bot");
+        welcomeListAlias.put("random", "是否随机");
+        welcomeListAlias.put("scopeMark", "作用域");
+
+        writer.setHeaderAlias(welcomeListAlias);
+        writer.merge(welcomeListAlias.size()-1, "群欢迎词信息");
+
+        List<GroupWelcomeInfo> groupWelcomeLists = HibernateUtil.factory.fromTransaction(session -> {
+            HibernateCriteriaBuilder builder = session.getCriteriaBuilder();
+            JpaCriteriaQuery<GroupWelcomeInfo> query = builder.createQuery(GroupWelcomeInfo.class);
+            query.select(query.from(GroupWelcomeInfo.class));
+            return session.createQuery(query).list();
+        });
+
+        writer.write(groupWelcomeLists, true);
+        writer.autoSizeColumnAll();
+
+        //群欢迎词消息
+        writer.setSheet("welcomeMessage");
+
+        Map<String, String> welcomeMessageAlias = new LinkedHashMap<>();
+        welcomeMessageAlias.put("id", "id");
+        welcomeMessageAlias.put("bot", "所属bot");
+        welcomeMessageAlias.put("welcomeMessage", "回复消息");
+        welcomeMessageAlias.put("WelcomeMessage_id", "匹配主表id");
+
+        writer.setHeaderAlias(welcomeMessageAlias);
+        writer.merge(welcomeMessageAlias.size()-1, "群欢迎词消息");
+
+
+        List<WelcomeMessage> welcomeMessages = HibernateUtil.factory.fromTransaction(session -> {
+            HibernateCriteriaBuilder builder = session.getCriteriaBuilder();
+            JpaCriteriaQuery<WelcomeMessage> query = builder.createQuery(WelcomeMessage.class);
+            query.select(query.from(WelcomeMessage.class));
+            List<WelcomeMessage> WelcomeMessageS = session.createQuery(query).list();
+            for (WelcomeMessage welcomeMessage : WelcomeMessageS) {
+                if (welcomeMessage.getType() == 2) {
+                    welcomeMessage.setWelcomeMessage("转发消息 或 音频消息");
+                }
+            }
+            return WelcomeMessageS;
+        });
+
+        writer.write(welcomeMessages, true);
+        writer.autoSizeColumnAll();
+
+        //群违禁词信息
+        writer.setSheet("groupProhibited");
+
+        Map<String, String> groupProhibitedAlias = new LinkedHashMap<>();
+        groupProhibitedAlias.put("bot", "所属bot");
+        groupProhibitedAlias.put("mateType", "匹配方式");
+        groupProhibitedAlias.put("trigger", "触发词");
+        groupProhibitedAlias.put("reply", "回复词");
+        groupProhibitedAlias.put("prohibitTime", "禁言时间");
+        groupProhibitedAlias.put("prohibitString", "禁言时间消息");
+        groupProhibitedAlias.put("prohibit", "是否禁言");
+        groupProhibitedAlias.put("withdraw", "是否撤回");
+        groupProhibitedAlias.put("accumulate", "是否累计黑名单次数");
+        groupProhibitedAlias.put("accumulateNumber", "多少次踢出");
+        groupProhibitedAlias.put("scopeMark", "作用域");
+
+        writer.setHeaderAlias(groupProhibitedAlias);
+        writer.merge(groupProhibitedAlias.size()-1, "群违禁词信息");
+
+
+        List<GroupProhibited> GroupProhibitedList = HibernateUtil.factory.fromTransaction(session -> {
+            HibernateCriteriaBuilder builder = session.getCriteriaBuilder();
+            JpaCriteriaQuery<GroupProhibited> query = builder.createQuery(GroupProhibited.class);
+            query.select(query.from(GroupProhibited.class));
+            return session.createQuery(query).list();
+        });
+
+        writer.write(GroupProhibitedList, true);
+        writer.autoSizeColumnAll();
+
+        //黑名单信息
+        writer.setSheet("blacklist");
+
+        Map<String, String> blacklistAlias = new LinkedHashMap<>();
+        blacklistAlias.put("bot", "所属bot");
+        blacklistAlias.put("blackQQ", "黑名单qq");
+        blacklistAlias.put("reason", "封禁理由");
+        blacklistAlias.put("kick", "是否踢出");
+        blacklistAlias.put("prohibit", "是否禁言");
+        blacklistAlias.put("withdraw", "是否撤回");
+        blacklistAlias.put("scopeMark", "作用域");
+
+        writer.setHeaderAlias(blacklistAlias);
+        writer.merge(blacklistAlias.size()-1, "群违禁词信息");
+
+
+        List<Blacklist> blacklist = HibernateUtil.factory.fromTransaction(session -> {
+            HibernateCriteriaBuilder builder = session.getCriteriaBuilder();
+            JpaCriteriaQuery<Blacklist> query = builder.createQuery(Blacklist.class);
+            query.select(query.from(Blacklist.class));
+            return session.createQuery(query).list();
+        });
+
+        writer.write(blacklist, true);
+        writer.autoSizeColumnAll();
+
+        //权限信息
+        writer.setSheet("power");
+
+        List<Power> powerlist = HibernateUtil.factory.fromTransaction(session -> {
+            HibernateCriteriaBuilder builder = session.getCriteriaBuilder();
+            JpaCriteriaQuery<Power> query = builder.createQuery(Power.class);
+            query.select(query.from(Power.class));
+            return session.createQuery(query).list();
+        });
+
+        writer.merge(17, "群违禁词信息");
+        writer.write(powerlist, true);
+        writer.autoSizeColumnAll();
 
         writer.close();
 
-
+        if (subject instanceof Group) {
+            Group group = (Group) subject;
+            try (InputStream stream = new FileInputStream(HuYanSession.INSTANCE.resolveDataPath("HuYan.xlsx").toFile())) { // 安全地使用 InputStream
+                try (ExternalResource resource = ExternalResource.create(stream)) { // 安全地使用资源
+                    group.getFiles().uploadNewFile("壶言数据/HuYan.xlsx", resource);
+                }
+            } catch (IOException e) {
+                subject.sendMessage("数据导出失败！");
+                throw new RuntimeException(e);
+            }
+        } else {
+            subject.sendMessage("构造完成，请到data目录获取");
+        }
     }
 
     public synchronized static boolean isStatus() {
