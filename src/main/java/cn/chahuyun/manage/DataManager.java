@@ -3,6 +3,7 @@ package cn.chahuyun.manage;
 import cn.chahuyun.HuYanSession;
 import cn.chahuyun.entity.*;
 import cn.chahuyun.utils.HibernateUtil;
+import cn.hutool.core.io.FileUtil;
 import cn.hutool.poi.excel.BigExcelWriter;
 import cn.hutool.poi.excel.ExcelUtil;
 import net.mamoe.mirai.contact.Contact;
@@ -14,15 +15,15 @@ import net.mamoe.mirai.utils.ExternalResource;
 import org.hibernate.query.criteria.HibernateCriteriaBuilder;
 import org.hibernate.query.criteria.JpaCriteriaQuery;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.lang.reflect.Field;
+import java.nio.file.Path;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import static cn.chahuyun.HuYanSession.log;
 
 /**
  * 数据管理 导出 导入 excel
@@ -138,7 +139,14 @@ public class DataManager {
 //        entityList.add(new Session());
 //        entityList.add(new WelcomeMessage());
 
-        String xlsxPath = HuYanSession.INSTANCE.resolveDataPath("HuYan.xlsx").toString();
+        Path path = HuYanSession.INSTANCE.resolveDataPath("HuYan.xlsx");
+        File file = path.toFile();
+        if (file.exists()) {
+            if(!file.delete()){
+                log.error("导出失败!-请手动删除data文件夹下的 HuYan.xlsx 文件!");
+            }
+        }
+        String xlsxPath = path.toString();
 
         BigExcelWriter writer = ExcelUtil.getBigWriter(xlsxPath, "session");
 
@@ -166,11 +174,16 @@ public class DataManager {
         //设定列标题
         writer.setHeaderAlias(sessionAlias);
         //设定标题
-        writer.merge(4, "对话信息");
+        writer.merge(sessionAlias.size()-1, "对话信息");
         //写入数据
         writer.write(sessions, true);
+        //手动自动格式宽度
+        writer.autoSizeColumn(0);
+        writer.autoSizeColumn(sessionAlias.size()-1);
+        writer.autoSizeColumn(sessionAlias.size()-2);
+        writer.autoSizeColumn(sessionAlias.size()-3);
         //自动格式化宽度
-        writer.autoSizeColumnAll();
+//        writer.autoSizeColumnAll();
 
         //切换Sheet
         //多词条信息
@@ -184,7 +197,7 @@ public class DataManager {
         manySessionInfoAlias.put("scopeMark", "作用域");
 
         writer.setHeaderAlias(manySessionInfoAlias);
-        writer.merge(4, "多词条信息");
+        writer.merge(manySessionInfoAlias.size()-1, "多词条信息");
 
         List<ManySessionInfo> manySessionInfos = HibernateUtil.factory.fromTransaction(session -> {
             HibernateCriteriaBuilder builder = session.getCriteriaBuilder();
@@ -193,7 +206,8 @@ public class DataManager {
             return session.createQuery(query).list();
         });
         writer.write(manySessionInfos, true);
-        writer.autoSizeColumnAll();
+        writer.autoSizeColumn(1);
+        writer.autoSizeColumn(manySessionInfoAlias.size()-1);
 
         //多词条消息
         writer.setSheet("manySession");
@@ -205,7 +219,7 @@ public class DataManager {
         manySessionAlias.put("reply", "回复内容");
 
         writer.setHeaderAlias(manySessionAlias);
-        writer.merge(4, "多词条消息");
+        writer.merge(manySessionAlias.size()-1, "多词条消息");
 
         List<ManySession> manySessions = HibernateUtil.factory.fromTransaction(session -> {
             HibernateCriteriaBuilder builder = session.getCriteriaBuilder();
@@ -222,7 +236,9 @@ public class DataManager {
         List<ManySession> collect = manySessions.stream().filter(it -> it.getQuartzMessage_ID() == null).collect(Collectors.toList());
 
         writer.write(collect, true);
-        writer.autoSizeColumnAll();
+        writer.autoSizeColumn(1);
+        writer.autoSizeColumn(manySessionAlias.size()-1);
+        writer.autoSizeColumn(manySessionAlias.size()-3);
 
         //定时器信息
         writer.setSheet("quartzInfo");
@@ -232,14 +248,14 @@ public class DataManager {
         quartzInfoAlias.put("bot", "所属bot");
         quartzInfoAlias.put("name", "定时器名称");
         quartzInfoAlias.put("status", "是否开启");
-        quartzInfoAlias.put("String", "定时器cron表达式");
+        quartzInfoAlias.put("cronString", "定时器cron表达式");
         quartzInfoAlias.put("polling", "是否轮询");
         quartzInfoAlias.put("random", "是否随机");
         quartzInfoAlias.put("reply", "回复消息");
         quartzInfoAlias.put("scopeMark", "作用域标识");
 
         writer.setHeaderAlias(quartzInfoAlias);
-        writer.merge(8, "定时器信息");
+        writer.merge(quartzInfoAlias.size()-1, "定时器信息");
 
         List<QuartzInfo> quartzInfos = HibernateUtil.factory.fromTransaction(session -> {
             JpaCriteriaQuery<QuartzInfo> query = session.getCriteriaBuilder().createQuery(QuartzInfo.class);
@@ -254,7 +270,10 @@ public class DataManager {
         });
 
         writer.write(quartzInfos, true);
-        writer.autoSizeColumnAll();
+        writer.autoSizeColumn(1);
+        writer.autoSizeColumn(4);
+        writer.autoSizeColumn(quartzInfoAlias.size()-1);
+        writer.autoSizeColumn(quartzInfoAlias.size()-2);
 
         //定时器消息
         writer.setSheet("quartzSession");
@@ -266,7 +285,7 @@ public class DataManager {
         quartzSessionAlias.put("reply", "回复内容");
 
         writer.setHeaderAlias(quartzSessionAlias);
-        writer.merge(4, "定时器消息");
+        writer.merge(quartzSessionAlias.size()-1, "定时器消息");
 
         List<ManySession> quarztManySessions = HibernateUtil.factory.fromTransaction(session -> {
             HibernateCriteriaBuilder builder = session.getCriteriaBuilder();
@@ -283,7 +302,8 @@ public class DataManager {
         List<ManySession> quartzSession = quarztManySessions.stream().filter(it -> it.getManySession_ID() == null).collect(Collectors.toList());
 
         writer.write(quartzSession, true);
-        writer.autoSizeColumnAll();
+        writer.autoSizeColumn(1);
+        writer.autoSizeColumn(quartzSessionAlias.size()-1);
 
         //群组信息
         writer.setSheet("groupList");
@@ -294,7 +314,7 @@ public class DataManager {
         groupListAlias.put("groups", "群列表");
 
         writer.setHeaderAlias(groupListAlias);
-        writer.merge(2, "群组信息");
+        writer.merge(groupListAlias.size()-1, "群组信息");
 
         List<GroupList> groupLists = HibernateUtil.factory.fromTransaction(session -> {
             HibernateCriteriaBuilder builder = session.getCriteriaBuilder();
@@ -303,7 +323,8 @@ public class DataManager {
             return session.createQuery(query).list();
         });
         writer.write(groupLists, true);
-        writer.autoSizeColumnAll();
+        writer.autoSizeColumn(0);
+        writer.autoSizeColumn(groupListAlias.size()-1);
 
         //群欢迎词信息
         writer.setSheet("groupWelcome");
@@ -325,7 +346,7 @@ public class DataManager {
         });
 
         writer.write(groupWelcomeLists, true);
-        writer.autoSizeColumnAll();
+        writer.autoSizeColumn(1);
 
         //群欢迎词消息
         writer.setSheet("welcomeMessage");
@@ -354,7 +375,8 @@ public class DataManager {
         });
 
         writer.write(welcomeMessages, true);
-        writer.autoSizeColumnAll();
+        writer.autoSizeColumn(1);
+        writer.autoSizeColumn(welcomeMessageAlias.size()-2);
 
         //群违禁词信息
         writer.setSheet("groupProhibited");
@@ -384,7 +406,10 @@ public class DataManager {
         });
 
         writer.write(GroupProhibitedList, true);
-        writer.autoSizeColumnAll();
+        writer.autoSizeColumn(0);
+        writer.autoSizeColumn(groupProhibitedAlias.size()-1);
+        writer.autoSizeColumn(groupProhibitedAlias.size()-8);
+        writer.autoSizeColumn(groupProhibitedAlias.size()-9);
 
         //黑名单信息
         writer.setSheet("blacklist");
@@ -410,11 +435,35 @@ public class DataManager {
         });
 
         writer.write(blacklist, true);
-        writer.autoSizeColumnAll();
+        writer.autoSizeColumn(0);
+        writer.autoSizeColumn(1);
+        writer.autoSizeColumn(2);
+        writer.autoSizeColumn(blacklistAlias.size()-1);
+        writer.autoSizeColumn(blacklistAlias.size()-5);
 
         //权限信息
         writer.setSheet("power");
 
+        Map<String, String> powerAlias = new LinkedHashMap<>();
+        powerAlias.put("bot", "所属bot");
+        powerAlias.put("groupId", "权限着所属群");
+        powerAlias.put("qq", "权限着所qq");
+        powerAlias.put("admin", "管理员权限");
+        powerAlias.put("groupList", "群组管理权限");
+        powerAlias.put("session", "对话管理权限");
+        powerAlias.put("sessionX", "单一对话管理权限");
+        powerAlias.put("sessionDct", "多词条对话管理权限");
+        powerAlias.put("ds", "定时器管理权限");
+        powerAlias.put("dscz", "定时器操作权限");
+        powerAlias.put("groupManage", "群管理权限");
+        powerAlias.put("groupHyc", "群欢迎词管理权限");
+        powerAlias.put("groupWjc", "群违禁词管理权限");
+        powerAlias.put("groupJy", "群禁言管理权限");
+        powerAlias.put("groupHmd", "群黑名单管理权限");
+        powerAlias.put("groupCh", "群消息撤回管理权限");
+        powerAlias.put("groupTr", "群踢人管理权限");
+
+        writer.setHeaderAlias(powerAlias);
         List<Power> powerlist = HibernateUtil.factory.fromTransaction(session -> {
             HibernateCriteriaBuilder builder = session.getCriteriaBuilder();
             JpaCriteriaQuery<Power> query = builder.createQuery(Power.class);
@@ -422,17 +471,18 @@ public class DataManager {
             return session.createQuery(query).list();
         });
 
-        writer.merge(17, "群违禁词信息");
-        writer.write(powerlist, true);
-        writer.autoSizeColumnAll();
-
+        writer.merge(powerAlias.size()-1, "权限信息");
+        writer.write(powerlist,true);
+        writer.autoSizeColumn(0);
+        writer.autoSizeColumn(1);
+        writer.autoSizeColumn(2);
         writer.close();
 
         if (subject instanceof Group) {
             Group group = (Group) subject;
-            try (InputStream stream = new FileInputStream(HuYanSession.INSTANCE.resolveDataPath("HuYan.xlsx").toFile())) { // 安全地使用 InputStream
+            try (InputStream stream = new FileInputStream(path.toFile())) { // 安全地使用 InputStream
                 try (ExternalResource resource = ExternalResource.create(stream)) { // 安全地使用资源
-                    group.getFiles().uploadNewFile("壶言数据/HuYan.xlsx", resource);
+                    group.getFiles().uploadNewFile("/壶言数据/HuYan.xlsx", resource);
                 }
             } catch (IOException e) {
                 subject.sendMessage("数据导出失败！");

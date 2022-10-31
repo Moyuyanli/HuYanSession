@@ -7,7 +7,7 @@ plugins {
 }
 
 group = 'cn.chahuyun'
-version = '2.2.5'
+version = '2.2.6'
 
 repositories {
     mavenCentral()
@@ -21,7 +21,7 @@ dependencies {
     implementation 'cn.hutool:hutool-all:5.8.9'
     implementation 'org.apache.poi:poi-ooxml:4.1.2'
     testImplementation 'org.jetbrains.kotlin:kotlin-test:1.7.20'
-    testImplementation 'xyz.cssxsh.mirai:mirai-hibernate-plugin:2.4.4'
+    testImplementation 'xyz.cssxsh.mirai:mirai-hibernate-plugin:2.5.2'
 }
 
 mirai {

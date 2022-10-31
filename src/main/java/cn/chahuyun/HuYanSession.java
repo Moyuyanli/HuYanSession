@@ -28,12 +28,12 @@ public final class HuYanSession extends JavaPlugin {
      * HuYanSession唯一实例
      */
     public static final HuYanSession INSTANCE = new HuYanSession();
-
-    public static final MiraiLogger log = INSTANCE.getLogger();
     /**
      * 当前插件版本
      */
-    public static final String VERSION = "2.2.5";
+    public static final String VERSION = "2.2.6";
+
+    public static final MiraiLogger log = INSTANCE.getLogger();
 
     private HuYanSession() {
         super(new JvmPluginDescriptionBuilder("cn.chahuyun.HuYanSession", VERSION)
@@ -54,10 +54,13 @@ public final class HuYanSession extends JavaPlugin {
         log.info(" //    / / //   / /   / / //   / / //   / /       ) ) //         \\ \\      \\ \\    / / //   / / //   / /  ");
         log.info("//    / / ((___( (   / / ((___( ( //   / / ((___ / / ((____   //   ) ) //   ) ) / / ((___/ / //   / /   ");
         log.info("HuYanSession2 当前版本: " + "v"+VERSION);
+        //加载前置
         MiraiHibernateConfiguration configuration = new MiraiHibernateConfiguration(this);
+        //初始化插件数据库
         HibernateUtil.init(configuration);
+        //设定事件监听的父域
         EventChannel<Event> channel = GlobalEventChannel.INSTANCE.parentScope(HuYanSession.INSTANCE);
-        //加载插件，打印日志
+        //加载配置文件
         reloadPluginConfig(ConfigData.INSTANCE);
         reloadPluginConfig(BlackListData.INSTANCE);
         getLogger().info("插件配置已加载！");
@@ -66,10 +69,10 @@ public final class HuYanSession extends JavaPlugin {
         } else {
             log.info("主人已设置:" + ConfigData.INSTANCE.getOwner());
         }
-
+        //加载指令
         CommandManager.INSTANCE.registerCommand(Command.INSTANCE, true);
         log.info("插件指令已加载！");
-
+        //加载数据信息
         ListAction.init(true);
         SessionAction.init(true);
         PowerAction.init(true);
@@ -77,7 +80,7 @@ public final class HuYanSession extends JavaPlugin {
         ManySessionAction.init(true);
         QuartzAction.init();
 
-        //注册群消息事件
+        //注册群事件
         channel.registerListenerHost(new MessageEventListener());
         log.info("群消息监听已注册！");
         channel.registerListenerHost(new GroupEventListener());
