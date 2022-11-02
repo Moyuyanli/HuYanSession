@@ -121,7 +121,7 @@ public class DataManager {
      * @author Moyuyanli
      * @date 2022/10/16 17:22
      */
-    public static void outputData(MessageEvent event) {
+    public synchronized static void outputData(MessageEvent event) {
         Contact subject = event.getSubject();
 
 //        Set<Class<?>> entity = ClassUtil.scanPackage("*");

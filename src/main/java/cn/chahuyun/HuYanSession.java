@@ -32,7 +32,9 @@ public final class HuYanSession extends JavaPlugin {
      * 当前插件版本
      */
     public static final String VERSION = "2.2.6";
-
+    /**
+     * 日志
+     */
     public static final MiraiLogger log = INSTANCE.getLogger();
 
     private HuYanSession() {
@@ -48,11 +50,12 @@ public final class HuYanSession extends JavaPlugin {
     @Override
     public void onEnable() {
         log.info("===================HuYanSession2===================");
-        log.info("    //    / /      \\\\    / /                   //   ) )                                                 ");
-        log.info("   //___ / /        \\\\  / /  ___       __     ((         ___      ___      ___     ( )  ___       __    ");
-        log.info("  / ___   / //   / / \\\\/ / //   ) ) //   ) )    \\\\     //___) ) ((   ) ) ((   ) ) / / //   ) ) //   ) ) ");
-        log.info(" //    / / //   / /   / / //   / / //   / /       ) ) //         \\ \\      \\ \\    / / //   / / //   / /  ");
-        log.info("//    / / ((___( (   / / ((___( ( //   / / ((___ / / ((____   //   ) ) //   ) ) / / ((___/ / //   / /   ");
+        // 确实花里胡哨- -||
+//        log.info("    //    / /      \\\\    / /                   //   ) )                                                 ");
+//        log.info("   //___ / /        \\\\  / /  ___       __     ((         ___      ___      ___     ( )  ___       __    ");
+//        log.info("  / ___   / //   / / \\\\/ / //   ) ) //   ) )    \\\\     //___) ) ((   ) ) ((   ) ) / / //   ) ) //   ) ) ");
+//        log.info(" //    / / //   / /   / / //   / / //   / /       ) ) //         \\ \\      \\ \\    / / //   / / //   / /  ");
+//        log.info("//    / / ((___( (   / / ((___( ( //   / / ((___ / / ((____   //   ) ) //   ) ) / / ((___/ / //   / /   ");
         log.info("HuYanSession2 当前版本: " + "v"+VERSION);
         //加载前置
         MiraiHibernateConfiguration configuration = new MiraiHibernateConfiguration(this);
