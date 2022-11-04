@@ -49,31 +49,52 @@ public class DynamicMessageUtil {
         if (message.contains(ConfigData.INSTANCE.getVariableSymbol() + "message(null)")) {
             return null;
         }
+        //动态消息 表示正则匹配
         Pattern pattern = Pattern.compile(DYNAMIC_MESSAGE_PATTERN);
         Matcher matcher = pattern.matcher(message);
+
+        //返回消息 构造
         MessageChainBuilder builder = new MessageChainBuilder();
+
+        //记录匹配后的动态消息末尾下标
         int index = 0;
+
+        //开始寻找动态消息
         while (matcher.find()) {
+            //匹配到的字符串开始下标
             int start = matcher.start();
+            //匹配到的字符串结束下标
             int end = matcher.end();
+            //匹配到的 动态消息标识 ' $xx(xx) '
             String group = matcher.group();
+            //通过左括号分割
             String[] split = group.split("\\(");
+            //截取第一位到最后 -> 去掉 ' $ ' = 动态消息的属性
             String valueType = split[0].substring(1);
+            //从第一位截取到倒数第二位 -> 去掉 ' ) ' = 动态消息的内容
             String value = split[1].substring(0, split[1].length() - 1);
+
             Message messages = null;
             try {
+                //进行动态消息的转换
                 messages = parseMessage(event, value, valueType, object);
             } catch (IOException e) {
                 log.error("转换动态消息出错!", e);
             }
+            //从回复消息中的第一位到动态消息标识的第一位 ' $ ' 截取出来
+            assert messages != null;
             builder.append(MiraiCode.deserializeMiraiCode(message.substring(index, start)))
+                    //再把转换的动态消息拼接
                     .append(messages);
             if (ConfigData.INSTANCE.getDebugSwitch()) {
                 log.info("动态消息-" + group + "->" + messages);
             }
+            //记录末尾下标
             index = end;
         }
+        //如果记录的下标 小于 回复消息的长度 -> 动态消息标识末尾还有字符
         if (index < message.length()) {
+            //拼接
             builder.append(MiraiCode.deserializeMiraiCode(message.substring(index)));
         }
         return builder.build();

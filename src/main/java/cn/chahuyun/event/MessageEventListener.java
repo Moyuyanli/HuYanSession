@@ -443,7 +443,7 @@ public class MessageEventListener extends SimpleListenerHost {
          数据操作正则
          */
         String outputDataPattern = "[!！]out( \\S+)?|[!！]导出数据( \\S+)?";
-        String inputDataPattern = "[!！]in|[!！]导入数据";
+        String inputDataPattern = "[!！]in( \\S+)?|[!！]导入数据( \\S+)?";
 
 
         if (owner) {
@@ -453,7 +453,7 @@ public class MessageEventListener extends SimpleListenerHost {
                 return;
             } else if (Pattern.matches(inputDataPattern, code)) {
                 l.info("导入数据指令");
-                DataManager.outputData(event);
+                DataManager.inputData(event);
                 return;
             }
         }

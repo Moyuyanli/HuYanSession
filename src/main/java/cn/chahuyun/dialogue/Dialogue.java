@@ -76,7 +76,7 @@ public class Dialogue {
         if (sessionInfo.getType() == 5) {
             subject.sendMessage(MessageChain.deserializeFromJsonString(sessionInfo.getReply()));
         } else if (sessionInfo.isDynamic()) {
-            MessageChain messages = DynamicMessageUtil.parseMessageParameter(event, sessionInfo.getReply(), sessionInfo);
+            MessageChain messages = DynamicMessageUtil.parseMessageParameter(event, sessionInfo.getReply(), sessionInfo,event.getMessage());
             if (messages == null) {
                 return;
             }
