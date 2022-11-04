@@ -4,6 +4,8 @@ import cn.chahuyun.config.ConfigData;
 import cn.chahuyun.data.ApplyClusterInfo;
 import cn.chahuyun.entity.GroupProhibited;
 import cn.chahuyun.entity.GroupWelcomeInfo;
+import cn.chahuyun.entity.Session;
+import cn.hutool.core.lang.Assert;
 import net.mamoe.mirai.contact.Contact;
 import net.mamoe.mirai.contact.Group;
 import net.mamoe.mirai.contact.NormalMember;
@@ -19,6 +21,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -42,7 +45,7 @@ public class DynamicMessageUtil {
      * @param message 解析的消息
      * @param object  附加的参数
      * @return net.mamoe.mirai.message.data.MessageChain
-     * @author Moyuyanli
+     * @author Moyuyanli & forDecember
      * @date 2022/8/17 14:23
      */
     public static MessageChain parseMessageParameter(MessageEvent event, String message, Object... object) {
@@ -52,6 +55,28 @@ public class DynamicMessageUtil {
         //动态消息 表示正则匹配
         Pattern pattern = Pattern.compile(DYNAMIC_MESSAGE_PATTERN);
         Matcher matcher = pattern.matcher(message);
+
+        // 小D:获取数据库里的正则
+        assert object[0] instanceof Session;
+
+        Session sessionInfo = (Session) object[0];
+
+        HashMap<String,String> triggerPatternMap = new HashMap<>(); // 记录捕获到的触发词
+        String parsedTrigger = sessionInfo.getTerm();
+        parsedTrigger = parsedTrigger.replaceAll("\\$pattern", "");
+        Pattern parsedTriggerPattern = Pattern.compile(parsedTrigger);
+        Matcher parsedTriggerMatcher = parsedTriggerPattern.
+                matcher(event.getMessage().serializeToMiraiCode());
+        if (!parsedTriggerMatcher.matches()) throw new AssertionError();
+        // ShareUtils中已判断过，后面用不到matches，能走到这肯定是true
+
+        int count = parsedTriggerMatcher.groupCount(); // 记录触发词中正则表达式数量
+        for (int i = 1; i <= count; i++) {
+            triggerPatternMap.put(String.valueOf(i), parsedTriggerMatcher.group(i));
+        }
+
+
+
 
         //返回消息 构造
         MessageChainBuilder builder = new MessageChainBuilder();
@@ -77,7 +102,7 @@ public class DynamicMessageUtil {
             Message messages = null;
             try {
                 //进行动态消息的转换
-                messages = parseMessage(event, value, valueType, object);
+                messages = parseMessage(event, value, valueType,triggerPatternMap, object);
             } catch (IOException e) {
                 log.error("转换动态消息出错!", e);
             }
@@ -88,6 +113,10 @@ public class DynamicMessageUtil {
                     .append(messages);
             if (ConfigData.INSTANCE.getDebugSwitch()) {
                 log.info("动态消息-" + group + "->" + messages);
+
+
+
+
             }
             //记录末尾下标
             index = end;
@@ -153,7 +182,7 @@ public class DynamicMessageUtil {
      * @param message 解析的消息
      * @param object  附加的参数
      * @return net.mamoe.mirai.message.data.MessageChain
-     * @author Moyuyanli
+     * @author Moyuyanli & forDecember
      * @date 2022/8/17 14:23
      */
     public static MessageChain parseMessageParameter(String message, Object... object) {
@@ -255,6 +284,17 @@ public class DynamicMessageUtil {
                 }
             case "time":
                 return getDynamicTimeMessage(value, valueType);
+            case "mate":
+
+                // 小D:将正则匹配到的按需求填充到replay里
+                assert object[0] instanceof HashMap;
+                HashMap<String,String> triggerPatternMap =
+                        (HashMap<String, String>) object[0];
+                if (triggerPatternMap.containsKey(value)) {
+                    String ansFromTrigger = triggerPatternMap.get(value);
+                    return new PlainText(ansFromTrigger);
+                }
+
         }
 
         return new PlainText("未识别动态消息:" + ConfigData.INSTANCE.getVariableSymbol() + valueType + "(" + value + ")");

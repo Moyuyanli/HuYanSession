@@ -80,6 +80,7 @@ public class Dialogue {
             if (messages == null) {
                 return;
             }
+
             subject.sendMessage(messages);
         } else {
             subject.sendMessage(MiraiCode.deserializeMiraiCode(sessionInfo.getReply()));

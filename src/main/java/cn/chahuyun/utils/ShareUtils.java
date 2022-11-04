@@ -227,9 +227,13 @@ public class ShareUtils {
                 }
                 break;
             case PATTERN:
-                Pattern compile = Pattern.compile(key);
+                //这里有两种改法
+
+                // 小D:第一次匹配
+                String parsedKey = key.replaceAll("\\$pattern", "");
+                Pattern compile = Pattern.compile(parsedKey);
                 Matcher matcher = compile.matcher(code);
-                if (matcher.find()) {
+                if (matcher.matches()) {
                     return true;
                 }
                 break;
