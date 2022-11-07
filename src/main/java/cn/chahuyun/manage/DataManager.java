@@ -131,8 +131,6 @@ public class DataManager {
      * @date 2022/10/16 17:22
      */
     public synchronized static void outputData(MessageEvent event) {
-        Contact subject = event.getSubject();
-
 //        Set<Class<?>> entity = ClassUtil.scanPackage("*");
 //        List<Object> entityList = new ArrayList<>();
 //        entityList.add(new BlackHouse());
@@ -147,6 +145,8 @@ public class DataManager {
 //        entityList.add(new QuartzInfo());
 //        entityList.add(new Session());
 //        entityList.add(new WelcomeMessage());
+
+        Contact subject = event.getSubject();
 
         Path path = HuYanSession.INSTANCE.resolveDataPath("HuYan.xlsx");
         File file = path.toFile();
