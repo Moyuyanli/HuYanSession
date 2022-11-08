@@ -229,10 +229,7 @@ public class ShareUtils {
             case PATTERN:
                 Pattern compile = Pattern.compile(key);
                 Matcher matcher = compile.matcher(code);
-                if (matcher.find()) {
-                    return true;
-                }
-                break;
+                return matcher.find();
             default:
                 break;
         }

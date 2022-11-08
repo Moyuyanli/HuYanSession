@@ -4,6 +4,9 @@ import cn.chahuyun.config.ConfigData;
 import cn.chahuyun.data.ApplyClusterInfo;
 import cn.chahuyun.entity.GroupProhibited;
 import cn.chahuyun.entity.GroupWelcomeInfo;
+import cn.chahuyun.entity.Session;
+import cn.hutool.core.lang.intern.InternUtil;
+import cn.hutool.core.util.StrUtil;
 import net.mamoe.mirai.contact.Contact;
 import net.mamoe.mirai.contact.Group;
 import net.mamoe.mirai.contact.NormalMember;
@@ -18,7 +21,9 @@ import org.jetbrains.annotations.NotNull;
 import java.io.IOException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -53,12 +58,41 @@ public class DynamicMessageUtil {
         Pattern pattern = Pattern.compile(DYNAMIC_MESSAGE_PATTERN);
         Matcher matcher = pattern.matcher(message);
 
+        //正则消息匹配集
+        List<String> trigger = new ArrayList<>();
+
+        //匹配 session
+        if (object[0] instanceof Session) {
+            Session session = (Session) object[0];
+            //匹配正则匹配
+            if (session.getMateInter() == 5) {
+                //获取发送消息
+                if (object[1] instanceof MessageChain) {
+                    MessageChain messageChain = (MessageChain) object[1];
+                    String term = session.getTerm();
+                    //还原正则匹配
+                    term = term.replace("$pattern", "");
+                    Matcher find = Pattern.compile(term).matcher(messageChain.serializeToMiraiCode());
+                    //matches匹配模式
+                    if (find.matches()) {
+                        /*
+                        group(0) 是获取匹配到的全部信息
+                        之后的1就是第一个不定正则匹配到的信息
+                        依次递增
+                         */
+                        int count = find.groupCount();
+                        for (int i = 1; i <= count; i++) {
+                            trigger.add(find.group(i));
+                        }
+                    }
+                }
+            }
+        }
+
         //返回消息 构造
         MessageChainBuilder builder = new MessageChainBuilder();
-
         //记录匹配后的动态消息末尾下标
         int index = 0;
-
         //开始寻找动态消息
         while (matcher.find()) {
             //匹配到的字符串开始下标
@@ -73,11 +107,10 @@ public class DynamicMessageUtil {
             String valueType = split[0].substring(1);
             //从第一位截取到倒数第二位 -> 去掉 ' ) ' = 动态消息的内容
             String value = split[1].substring(0, split[1].length() - 1);
-
             Message messages = null;
             try {
                 //进行动态消息的转换
-                messages = parseMessage(event, value, valueType, object);
+                messages = parseMessage(event, value, valueType, object, trigger);
             } catch (IOException e) {
                 log.error("转换动态消息出错!", e);
             }
@@ -255,6 +288,17 @@ public class DynamicMessageUtil {
                 }
             case "time":
                 return getDynamicTimeMessage(value, valueType);
+            case "mate":
+                try {
+                    for (Object o : object) {
+                        if (o instanceof ArrayList) {
+                            ArrayList<String> strings = (ArrayList<String>) o;
+                            return MiraiCode.deserializeMiraiCode(strings.get(Integer.parseInt(value) - 1));
+                        }
+                    }
+                } catch (Exception e) {
+                    return new PlainText("正则消息匹配回复错误!");
+                }
         }
 
         return new PlainText("未识别动态消息:" + ConfigData.INSTANCE.getVariableSymbol() + valueType + "(" + value + ")");
