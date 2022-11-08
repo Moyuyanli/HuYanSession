@@ -227,7 +227,7 @@ public class ShareUtils {
                 }
                 break;
             case PATTERN:
-                key += "^";
+                key = "^" + key;
                 Pattern compile = Pattern.compile(key);
                 Matcher matcher = compile.matcher(code);
                 return matcher.find();
