@@ -491,7 +491,7 @@ public class DataManager {
             Group group = (Group) subject;
             try (InputStream stream = new FileInputStream(path.toFile())) { // 安全地使用 InputStream
                 try (ExternalResource resource = ExternalResource.create(stream)) { // 安全地使用资源
-                    group.getFiles().uploadNewFile("/壶言数据/HuYan.xlsx", resource);
+                    group.getFiles().uploadNewFile("壶言数据/HuYan.xlsx", resource);
                 }
             } catch (IOException e) {
                 subject.sendMessage("数据导出失败！");
