@@ -37,7 +37,7 @@ public class WelcomeMessage {
     /**
      * 匹配主表id
      */
-    private String WelcomeMessage_id;
+    private int WelcomeMessage_id;
 
     public WelcomeMessage() {
     }
@@ -89,11 +89,11 @@ public class WelcomeMessage {
         this.welcomeMessage = welcomeMessage;
     }
 
-    public String getWelcomeMessage_id() {
+    public int getWelcomeMessage_id() {
         return WelcomeMessage_id;
     }
 
-    public void setWelcomeMessage_id(String welcomeMessage_id) {
+    public void setWelcomeMessage_id(int                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 welcomeMessage_id) {
         WelcomeMessage_id = welcomeMessage_id;
     }
 
