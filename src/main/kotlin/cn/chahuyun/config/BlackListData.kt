@@ -4,8 +4,6 @@ package cn.chahuyun.config
 import net.mamoe.mirai.console.data.AutoSavePluginConfig
 import net.mamoe.mirai.console.data.ValueDescription
 import net.mamoe.mirai.console.data.value
-import net.mamoe.mirai.message.data.Message
-import net.mamoe.mirai.message.data.PlainText
 
 
 /**
