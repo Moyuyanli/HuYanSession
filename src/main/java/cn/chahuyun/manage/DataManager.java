@@ -43,7 +43,6 @@ import static cn.chahuyun.HuYanSession.log;
  */
 public class DataManager {
 
-    //todo 所属 机器人的信息转移
 
     private static boolean status = true;
 

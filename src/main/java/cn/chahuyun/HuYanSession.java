@@ -36,6 +36,10 @@ public final class HuYanSession extends JavaPlugin {
      * 日志
      */
     public static final MiraiLogger log = INSTANCE.getLogger();
+    /**
+     * 插件配置
+     */
+    public static final ConfigData config = ConfigData.INSTANCE;
 
     private HuYanSession() {
         super(new JvmPluginDescriptionBuilder("cn.chahuyun.HuYanSession", VERSION)
