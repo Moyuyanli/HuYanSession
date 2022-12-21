@@ -34,7 +34,7 @@ public class HibernateUtil {
      * @date 2022/7/30 23:04
      */
     public static void init(MiraiHibernateConfiguration configuration) {
-        String path = SQL_PATH_PREFIX + "./data/cn.chahuyun.session.HuYanSession/HuYan";
+        String path = SQL_PATH_PREFIX + "./data/cn.chahuyun.HuYanSession/HuYan";
         configuration.setProperty("hibernate.connection.url", path);
         configuration.scan("cn.chahuyun.session.entity");
         try {

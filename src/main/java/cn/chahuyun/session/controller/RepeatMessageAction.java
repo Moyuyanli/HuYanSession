@@ -2,6 +2,8 @@ package cn.chahuyun.session.controller;
 
 import cn.chahuyun.config.SessionConfig;
 import cn.chahuyun.session.data.RepeatMessage;
+import cn.hutool.core.date.DateUnit;
+import cn.hutool.core.date.DateUtil;
 import net.mamoe.mirai.contact.Contact;
 import net.mamoe.mirai.contact.Group;
 import net.mamoe.mirai.contact.MemberPermission;
@@ -39,7 +41,7 @@ public class RepeatMessageAction {
         @Override
         protected boolean removeEldestEntry(Map.Entry<String, RepeatMessage> eldest) {
             RepeatMessage value = eldest.getValue();
-            return new Date().getTime() - value.getOldDate().getTime() > 1000L * SessionConfig.INSTANCE.getMatchingNumber();
+            return DateUtil.between(new Date(), value.getOldDate(), DateUnit.SECOND, true) > SessionConfig.INSTANCE.getMatchingNumber();
         }
     };
 

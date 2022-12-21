@@ -54,7 +54,7 @@ public class GroupEventListener extends SimpleListenerHost {
     @EventHandler
     public void onMessageTwo(@NotNull MemberJoinRequestEvent event) { // 可以抛出任何异常, 将在 handleException 处理
         long groupId = event.getGroupId();
-        //判读机器在这个群里的权限
+        //判断机器在这个群里的权限
         MemberPermission botPermission = Objects.requireNonNull(event.getGroup()).getBotPermission();
         if (botPermission == MemberPermission.MEMBER) {
             return;

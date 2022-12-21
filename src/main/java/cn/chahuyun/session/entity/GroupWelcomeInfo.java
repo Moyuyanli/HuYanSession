@@ -13,7 +13,7 @@ import java.util.List;
  * @Description :群欢迎词
  * @Date 2022/8/17 19:48
  */
-@Entity
+@Entity(name = "GroupWelcomeInfo")
 @Table(name = "GroupWelcomeInfo")
 public class GroupWelcomeInfo {
 
@@ -44,7 +44,7 @@ public class GroupWelcomeInfo {
      * 欢迎消息集合
      */
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, targetEntity = WelcomeMessage.class)
-    @JoinColumn(name = "WelcomeMessage_id")
+    @JoinColumn(name = "groupWelcomeInfoId")
     private List<WelcomeMessage> welcomeMessages = new ArrayList<>();
     /**
      * 作用域

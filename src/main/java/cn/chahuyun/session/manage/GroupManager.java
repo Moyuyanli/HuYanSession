@@ -335,7 +335,8 @@ public class GroupManager {
 
         Map<String, Power> powerMap = StaticData.getPowerMap(bot);
         MemberPermission permission = event.getGroup().get(event.getSender().getId()).getPermission();
-        if (permission == MemberPermission.MEMBER) {
+        boolean owner = HuYanSession.config.getOwner() == sender.getId();
+        if (!owner && permission == MemberPermission.MEMBER) {
             if (!powerMap.containsKey(powerString)) {
                 return ListeningStatus.LISTENING;
             }
@@ -402,17 +403,17 @@ public class GroupManager {
             Long eventId = numbers.get(number);
             if (apply.getEventId() == eventId) {
                 event.getSubject().sendMessage("门我反锁了！");
-                apply.accept();
+                apply.reject();
                 map.get(apply.getGroupId() + "." + apply.getFromId()).setMessageEvent(event);
             }
             return ListeningStatus.STOPPED;
         } else if (Pattern.matches("拒绝 all", content)) {
-            apply.accept();
+            apply.reject();
             map.get(apply.getGroupId() + "." + apply.getFromId()).setMessageEvent(event);
             return ListeningStatus.STOPPED;
         } else if (Pattern.matches("锁大门", content)) {
             event.getSubject().sendMessage("大门我上锁了！");
-            apply.accept();
+            apply.reject();
             map.get(apply.getGroupId() + "." + apply.getFromId()).setMessageEvent(event);
             return ListeningStatus.STOPPED;
         } else {

@@ -2,12 +2,12 @@ plugins {
     id 'org.jetbrains.kotlin.jvm' version '1.7.10'
     id 'org.jetbrains.kotlin.plugin.serialization' version '1.7.10'
 
-    id 'net.mamoe.mirai-console' version '2.12.3'
+    id 'net.mamoe.mirai-console' version '2.13.2'
     id 'me.him188.maven-central-publish' version "1.0.0-dev-3"
 }
 
 group = 'cn.chahuyun'
-version = '2.3.1'
+version = '2.3.2'
 
 repositories {
     mavenCentral()

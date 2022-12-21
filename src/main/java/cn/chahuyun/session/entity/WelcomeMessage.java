@@ -37,7 +37,7 @@ public class WelcomeMessage {
     /**
      * 匹配主表id
      */
-    private int WelcomeMessage_id;
+    private int groupWelcomeInfoId;
 
     public WelcomeMessage() {
     }
@@ -89,12 +89,12 @@ public class WelcomeMessage {
         this.welcomeMessage = welcomeMessage;
     }
 
-    public int getWelcomeMessage_id() {
-        return WelcomeMessage_id;
+    public int getGroupWelcomeInfoId() {
+        return groupWelcomeInfoId;
     }
 
-    public void setWelcomeMessage_id(int welcomeMessage_id) {
-        WelcomeMessage_id = welcomeMessage_id;
+    public void setGroupWelcomeInfoId(int groupWelcomeInfoId) {
+        this.groupWelcomeInfoId = groupWelcomeInfoId;
     }
 
     @Override

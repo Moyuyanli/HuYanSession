@@ -153,7 +153,6 @@ public class GroupWelcomeInfoAction {
             return;
         }
         welcomeMessages.add(welcomeMessage);
-        groupWelcomeInfo.setWelcomeMessages(welcomeMessages);
         groupWelcomeInfo.setScope(scope);
         //保存或更新
         try {
@@ -164,10 +163,22 @@ public class GroupWelcomeInfoAction {
                     //不存在则先添加作用域
                     session.persist(finalScope);
                 }
-                session.merge(groupWelcomeInfo);
+                GroupWelcomeInfo merge = session.merge(groupWelcomeInfo);
+//                for (WelcomeMessage mergeWelcomeMessage : merge.getWelcomeMessages()) {
+//                    mergeWelcomeMessage.setGroupWelcomeInfoId(merge.getId());
+//                    session.merge(mergeWelcomeMessage);
+//                }
                 return 0;
             });
         } catch (Exception e) {
+            if (e.getMessage().equals("Converting `org.hibernate.exception.ConstraintViolationException` to JPA `PersistenceException` : could not execute statement")) {
+                HibernateUtil.factory.fromTransaction(session -> {
+                    session.createNativeQuery("drop table WELCOMEMESSAGE").executeUpdate();
+                    return null;
+                });
+                subject.sendMessage("请重启mcl!");
+                return;
+            }
             log.error("出错啦！", e);
             subject.sendMessage("欢迎词保存失败!");
             return;
