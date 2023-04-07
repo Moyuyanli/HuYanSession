@@ -197,7 +197,7 @@ public class GroupProhibitedAction {
                         } else if (Pattern.matches("gr\\d+", string)) {
                             scope.setScopeName("群组" + string.substring(1));
                             scope.setGroupInfo(true);
-                            scope.setListId(Integer.parseInt(string.substring(1)));
+                            scope.setListId(Integer.parseInt(string.substring(2)));
                             groupProhibited.setScopeInfo(scope);
                         } else if (Pattern.matches("hmd\\d+", string)) {
                             int number = Integer.parseInt(string.substring(3));

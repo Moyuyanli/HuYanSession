@@ -18,6 +18,7 @@ import org.hibernate.query.criteria.HibernateCriteriaBuilder;
 import org.hibernate.query.criteria.JpaCriteriaQuery;
 import org.hibernate.query.criteria.JpaRoot;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -164,10 +165,10 @@ public class GroupWelcomeInfoAction {
                     session.persist(finalScope);
                 }
                 GroupWelcomeInfo merge = session.merge(groupWelcomeInfo);
-//                for (WelcomeMessage mergeWelcomeMessage : merge.getWelcomeMessages()) {
-//                    mergeWelcomeMessage.setGroupWelcomeInfoId(merge.getId());
-//                    session.merge(mergeWelcomeMessage);
-//                }
+                for (WelcomeMessage mergeWelcomeMessage : merge.getWelcomeMessages()) {
+                    mergeWelcomeMessage.setGroupWelcomeInfoId(merge.getId());
+                    session.merge(mergeWelcomeMessage);
+                }
                 return 0;
             });
         } catch (Exception e) {

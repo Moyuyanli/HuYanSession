@@ -2,7 +2,7 @@ plugins {
     id 'org.jetbrains.kotlin.jvm' version '1.7.10'
     id 'org.jetbrains.kotlin.plugin.serialization' version '1.7.10'
 
-    id 'net.mamoe.mirai-console' version '2.13.2'
+    id 'net.mamoe.mirai-console' version '2.15.0-M1'
     id 'me.him188.maven-central-publish' version "1.0.0-dev-3"
 }
 
@@ -10,18 +10,16 @@ group = 'cn.chahuyun'
 version = '2.3.2'
 
 repositories {
-    mavenCentral()
     maven { url 'https://maven.aliyun.com/repository/public' }
+    mavenCentral()
     maven { url 'https://s01.oss.sonatype.org/content/repositories/snapshots/' }
     maven { url "https://www.sonatype.org/nexus/" }
 }
 
 dependencies {
-    compileOnly 'xyz.cssxsh.mirai:mirai-hibernate-plugin:2.4.4'
+    compileOnly 'xyz.cssxsh.mirai:mirai-hibernate-plugin:2.7.1'
     implementation 'cn.hutool:hutool-all:5.8.9'
     implementation 'org.apache.poi:poi-ooxml:4.1.2'
-    testImplementation 'org.jetbrains.kotlin:kotlin-test:1.7.20'
-    testImplementation 'xyz.cssxsh.mirai:mirai-hibernate-plugin:2.4.4'
 }
 
 mirai {
