@@ -153,6 +153,10 @@ public class GroupProhibitedAction {
                     case "4":
                         groupProhibited.setMateType(4);
                         break;
+                    case "正则":
+                    case "5":
+                        groupProhibited.setMateType(5);
+                        break;
                     case "0":
                     case "全局":
                         scope.setScopeName("全局");
