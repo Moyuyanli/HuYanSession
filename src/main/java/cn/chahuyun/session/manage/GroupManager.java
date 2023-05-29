@@ -671,6 +671,8 @@ public class GroupManager {
                         mate = Mate.START;
                     } else if (mateType == 4) {
                         mate = Mate.END;
+                    } else if (mateType == 5) {
+                        mate = Mate.PATTERN;
                     }
                     if (ShareUtils.mateMate(code, mate, trigger)) {
                         groupProhibited = prohibited;
