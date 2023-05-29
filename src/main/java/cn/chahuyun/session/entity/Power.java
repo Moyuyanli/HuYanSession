@@ -12,7 +12,7 @@ import jakarta.persistence.Table;
  * @Date 2022/7/29 23:51
  */
 @Entity
-@Table(name = "power")
+@Table(name = "Power")
 public class Power {
 
     /**

@@ -29,6 +29,7 @@ public class WelcomeMessage {
     /**
      * 标识
      */
+    @JoinColumn(name = "mark")
     private String mark;
     /**
      * 欢迎消息

@@ -10,8 +10,8 @@ import jakarta.persistence.*;
  * @Date 2022/8/17 19:20
  */
 @Entity
-@Table(name = "ManySession")
-public class ManySession {
+@Table(name = "QuartzSession")
+public class QuartzSession {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -29,11 +29,10 @@ public class ManySession {
      */
     private boolean other;
     /**
-     * 匹配主表消息id
+     * 匹配定时任务的多消息
      */
-    @ManyToOne
-    @JoinColumn(name = "manySession_id")
-    private ManySessionInfo manySessionId;
+    @JoinColumn(name = "quartzMessage_id")
+    private int quartzMessageId;
 
     /**
      * 回复消息
@@ -41,11 +40,11 @@ public class ManySession {
     @Column(length = 10240)
     private String reply;
 
-    public ManySession() {
+    public QuartzSession() {
     }
 
 
-    public ManySession(long bot, boolean dynamic, boolean other, String reply) {
+    public QuartzSession(long bot, boolean dynamic, boolean other, String reply) {
         this.bot = bot;
         this.dynamic = dynamic;
         this.other = other;
@@ -76,12 +75,12 @@ public class ManySession {
         this.bot = bot;
     }
 
-    public ManySessionInfo getManySessionId() {
-        return manySessionId;
+    public int getQuartzMessageId() {
+        return quartzMessageId;
     }
 
-    public void setManySessionId(ManySessionInfo manySessionID) {
-        this.manySessionId = manySessionID;
+    public void setQuartzMessageId(int quartzMessageID) {
+        this.quartzMessageId = quartzMessageID;
     }
 
     public String getReply() {

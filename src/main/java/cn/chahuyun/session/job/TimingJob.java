@@ -97,18 +97,18 @@ public class TimingJob implements Task {
     private void dialogue(QuartzInfo quartzInfo, Group group) {
         boolean random = quartzInfo.isRandom();
         boolean polling = quartzInfo.isPolling();
-        List<ManySession> manySessions = quartzInfo.getManySessions();
+        List<QuartzSession> manySessions = quartzInfo.getManySessions();
 
         if (!random && !polling) {
             sendMessage(group, quartzInfo.isDynamic(), quartzInfo.isOther(), quartzInfo.getReply());
         } else {
             int size = manySessions.size();
             if (random) {
-                ManySession manySession = manySessions.get((int) (Math.random() * size - 1));
+                QuartzSession manySession = manySessions.get((int) (Math.random() * size - 1));
                 sendMessage(group, manySession.isDynamic(), manySession.isOther(), manySession.getReply());
             } else {
                 int pollingNumber = quartzInfo.getPollingNumber();
-                ManySession manySession = manySessions.get(pollingNumber < size ? pollingNumber : pollingNumber % size);
+                QuartzSession manySession = manySessions.get(pollingNumber < size ? pollingNumber : pollingNumber % size);
                 sendMessage(group, manySession.isDynamic(), manySession.isOther(), manySession.getReply());
                 QuartzAction.increase(quartzInfo);
             }

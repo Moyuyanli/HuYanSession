@@ -38,7 +38,7 @@ public class ManySessionInfo {
     /**
      * 触发消息
      */
-    private String trigger;
+    private String keywords;
     /**
      * 匹配类型 int
      */
@@ -46,8 +46,7 @@ public class ManySessionInfo {
     /**
      * 多词条消息集合
      */
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, targetEntity = ManySession.class)
-    @JoinColumn(name = "ManySession_ID")
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER,mappedBy = "manySessionId",targetEntity = ManySession.class)
     private List<ManySession> manySessions = new ArrayList<>();
     /**
      * 作用域标识
@@ -67,11 +66,11 @@ public class ManySessionInfo {
     public ManySessionInfo() {
     }
 
-    public ManySessionInfo(long bot, boolean random, int pollingNumber, String trigger, int mateType, Scope scope) {
+    public ManySessionInfo(long bot, boolean random, int pollingNumber, String keywords, int mateType, Scope scope) {
         this.bot = bot;
         this.random = random;
         this.pollingNumber = pollingNumber;
-        this.trigger = trigger;
+        this.keywords = keywords;
         this.mateType = mateType;
         this.mate = MateUtil.getMate(mateType);
         if (scope.isGlobal()) {
@@ -116,12 +115,12 @@ public class ManySessionInfo {
         this.pollingNumber = pollingNumber;
     }
 
-    public String getTrigger() {
-        return trigger;
+    public String getKeywords() {
+        return keywords;
     }
 
-    public void setTrigger(String trigger) {
-        this.trigger = trigger;
+    public void setKeywords(String trigger) {
+        this.keywords = trigger;
     }
 
     public int getMateType() {

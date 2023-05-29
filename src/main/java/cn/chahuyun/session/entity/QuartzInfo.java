@@ -72,9 +72,8 @@ public class QuartzInfo {
     /**
      * 多词条消息集合
      */
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, targetEntity = ManySession.class)
-    @JoinColumn(name = "QuartzMessage_ID")
-    private List<ManySession> manySessions = new ArrayList<>();
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "quartzMessageId")
+    private List<QuartzSession> manySessions = new ArrayList<>();
 
     public QuartzInfo() {
     }
@@ -211,11 +210,11 @@ public class QuartzInfo {
         this.scope = scope;
     }
 
-    public List<ManySession> getManySessions() {
+    public List<QuartzSession> getManySessions() {
         return manySessions;
     }
 
-    public void setManySessions(List<ManySession> manySessions) {
+    public void setManySessions(List<QuartzSession> manySessions) {
         this.manySessions = manySessions;
     }
 }

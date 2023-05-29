@@ -70,15 +70,15 @@ public class ManySessionAction {
             if (map == null) {
                 map = new HashMap<>() {{
                     put(manySessionInfo.getBot(), new HashMap<>() {{
-                        put(manySessionInfo.getTrigger(), manySessionInfo);
+                        put(manySessionInfo.getKeywords(), manySessionInfo);
                     }});
                 }};
             }
             if (map.containsKey(manySessionInfo.getBot())) {
-                map.get(manySessionInfo.getBot()).put(manySessionInfo.getTrigger(), manySessionInfo);
+                map.get(manySessionInfo.getBot()).put(manySessionInfo.getKeywords(), manySessionInfo);
             } else {
                 map.put(manySessionInfo.getBot(), new HashMap<>() {{
-                    put(manySessionInfo.getTrigger(), manySessionInfo);
+                    put(manySessionInfo.getKeywords(), manySessionInfo);
                 }});
             }
         }
@@ -304,7 +304,7 @@ public class ManySessionAction {
         for (ManySessionInfo value : manySession.values()) {
             List<ManySession> manySessions = value.getManySessions();
             MessageChainBuilder messages = new MessageChainBuilder();
-            messages.add(String.format("多词条编号:%d%n触发方式:%s%n触发内容:%s%n", value.getId(), value.getMate().getMateName(), value.getTrigger()));
+            messages.add(String.format("多词条编号:%d%n触发方式:%s%n触发内容:%s%n", value.getId(), value.getMate().getMateName(), value.getKeywords()));
             messages.add(String.format("作用域:%s%n", value.getScope().getScopeName()));
             messages.add(String.format("当前群是否触发:%s", ShareUtils.mateScope(event, value.getScope()) ? "是" : "否"));
             builder.add(bot, messages.build());
@@ -391,9 +391,9 @@ public class ManySessionAction {
         });
 
         if (deleteType) {
-            subject.sendMessage(String.format("删除多词条 %s 成功！", manySessionInfo.getTrigger()));
+            subject.sendMessage(String.format("删除多词条 %s 成功！", manySessionInfo.getKeywords()));
         } else if (deleteMessageType) {
-            subject.sendMessage(String.format("删除多词条 %s 下的回复成功!", manySessionInfo.getTrigger()));
+            subject.sendMessage(String.format("删除多词条 %s 下的回复成功!", manySessionInfo.getKeywords()));
         } else {
             subject.sendMessage("没有找到要删除的多词条回复！");
         }

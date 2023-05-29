@@ -139,7 +139,7 @@ public class ListAction {
                     if (groupList.containsGroupId(groupId)) {
                         continue;
                     }
-                    GroupInfo groupInfo = new GroupInfo(bot.getId(), key, groupId);
+                    GroupInfo groupInfo = new GroupInfo(bot.getId(), groupId);
                     groupList.getGroups().add(groupInfo);
                 }
                 session.merge(groupList);
@@ -264,11 +264,6 @@ public class ListAction {
                 subject.sendMessage("没有找到要忘掉的群组~");
                 return;
             }
-        } else {
-            if (!StaticData.isGrouper(bot, key, value)) {
-                subject.sendMessage("没有找到要忘掉的群~");
-                return;
-            }
         }
 
         Boolean aBoolean = false;
@@ -286,11 +281,14 @@ public class ListAction {
                 if (finalType) {
                     session.remove(groupList);
                 } else {
-                    assert groupList != null;
+                    if (groupList == null) {
+                        log.error("GroupList remove failed !");
+                        return false;
+                    }
+
                     GroupInfo groupInfo = groupList.getGroups().stream().filter(item -> item.getGroupId() == finalValue)
                             .collect(Collectors.toList()).get(0);
-                    groupList.getGroups().remove(groupInfo);
-                    session.merge(groupList);
+                    session.merge(groupInfo);
                 }
                 return true;
             });

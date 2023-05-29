@@ -512,7 +512,7 @@ public class MessageEventListener extends SimpleListenerHost {
                         l.info("匹配作用域->存在");
                     }
                     //尝试匹配匹配方式
-                    if (ShareUtils.mateMate(code, manySessionInfo.getMate(), manySessionInfo.getTrigger())) {
+                    if (ShareUtils.mateMate(code, manySessionInfo.getMate(), manySessionInfo.getKeywords())) {
                         if (SessionConfig.INSTANCE.getDebugSwitch()) {
                             l.info("匹配匹配方式->成功");
                         }

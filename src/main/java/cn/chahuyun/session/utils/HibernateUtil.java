@@ -19,7 +19,8 @@ public class HibernateUtil {
     /**
      * 数据库连接前缀
      */
-    private static final String SQL_PATH_PREFIX = "jdbc:h2:file:";
+    private static final String H2_BASE_PATH = "jdbc:h2:file:./data/cn.chahuyun.HuYanSession/HuYan";
+    private static final String MYSQL_BASE_PATH = "jdbc:mysql://localhost:3306/huyansession2?autoReconnect=true";
 
     /**
      * 会话工厂
@@ -34,9 +35,8 @@ public class HibernateUtil {
      * @date 2022/7/30 23:04
      */
     public static void init(MiraiHibernateConfiguration configuration) {
-        String path = SQL_PATH_PREFIX + "./data/cn.chahuyun.HuYanSession/HuYan";
-        configuration.setProperty("hibernate.connection.url", path);
-        configuration.scan("cn.chahuyun.session.entity");
+        configuration.setProperty("hibernate.connection.url", MYSQL_BASE_PATH);
+//        configuration.scan("cn.chahuyun.session.entity");
         try {
             factory = configuration.buildSessionFactory();
         } catch (HibernateException e) {

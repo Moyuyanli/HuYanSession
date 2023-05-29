@@ -213,7 +213,7 @@ public class GroupProhibitedAction {
         if (prohibitedMap.containsKey(scope)) {
             List<GroupProhibited> prohibitedList = prohibitedMap.get(scope);
             for (GroupProhibited prohibited : prohibitedList) {
-                if (prohibited.getTrigger().equals(groupProhibited.getTrigger())) {
+                if (prohibited.getKeywords().equals(groupProhibited.getKeywords())) {
                     groupProhibited.setId(prohibited.getId());
                 }
             }
@@ -259,7 +259,7 @@ public class GroupProhibitedAction {
                 for (GroupProhibited prohibited : prohibitedList) {
                     builder.add(bot, singleMessages -> {
                         singleMessages.add("违禁词编号:" + prohibited.getId() + "\n" +
-                                "违禁词触发词:" + prohibited.getTrigger() + "\n" +
+                                "违禁词触发词:" + prohibited.getKeywords() + "\n" +
                                 "违禁词回复词:" + prohibited.getReply() + "\n" +
                                 "是否撤回:" + (prohibited.isWithdraw() ? "是" : "否") + "\n" +
                                 "是否禁言:" + (prohibited.isProhibit() ? "是" : "否") + "\n" +
@@ -322,11 +322,11 @@ public class GroupProhibitedAction {
             });
         } catch (Exception e) {
             log.error("出错啦~", e);
-            subject.sendMessage("违禁词 " + MiraiCode.deserializeMiraiCode(groupProhibited.getTrigger()) + " 删除失败");
+            subject.sendMessage("违禁词 " + MiraiCode.deserializeMiraiCode(groupProhibited.getKeywords()) + " 删除失败");
             return;
         }
 
-        subject.sendMessage("违禁词 " + MiraiCode.deserializeMiraiCode(groupProhibited.getTrigger()) + " 删除成功");
+        subject.sendMessage("违禁词 " + MiraiCode.deserializeMiraiCode(groupProhibited.getKeywords()) + " 删除成功");
 
         init(false);
 

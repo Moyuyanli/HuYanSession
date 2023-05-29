@@ -33,6 +33,11 @@ public class GroupInfo {
         this.groupId = groupId;
     }
 
+    public GroupInfo(long bot, long groupId) {
+        this.bot = bot;
+        this.groupId = groupId;
+    }
+
 
     public int getId() {
         return id;

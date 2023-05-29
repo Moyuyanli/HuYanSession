@@ -83,7 +83,9 @@ public class DataManager {
                     break;
                 }
             }
-            if (!find) throw new RuntimeException("表与实体类不对应...");
+            if (!find) {
+                throw new RuntimeException("表与实体类不对应...");
+            }
 
             // 获取'当前遍历到的表'中的'类的实例们'
             String sql = "select * from " + table;
@@ -243,9 +245,8 @@ public class DataManager {
             }
             return manySessionsTemp;
         });
-        List<ManySession> collect = manySessions.stream().filter(it -> it.getQuartzMessage_ID() == null).collect(Collectors.toList());
 
-        writer.write(collect, true);
+        writer.write(manySessions, true);
         writer.autoSizeColumn(1);
         writer.autoSizeColumn(manySessionAlias.size() - 1);
         writer.autoSizeColumn(manySessionAlias.size() - 3);
@@ -297,21 +298,21 @@ public class DataManager {
         writer.setHeaderAlias(quartzSessionAlias);
         writer.merge(quartzSessionAlias.size() - 1, "定时器消息");
 
-        List<ManySession> quarztManySessions = HibernateUtil.factory.fromTransaction(session -> {
+        List<QuartzSession> quartzSessions = HibernateUtil.factory.fromTransaction(session -> {
             HibernateCriteriaBuilder builder = session.getCriteriaBuilder();
-            JpaCriteriaQuery<ManySession> query = builder.createQuery(ManySession.class);
-            query.select(query.from(ManySession.class));
-            List<ManySession> manySessionsTemp = session.createQuery(query).list();
-            for (ManySession manySession : manySessionsTemp) {
+            JpaCriteriaQuery<QuartzSession> query = builder.createQuery(QuartzSession.class);
+            query.select(query.from(QuartzSession.class));
+            List<QuartzSession> manySessionsTemp = session.createQuery(query).list();
+            for (QuartzSession manySession : manySessionsTemp) {
                 if (manySession.isOther()) {
                     manySession.setReply("转发消息 或 音频消息");
                 }
             }
             return manySessionsTemp;
         });
-        List<ManySession> quartzSession = quarztManySessions.stream().filter(it -> it.getManySession_ID() == null).collect(Collectors.toList());
 
-        writer.write(quartzSession, true);
+
+        writer.write(quartzSessions, true);
         writer.autoSizeColumn(1);
         writer.autoSizeColumn(quartzSessionAlias.size() - 1);
 

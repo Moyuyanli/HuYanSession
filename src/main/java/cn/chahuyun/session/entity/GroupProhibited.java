@@ -11,7 +11,7 @@ import jakarta.persistence.*;
  * @date 2022/8/16 10:33
  */
 @Entity
-@Table
+@Table(name = "GroupProhibited")
 public class GroupProhibited {
 
     /**
@@ -31,7 +31,7 @@ public class GroupProhibited {
     /**
      * 触发词
      */
-    private String trigger;
+    private String keywords;
     /**
      * 回复消息
      */
@@ -73,9 +73,9 @@ public class GroupProhibited {
     public GroupProhibited() {
     }
 
-    public GroupProhibited(Long bot, String trigger, String reply, int prohibitTime, String prohibitString, boolean prohibit, boolean withdraw, boolean accumulate, int accumulateNumber) {
+    public GroupProhibited(Long bot, String keywords, String reply, int prohibitTime, String prohibitString, boolean prohibit, boolean withdraw, boolean accumulate, int accumulateNumber) {
         this.bot = bot;
-        this.trigger = trigger;
+        this.keywords = keywords;
         this.mateType = 2;
         this.reply = reply;
         this.prohibitTime = prohibitTime;
@@ -87,10 +87,10 @@ public class GroupProhibited {
 
     }
 
-    public GroupProhibited(Long bot, String trigger, String reply, int prohibitTime, String prohibitString, boolean prohibit, boolean withdraw, boolean accumulate, int accumulateNumber, Scope scope) {
+    public GroupProhibited(Long bot, String keywords, String reply, int prohibitTime, String prohibitString, boolean prohibit, boolean withdraw, boolean accumulate, int accumulateNumber, Scope scope) {
         this.bot = bot;
         this.mateType = 2;
-        this.trigger = trigger;
+        this.keywords = keywords;
         this.reply = reply;
         this.prohibitTime = prohibitTime;
         this.prohibitString = prohibitString;
@@ -132,12 +132,12 @@ public class GroupProhibited {
         this.mateType = mateType;
     }
 
-    public String getTrigger() {
-        return trigger;
+    public String getKeywords() {
+        return keywords;
     }
 
-    public void setTrigger(String trigger) {
-        this.trigger = trigger;
+    public void setKeywords(String trigger) {
+        this.keywords = trigger;
     }
 
     public String getReply() {

@@ -664,7 +664,7 @@ public class GroupManager {
                 for (GroupProhibited prohibited : groupProhibits) {
                     int mateType = prohibited.getMateType();
                     Mate mate = Mate.VAGUE;
-                    String trigger = prohibited.getTrigger();
+                    String trigger = prohibited.getKeywords();
                     if (mateType == 1) {
                         mate = Mate.ACCURATE;
                     } else if (mateType == 3) {

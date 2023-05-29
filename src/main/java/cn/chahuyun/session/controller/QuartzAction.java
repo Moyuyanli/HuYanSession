@@ -2,6 +2,7 @@ package cn.chahuyun.session.controller;
 
 import cn.chahuyun.session.entity.ManySession;
 import cn.chahuyun.session.entity.QuartzInfo;
+import cn.chahuyun.session.entity.QuartzSession;
 import cn.chahuyun.session.entity.Scope;
 import cn.chahuyun.session.job.TimingJob;
 import cn.chahuyun.session.utils.HibernateUtil;
@@ -222,7 +223,7 @@ public class QuartzAction {
 
         //多条消息的定时任务
         QuartzInfo quartzInfo = new QuartzInfo(bot.getId(), name, cron, false, false, "miraiCode", isPolling, isRandom, scope);
-        List<ManySession> manySessions = quartzInfo.getManySessions();
+        List<QuartzSession> quartzSessions = quartzInfo.getManySessions();
 
         boolean isQuit = false;
         while (!isQuit) {
@@ -233,12 +234,12 @@ public class QuartzAction {
             }
             MessageChain nextEventMessage = nextEvent.getMessage();
             String miraiCode = nextEventMessage.serializeToMiraiCode();
-            if (miraiCode.equals("！！") || miraiCode.equals("!!")) {
+            if ("！！".equals(miraiCode) || "!!".equals(miraiCode)) {
                 isQuit = true;
             }
-            if (miraiCode.equals("！") || miraiCode.equals("!")) {
-                if (manySessions.size() > 2) {
-                    manySessions.remove(manySessions.size() - 1);
+            if ("！".equals(miraiCode) || "!".equals(miraiCode)) {
+                if (quartzSessions.size() > 2) {
+                    quartzSessions.remove(quartzSessions.size() - 1);
                     subject.sendMessage("删除上一条回复消息成功！");
                     continue;
                 }
@@ -257,9 +258,11 @@ public class QuartzAction {
                 other = true;
                 miraiCode = MessageChain.serializeToJsonString(nextEventMessage);
             }
-            ManySession manySession = new ManySession(bot.getId(), dynamic, other, miraiCode);
-            manySessions.add(manySession);
-            if (isQuit) break;
+            QuartzSession manySession = new QuartzSession(bot.getId(), dynamic, other, miraiCode);
+            quartzSessions.add(manySession);
+            if (isQuit) {
+                break;
+            }
             subject.sendMessage("添加成功!");
         }
 
@@ -307,7 +310,7 @@ public class QuartzAction {
         builder.add(bot, new PlainText("以下是所有多词条消息↓"));
 
         for (QuartzInfo value : quartzInfos) {
-            List<ManySession> manySessions = value.getManySessions();
+            List<QuartzSession> manySessions = value.getManySessions();
             MessageChainBuilder chainBuilder = new MessageChainBuilder();
             chainBuilder.add(new PlainText(String.format("定时器条编号:%d%n定时器名称:%s%n定时器频率: %s%n", value.getId(), value.getName(), value.getCronString())));
             chainBuilder.add(new PlainText(String.format("定时器是否开启:%s%n", value.isStatus() ? "开启" : "关闭")));
@@ -325,7 +328,7 @@ public class QuartzAction {
                 continue;
             }
             ForwardMessageBuilder messageBuilder = new ForwardMessageBuilder(subject);
-            for (ManySession session : manySessions) {
+            for (QuartzSession session : manySessions) {
                 if (session.isOther()) {
                     messageBuilder.add(bot, new PlainText(String.format("编号:%s", session.getId())));
                     MessageChain singleMessages = MessageChain.deserializeFromJsonString(session.getReply());
