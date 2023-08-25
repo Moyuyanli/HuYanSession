@@ -1,6 +1,9 @@
 package cn.chahuyun.session.entity;
 
+import cn.chahuyun.session.utils.HibernateUtil;
 import jakarta.persistence.*;
+
+import static cn.chahuyun.session.HuYanSession.LOGGER;
 
 /**
  * 说明
@@ -11,7 +14,7 @@ import jakarta.persistence.*;
  */
 @Entity
 @Table(name = "WelcomeMessage")
-public class WelcomeMessage {
+public class WelcomeMessage implements BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -29,8 +32,7 @@ public class WelcomeMessage {
     /**
      * 标识
      */
-    @JoinColumn(name = "mark")
-    private String mark;
+    private Integer mark;
     /**
      * 欢迎消息
      */
@@ -43,9 +45,8 @@ public class WelcomeMessage {
     public WelcomeMessage() {
     }
 
-    public WelcomeMessage(long bot, int randomMark, int type, String welcomeMessage) {
+    public WelcomeMessage(long bot, int type, String welcomeMessage) {
         this.bot = bot;
-        this.mark = bot + "." + randomMark;
         this.type = type;
         this.welcomeMessage = welcomeMessage;
     }
@@ -74,11 +75,11 @@ public class WelcomeMessage {
         this.type = type;
     }
 
-    public String getMark() {
+    public Integer getMark() {
         return mark;
     }
 
-    public void setMark(String mark) {
+    public void setMark(Integer mark) {
         this.mark = mark;
     }
 
@@ -101,5 +102,45 @@ public class WelcomeMessage {
     @Override
     public boolean equals(Object obj) {
         return this.welcomeMessage.equals(((WelcomeMessage) obj).getWelcomeMessage());
+    }
+
+    /**
+     * 修改 this 所保存的数据
+     * 用于保存或更新
+     *
+     * @return boolean t 成功
+     * @author Moyuyanli
+     * @date 2023/8/4 10:33
+     */
+    @Override
+    public boolean merge() {
+        try {
+            HibernateUtil.factory.fromTransaction(session -> session.merge(this));
+        } catch (Exception e) {
+            LOGGER.error("欢迎词消息保存失败！",e);
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * 删除
+     *
+     * @return boolean t 成功
+     * @author Moyuyanli
+     * @date 2023/8/4 10:34
+     */
+    @Override
+    public boolean remove() {
+        try {
+            HibernateUtil.factory.fromTransaction(session -> {
+                session.remove(this);
+                return null;
+            });
+        } catch (Exception e) {
+            LOGGER.error("欢迎词消息删除失败！",e);
+            return false;
+        }
+        return true;
     }
 }

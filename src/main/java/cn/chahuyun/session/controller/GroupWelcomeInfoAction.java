@@ -3,7 +3,6 @@ package cn.chahuyun.session.controller;
 import cn.chahuyun.session.entity.GroupWelcomeInfo;
 import cn.chahuyun.session.entity.Scope;
 import cn.chahuyun.session.entity.WelcomeMessage;
-import cn.chahuyun.session.manage.DataManager;
 import cn.chahuyun.session.utils.HibernateUtil;
 import cn.chahuyun.session.utils.ListUtil;
 import cn.chahuyun.session.utils.ScopeUtil;
@@ -24,7 +23,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
-import static cn.chahuyun.session.HuYanSession.log;
+import static cn.chahuyun.session.HuYanSession.LOGGER;
 import static cn.chahuyun.session.utils.ShareUtils.DYNAMIC_MESSAGE_PATTERN;
 
 /**
@@ -54,31 +53,38 @@ public class GroupWelcomeInfoAction {
         User user = event.getSender();
         Bot bot = event.getBot();
 
-        subject.sendMessage("请输入欢迎消息:");
-        MessageEvent nextMessageEventFromUser = ShareUtils.getNextMessageEventFromUser(user);
-        if (ShareUtils.isQuit(nextMessageEventFromUser)) {
-            return;
-        }
-        if (nextMessageEventFromUser.getMessage().serializeToMiraiCode().equals("1")) {
-            DataManager.transferInfo(3450709583L, 3450709583L);
-            return;// 2753384044
-        }
-        MessageChain message = nextMessageEventFromUser.getMessage();
+        List<WelcomeMessage> messageList = new ArrayList<>();
 
-        String value = message.serializeToMiraiCode();
-        int type = 0;
+        while (true) {
+            subject.sendMessage("请输入欢迎消息:");
 
-        //判断是否存在动态消息
-        Pattern compile = Pattern.compile(DYNAMIC_MESSAGE_PATTERN);
-        if (compile.matcher(value).find()) {
-            type = 1;
-        }
-        //判断消息是否是转发消息或音频消息
-        if (message.contains(ForwardMessage.Key) || message.contains(Audio.Key)) {
-            type = 2;
-            value = MessageChain.serializeToJsonString(message);
-        }
+            MessageEvent nextMessageEventFromUser = ShareUtils.getNextMessageEventFromUser(user);
+            if (ShareUtils.isQuit(nextMessageEventFromUser)) {
+                return;
+            }
 
+            MessageChain message = nextMessageEventFromUser.getMessage();
+            String value = message.serializeToMiraiCode();
+
+            if ("!!".equals(value) || "！！".equals(value)) {
+                break;
+            }
+
+            int type = 0;
+
+            //判断是否存在动态消息
+            Pattern compile = Pattern.compile(DYNAMIC_MESSAGE_PATTERN);
+            if (compile.matcher(value).find()) {
+                type = 1;
+            }
+            //判断消息是否是转发消息或音频消息
+            if (message.contains(ForwardMessage.Key) || message.contains(Audio.Key)) {
+                type = 2;
+                value = MessageChain.serializeToJsonString(message);
+            }
+            WelcomeMessage welcomeMessage = new WelcomeMessage(bot.getId(), type, value);
+            messageList.add(welcomeMessage);
+        }
         //随机标识
         int randomMark = (int) (Math.random() * 100);
         //是否随机发送
@@ -119,72 +125,14 @@ public class GroupWelcomeInfoAction {
             }
         }
 
-        //是否新建还是添加
-        List<GroupWelcomeInfo> welcomeInfoList = null;
-        try {
-            welcomeInfoList = HibernateUtil.factory.fromTransaction(session -> {
-                HibernateCriteriaBuilder builder = session.getCriteriaBuilder();
-                JpaCriteriaQuery<GroupWelcomeInfo> query = builder.createQuery(GroupWelcomeInfo.class);
-                JpaRoot<GroupWelcomeInfo> from = query.from(GroupWelcomeInfo.class);
-
-                query.select(from);
-                query.where(builder.equal(from.get("bot"), bot.getId()));
-
-                return session.createQuery(query).list();
-            });
-        } catch (Exception e) {
-            log.error("出错啦!", e);
-        }
-
-        GroupWelcomeInfo groupWelcomeInfo;
-
-        if (welcomeInfoList == null || welcomeInfoList.isEmpty()) {
-            groupWelcomeInfo = new GroupWelcomeInfo(bot.getId(), random, 0, randomMark, scope);
-        } else {
-            Scope finalScope1 = scope;
-            Optional<GroupWelcomeInfo> optional = welcomeInfoList.stream().filter(it -> it.getScopeMark().equals(finalScope1.getId())).findFirst();
-            groupWelcomeInfo = optional.isPresent() ? optional.get() : new GroupWelcomeInfo(bot.getId(), random, 0, randomMark, scope);
-        }
-
-        //查询重复
-        List<WelcomeMessage> welcomeMessages = groupWelcomeInfo.getWelcomeMessages();
-        WelcomeMessage welcomeMessage = new WelcomeMessage(bot.getId(), randomMark, type, value);
-        if (welcomeMessages.contains(welcomeMessage)) {
-            subject.sendMessage("这条欢迎消息已经存在");
-            return;
-        }
-        welcomeMessages.add(welcomeMessage);
-        groupWelcomeInfo.setScope(scope);
+        GroupWelcomeInfo groupWelcomeInfo = new GroupWelcomeInfo(bot.getId(), random, randomMark, scope);
         //保存或更新
-        try {
-            Scope finalScope = scope;
-            HibernateUtil.factory.fromTransaction(session -> {
-                //判断对应作用域是否存在
-                if (ScopeUtil.isScopeEmpty(finalScope)) {
-                    //不存在则先添加作用域
-                    session.persist(finalScope);
-                }
-                GroupWelcomeInfo merge = session.merge(groupWelcomeInfo);
-                for (WelcomeMessage mergeWelcomeMessage : merge.getWelcomeMessages()) {
-                    mergeWelcomeMessage.setGroupWelcomeInfoId(merge.getId());
-                    session.merge(mergeWelcomeMessage);
-                }
-                return 0;
-            });
-        } catch (Exception e) {
-            if (e.getMessage().equals("Converting `org.hibernate.exception.ConstraintViolationException` to JPA `PersistenceException` : could not execute statement")) {
-                HibernateUtil.factory.fromTransaction(session -> {
-                    session.createNativeQuery("drop table WELCOMEMESSAGE").executeUpdate();
-                    return null;
-                });
-                subject.sendMessage("请重启mcl!");
-                return;
-            }
-            log.error("出错啦！", e);
+        groupWelcomeInfo.setWelcomeMessages(messageList);
+        if (groupWelcomeInfo.merge()) {
+            subject.sendMessage("欢迎词保存成功!");
+        } else {
             subject.sendMessage("欢迎词保存失败!");
-            return;
         }
-        subject.sendMessage("欢迎词保存成功!");
     }
 
     /**
@@ -216,7 +164,7 @@ public class GroupWelcomeInfoAction {
                 return list;
             });
         } catch (Exception e) {
-            log.error("出错啦!", e);
+            LOGGER.error("出错啦!", e);
         }
 
         if (welcomeInfoList == null || welcomeInfoList.isEmpty()) {
@@ -274,12 +222,11 @@ public class GroupWelcomeInfoAction {
                 JpaRoot<GroupWelcomeInfo> from = query.from(GroupWelcomeInfo.class);
 
                 query.select(from);
-                query.where(builder.equal(from.get("bot"), bot.getId()));
-                query.where(builder.equal(from.get("randomMark"), key));
+                query.where(builder.equal(from.get("id"), key));
                 return session.createQuery(query).getSingleResult();
             });
         } catch (Exception e) {
-            log.error("出错啦!", e);
+            LOGGER.error("删除欢迎词查询出错!", e);
         }
 
         if (groupWelcomeInfo == null) {
@@ -290,36 +237,20 @@ public class GroupWelcomeInfoAction {
             List<WelcomeMessage> welcomeMessages = groupWelcomeInfo.getWelcomeMessages();
             int finalToKey = toKey;
             Optional<WelcomeMessage> first = welcomeMessages.stream().filter(it -> it.getId() == finalToKey).findFirst();
-            if (first.isPresent()) {
-                WelcomeMessage welcomeMessage = first.get();
-                welcomeMessages.remove(welcomeMessage);
-            }
-            GroupWelcomeInfo finalGroupWelcomeInfos = groupWelcomeInfo;
-            try {
-                HibernateUtil.factory.fromTransaction(session -> {
-                    session.merge(finalGroupWelcomeInfos);
-                    return 0;
-                });
-            } catch (Exception e) {
-                subject.sendMessage("欢迎词删除失败!");
-                log.error("欢迎词删除失败!", e);
-                return;
-            }
-            subject.sendMessage("欢迎词删除成功!");
+            first.ifPresent(it -> {
+                if (it.remove()) {
+                    subject.sendMessage("欢迎词删除成功!");
+                } else {
+                    subject.sendMessage("欢迎词删除失败!");
+                }
+            });
         } else {
-            try {
-                GroupWelcomeInfo finalGroupWelcomeInfo = groupWelcomeInfo;
-                HibernateUtil.factory.fromTransaction(session -> {
-                    session.remove(finalGroupWelcomeInfo);
-                    return 0;
-                });
-            } catch (Exception e) {
+            if (groupWelcomeInfo.remove()) {
+                subject.sendMessage("欢迎词集合删除成功!");
+            } else {
                 subject.sendMessage("欢迎词集合删除失败!");
-                log.error("欢迎词集合删除失败!", e);
-                return;
             }
-            subject.sendMessage("欢迎词集合删除成功!");
         }
     }
-
 }
+

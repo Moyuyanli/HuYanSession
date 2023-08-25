@@ -46,12 +46,12 @@ public class Scope {
     /**
      * 群组编号-`群组`使用
      */
-    private int listId;
+    private String listId;
 
     public Scope() {
     }
 
-    public Scope(long bot, String scopeName, boolean isGlobal, boolean isGroupInfo, long groupNumber, int listId) {
+    public Scope(long bot, String scopeName, boolean isGlobal, boolean isGroupInfo, long groupNumber, String listId) {
         this.id = bot + "." + isGlobal + "." + isGroupInfo + "." + groupNumber + "." + listId;
         this.bot = bot;
         this.scopeName = scopeName;
@@ -105,11 +105,11 @@ public class Scope {
         this.groupNumber = groupNumber;
     }
 
-    public int getListId() {
+    public String getListId() {
         return listId;
     }
 
-    public void setListId(int listId) {
+    public void setListId(String listId) {
         this.listId = listId;
         setId();
     }

@@ -1,6 +1,5 @@
 package cn.chahuyun.session.controller;
 
-import cn.chahuyun.session.entity.ManySession;
 import cn.chahuyun.session.entity.QuartzInfo;
 import cn.chahuyun.session.entity.QuartzSession;
 import cn.chahuyun.session.entity.Scope;
@@ -24,7 +23,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static cn.chahuyun.session.HuYanSession.log;
+import static cn.chahuyun.session.HuYanSession.LOGGER;
 import static cn.chahuyun.session.utils.ShareUtils.DYNAMIC_MESSAGE_PATTERN;
 
 /**
@@ -61,14 +60,14 @@ public class QuartzAction {
                 try {
                     CronUtil.schedule(id, quartzInfo.getCronString(), timingJob);
                 } catch (Exception e) {
-                    log.error("!!!∑(ﾟДﾟノ)ノ 添加定时任务出错:" + quartzInfo.getName(), e);
+                    LOGGER.error("!!!∑(ﾟДﾟノ)ノ 添加定时任务出错:" + quartzInfo.getName(), e);
                     continue;
                 }
                 quartzInfo.setStatus(true);
                 updateQuartz(quartzInfo);
             }
         }
-        log.info("定时器加载成功!");
+        LOGGER.info("定时器加载成功!");
     }
 
     /**
@@ -296,7 +295,7 @@ public class QuartzAction {
                 return session.createQuery(query).list();
             });
         } catch (Exception e) {
-            log.error("出错拉~", e);
+            LOGGER.error("出错拉~", e);
             subject.sendMessage("查询定时任务出错!");
             return;
         }
@@ -371,7 +370,7 @@ public class QuartzAction {
                 return session.createQuery(query).list();
             });
         } catch (Exception e) {
-            log.error("出错拉~", e);
+            LOGGER.error("出错拉~", e);
             subject.sendMessage("查询定时任务出错!");
             return;
         }
@@ -392,7 +391,7 @@ public class QuartzAction {
             });
         } catch (Exception e) {
             subject.sendMessage("定时任务删除失败!");
-            log.error("出错啦~", e);
+            LOGGER.error("出错啦~", e);
             return;
         }
         subject.sendMessage("定时任务删除成功!");
@@ -432,7 +431,7 @@ public class QuartzAction {
                 }
             });
         } catch (Exception e) {
-            log.error("出错拉~", e);
+            LOGGER.error("出错拉~", e);
             subject.sendMessage("查询定时任务出错!");
             return;
         }
@@ -449,7 +448,7 @@ public class QuartzAction {
             try {
                 CronUtil.remove(timingId);
             } catch (Exception e) {
-                log.warning("定时器未启用!");
+                LOGGER.warning("定时器未启用!");
                 subject.sendMessage(String.format("定时器 %s %s失败!", quartzInfo.getName(), !quartzInfo.isStatus() ? "开启" : "关闭"));
                 updateQuartz(quartzInfo);
                 return;
@@ -475,7 +474,7 @@ public class QuartzAction {
                 return true;
             });
         } catch (Exception e) {
-            log.error("出错啦~", e);
+            LOGGER.error("出错啦~", e);
             return false;
         }
         return true;

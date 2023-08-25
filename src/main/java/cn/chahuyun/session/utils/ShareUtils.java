@@ -30,7 +30,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static cn.chahuyun.session.HuYanSession.log;
+import static cn.chahuyun.session.HuYanSession.LOGGER;
 
 /**
  * ShareUtils
@@ -145,7 +145,7 @@ public class ShareUtils {
         Bot bot = event.getBot();
         long group = event.getSubject().getId();
 
-        Map<Integer, GroupList> groupListMap = StaticData.getGroupListMap(bot);
+        Map<String, GroupList> groupListMap = StaticData.getGroupListMap(bot);
 
         if (scope.getGroupInfo()) {
             GroupList groupList = groupListMap.get(scope.getListId());
@@ -175,7 +175,7 @@ public class ShareUtils {
      * @date 2022/7/13 21:34
      */
     public static boolean mateScope(Bot bot, Group group, Scope scope) {
-        Map<Integer, GroupList> groupListMap = StaticData.getGroupListMap(bot);
+        Map<String, GroupList> groupListMap = StaticData.getGroupListMap(bot);
 
         if (scope.getGroupInfo()) {
             GroupList groupList = groupListMap.get(scope.getListId());
@@ -204,7 +204,7 @@ public class ShareUtils {
      * @author Moyuyanli
      * @date 2022/7/13 21:40
      */
-    public static boolean mateMate(String code, Mate mate, String key) {
+    public static boolean mateMate(String code, Mate mate, String key,String content) {
         switch (mate) {
             case ACCURATE:
                 if (code.equals(key)) {
@@ -212,7 +212,7 @@ public class ShareUtils {
                 }
                 break;
             case VAGUE:
-                if (code.contains(key)) {
+                if (content.contains(key)) {
                     return true;
                 }
                 break;
@@ -263,7 +263,7 @@ public class ShareUtils {
         try {
             event = future.get();
         } catch (InterruptedException | ExecutionException e) {
-            log.error("获取下一条消息出错!", e);
+            LOGGER.error("获取下一条消息出错!", e);
         }
         assert event != null;
         return event;

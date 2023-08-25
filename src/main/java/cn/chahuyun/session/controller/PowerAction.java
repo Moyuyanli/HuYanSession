@@ -25,7 +25,7 @@ import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static cn.chahuyun.session.HuYanSession.log;
+import static cn.chahuyun.session.HuYanSession.LOGGER;
 
 /**
  * 权限工具
@@ -61,11 +61,11 @@ public class PowerAction {
         StaticData.setPowerMap(map);
 
         if (SessionConfig.INSTANCE.getDebugSwitch() && type) {
-            log.info("数据库权限信息初始化成功!");
+            LOGGER.info("数据库权限信息初始化成功!");
             return;
         }
         if (SessionConfig.INSTANCE.getDebugSwitch()) {
-            log.info("权限信息更新成功!");
+            LOGGER.info("权限信息更新成功!");
         }
 
     }
@@ -241,7 +241,7 @@ public class PowerAction {
 
         String[] splits = code.split(" +");
         if (SessionConfig.INSTANCE.getDebugSwitch()) {
-            log.info("code=" + code);
+            LOGGER.info("code=" + code);
         }
         if (splits.length == 2) {
             String split = splits[1];
@@ -544,7 +544,7 @@ public class PowerAction {
         for (Power power : powerList) {
             if (power.getQq() == normalMember.getId() && power.getGroupId() ==
                     event.getSubject().getId()) {
-                log.info("是和该传入用户相关的，该用户在该群组的权限");
+                LOGGER.info("是和该传入用户相关的，该用户在该群组的权限");
                 curPowerList.add(power);
                 //唯一
                 break;

@@ -26,7 +26,7 @@ import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static cn.chahuyun.session.HuYanSession.log;
+import static cn.chahuyun.session.HuYanSession.LOGGER;
 import static cn.chahuyun.session.utils.ShareUtils.DYNAMIC_MESSAGE_PATTERN;
 
 /**
@@ -59,7 +59,7 @@ public class ManySessionAction {
             });
         } catch (Exception e) {
             if (type) {
-                log.warning("多词条加载消息出错!", e);
+                LOGGER.warning("多词条加载消息出错!", e);
                 return;
             }
         }
@@ -85,10 +85,10 @@ public class ManySessionAction {
         StaticData.setManySession(map);
 
         if (type) {
-            log.info("多词条消息初始化成功!");
+            LOGGER.info("多词条消息初始化成功!");
         }
         if (SessionConfig.INSTANCE.getDebugSwitch()) {
-            log.info("多词条数据更新成功!");
+            LOGGER.info("多词条数据更新成功!");
         }
     }
 
@@ -268,7 +268,7 @@ public class ManySessionAction {
             } else {
                 subject.sendMessage("多词条保存失败!");
             }
-            log.error("出错啦~", e);
+            LOGGER.error("出错啦~", e);
             return;
         }
         if (editOrAdd) {
@@ -367,7 +367,7 @@ public class ManySessionAction {
                 try {
                     s = Integer.parseInt(value);
                 } catch (NumberFormatException e) {
-                    log.warning("删除多词条-id中含有不是数值的字符!");
+                    LOGGER.warning("删除多词条-id中含有不是数值的字符!");
                 }
                 int finalS = s;
                 //因为要操作list长度，这里用流

@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import static cn.chahuyun.session.HuYanSession.log;
+import static cn.chahuyun.session.HuYanSession.LOGGER;
 
 /**
  * GroupProhibitedUtil
@@ -54,17 +54,17 @@ public class GroupProhibitedAction {
                 return session.createQuery(query).list();
             });
         } catch (Exception e) {
-            log.error("数据库违禁词信息初始化失败!", e);
+            LOGGER.error("数据库违禁词信息初始化失败!", e);
         }
 
         StaticData.setProhibitedMap(parseList(groupProhibits));
 
         if (SessionConfig.INSTANCE.getDebugSwitch() && type) {
-            log.info("数据库违禁词信息初始化成功!");
+            LOGGER.info("数据库违禁词信息初始化成功!");
             return;
         }
         if (SessionConfig.INSTANCE.getDebugSwitch()) {
-            log.info("违禁词数据更新成功!");
+            LOGGER.info("违禁词数据更新成功!");
         }
 
     }
@@ -231,7 +231,7 @@ public class GroupProhibitedAction {
             });
         } catch (Exception e) {
             subject.sendMessage("违禁词添加失败!");
-            log.error("出错啦~", e);
+            LOGGER.error("出错啦~", e);
             return;
         }
 
@@ -325,7 +325,7 @@ public class GroupProhibitedAction {
                 return 0;
             });
         } catch (Exception e) {
-            log.error("出错啦~", e);
+            LOGGER.error("出错啦~", e);
             subject.sendMessage("违禁词 " + MiraiCode.deserializeMiraiCode(groupProhibited.getKeywords()) + " 删除失败");
             return;
         }

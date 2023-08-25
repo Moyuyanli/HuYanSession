@@ -16,7 +16,7 @@ import org.hibernate.query.criteria.JpaRoot;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import static cn.chahuyun.session.HuYanSession.log;
+import static cn.chahuyun.session.HuYanSession.LOGGER;
 
 /**
  * 说明
@@ -45,7 +45,7 @@ public class BlackListAction {
                 return null;
             });
         } catch (Exception e) {
-            log.error("出错啦~", e);
+            LOGGER.error("出错啦~", e);
             return false;
         }
         return true;
@@ -132,7 +132,7 @@ public class BlackListAction {
                 group.get(userId).kick(reason);
                 subject.sendMessage("检测到黑名单用户->" + userId + " 已踢出,理由:" + reason);
             } catch (Exception e) {
-                log.error("出错啦~", e);
+                LOGGER.error("出错啦~", e);
                 subject.sendMessage("检测到黑名单用户->" + userId + " 踢出失败!");
             }
         } else {
@@ -172,7 +172,7 @@ public class BlackListAction {
                 return list;
             });
         } catch (Exception e) {
-            log.error("出错啦~", e);
+            LOGGER.error("出错啦~", e);
             return;
         }
 
@@ -274,7 +274,7 @@ public class BlackListAction {
                 return list;
             });
         } catch (Exception e) {
-            log.error("出错啦~", e);
+            LOGGER.error("出错啦~", e);
             return;
         }
         if (blacklists == null || blacklists.isEmpty()) {
@@ -287,7 +287,7 @@ public class BlackListAction {
                         member.kick("你已被封禁");
                         subject.sendMessage(String.format("检测到黑名单用户 %d ,已踢出,封禁理由: %s", user.getId(), blacklist.getReason()));
                     } catch (Exception e) {
-                        log.warning("该用户不存在");
+                        LOGGER.warning("该用户不存在");
                     }
                 } else if (blacklist.isProhibit()) {
                     member.mute(999999999);

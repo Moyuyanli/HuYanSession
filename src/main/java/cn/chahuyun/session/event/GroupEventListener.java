@@ -86,6 +86,8 @@ public class GroupEventListener extends SimpleListenerHost {
         if (!SessionConfig.INSTANCE.getGroupList().contains(groupId)) {
             return;
         }
+        String nick = event.getMember().getNick();
+        event.getGroup().sendMessage(String.format("%s离开了我们...", nick));
         if (BlackListData.INSTANCE.isAutoBlackList()) {
             GroupManager.autoAddBlackList(event);
         }

@@ -21,7 +21,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 
-import static cn.chahuyun.session.HuYanSession.log;
+import static cn.chahuyun.session.HuYanSession.LOGGER;
 
 /**
  * 说明
@@ -163,15 +163,15 @@ public class Dialogue {
             }
 
         } catch (EventCancelledException e) {
-            log.error("发送消息被取消:", e);
+            LOGGER.error("发送消息被取消:", e);
         } catch (BotIsBeingMutedException e) {
-            log.error("你的机器人被禁言:", e);
+            LOGGER.error("你的机器人被禁言:", e);
         } catch (MessageTooLargeException e) {
-            log.error("发送消息过长:", e);
+            LOGGER.error("发送消息过长:", e);
         } catch (IllegalArgumentException e) {
-            log.error("发送消息为空:", e);
+            LOGGER.error("发送消息为空:", e);
         } catch (Exception e) {
-            log.error("发送消息错误!!!!:", e);
+            LOGGER.error("发送消息错误!!!!:", e);
         } finally {
             GroupManager.map.remove(mark);
         }

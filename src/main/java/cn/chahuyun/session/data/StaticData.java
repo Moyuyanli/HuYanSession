@@ -22,7 +22,7 @@ public class StaticData {
      * 不同群组
      * 群组信息
      */
-    private static Map<Long, Map<Integer, GroupList>> groupListMap;
+    private static Map<Long, Map<String, GroupList>> groupListMap;
 
     /**
      * 不同机器人
@@ -54,7 +54,7 @@ public class StaticData {
     private StaticData() {
     }
 
-    public static Map<Integer, GroupList> getGroupListMap(Bot bot) {
+    public static Map<String, GroupList> getGroupListMap(Bot bot) {
 
         if (groupListMap == null) {
             groupListMap = new HashMap<>();
@@ -66,7 +66,7 @@ public class StaticData {
         return new HashMap<>();
     }
 
-    public static Map<Integer, GroupList> getGroupListMap(long bot) {
+    public static Map<String, GroupList> getGroupListMap(long bot) {
 
         if (groupListMap == null) {
             groupListMap = new HashMap<>();
@@ -78,7 +78,7 @@ public class StaticData {
         return new HashMap<>();
     }
 
-    public static void setGroupListMap(Map<Long, Map<Integer, GroupList>> groupListMap) {
+    public static void setGroupListMap(Map<Long, Map<String, GroupList>> groupListMap) {
         StaticData.groupListMap = groupListMap;
     }
 

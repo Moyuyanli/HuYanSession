@@ -1,10 +1,13 @@
 package cn.chahuyun.session.entity;
 
+import cn.chahuyun.session.utils.HibernateUtil;
 import cn.chahuyun.session.utils.ScopeUtil;
 import jakarta.persistence.*;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static cn.chahuyun.session.HuYanSession.LOGGER;
 
 /**
  * 说明
@@ -15,7 +18,7 @@ import java.util.List;
  */
 @Entity
 @Table(name = "GroupWelcomeInfo")
-public class GroupWelcomeInfo {
+public class GroupWelcomeInfo implements BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -54,10 +57,10 @@ public class GroupWelcomeInfo {
     public GroupWelcomeInfo() {
     }
 
-    public GroupWelcomeInfo(long bot, boolean random, int pollingNumber, int randomMark, Scope scope) {
+    public GroupWelcomeInfo(long bot, boolean random, int randomMark, Scope scope) {
         this.bot = bot;
         this.random = random;
-        this.pollingNumber = pollingNumber;
+        this.pollingNumber = 1;
         this.randomMark = randomMark;
         if (scope.isGlobal()) {
             this.scopeMark = bot + ".";
@@ -138,5 +141,60 @@ public class GroupWelcomeInfo {
             this.scopeMark = bot + "." + scope.getGroupNumber();
         }
         this.scope = scope;
+    }
+
+
+    /**
+     * 修改 this 所保存的数据
+     * 用于保存或更新
+     *
+     * @return boolean t 成功
+     * @author Moyuyanli
+     * @date 2023/8/4 10:33
+     */
+    @Override
+    public boolean merge() {
+        try {
+            HibernateUtil.factory.fromTransaction(session -> {
+                GroupWelcomeInfo merge = session.merge(this);
+                merge.getWelcomeMessages().forEach(it -> {
+                    it.setMark(merge.getId());
+                    it.merge();
+                });
+                return null;
+            });
+        } catch (Exception e) {
+            if (e.getMessage().equals("Converting `org.hibernate.exception.ConstraintViolationException` to JPA `PersistenceException` : could not execute statement")) {
+                HibernateUtil.factory.fromTransaction(session -> {
+                    session.createNativeQuery("drop table WELCOMEMESSAGE").executeUpdate();
+                    return null;
+                });
+            }
+            LOGGER.error("欢迎词保存失败！",e);
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * 删除
+     *
+     * @return boolean t 成功
+     * @author Moyuyanli
+     * @date 2023/8/4 10:34
+     */
+    @Override
+    public boolean remove() {
+        try {
+            HibernateUtil.factory.fromTransaction(session -> {
+                this.getWelcomeMessages().forEach(WelcomeMessage::remove);
+                session.remove(this);
+                return null;
+            });
+        } catch (Exception e) {
+            LOGGER.error("群组信息删除失败！",e);
+            return false;
+        }
+        return true;
     }
 }

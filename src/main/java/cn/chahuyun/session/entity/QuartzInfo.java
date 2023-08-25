@@ -1,10 +1,13 @@
 package cn.chahuyun.session.entity;
 
+import cn.chahuyun.session.utils.HibernateUtil;
 import cn.chahuyun.session.utils.ScopeUtil;
 import jakarta.persistence.*;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static cn.chahuyun.session.HuYanSession.LOGGER;
 
 /**
  * 定时器信息
@@ -14,7 +17,7 @@ import java.util.List;
  */
 @Entity
 @Table(name = "QuartzInfo")
-public class QuartzInfo {
+public class QuartzInfo implements BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -72,8 +75,8 @@ public class QuartzInfo {
     /**
      * 多词条消息集合
      */
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "quartzMessageId")
-    private List<QuartzSession> manySessions = new ArrayList<>();
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER,targetEntity = QuartzSession.class,mappedBy = "quartzMessageId")
+    private List<QuartzSession> quartzSessions = new ArrayList<>();
 
     public QuartzInfo() {
     }
@@ -210,11 +213,59 @@ public class QuartzInfo {
         this.scope = scope;
     }
 
-    public List<QuartzSession> getManySessions() {
-        return manySessions;
+    public List<QuartzSession> getQuartzSession() {
+        return quartzSessions;
     }
 
-    public void setManySessions(List<QuartzSession> manySessions) {
-        this.manySessions = manySessions;
+    public void setQuartzSession(List<QuartzSession> quartzSessions) {
+        this.quartzSessions = quartzSessions;
+    }
+
+    /**
+     * 修改 this 所保存的数据
+     * 用于保存或更新
+     *
+     * @return boolean t 成功
+     * @author Moyuyanli
+     * @date 2023/8/4 10:33
+     */
+    @Override
+    public boolean merge() {
+        try {
+            HibernateUtil.factory.fromTransaction(session -> {
+                QuartzInfo merge = session.merge(this);
+                merge.getQuartzSession().forEach(it->{
+                    it.setQuartzMessageId(merge.getId());
+                    it.merge();
+                });
+                return null;
+            });
+        } catch (Exception e) {
+            LOGGER.error("定时消息信息保存失败！",e);
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * 删除
+     *
+     * @return boolean t 成功
+     * @author Moyuyanli
+     * @date 2023/8/4 10:34
+     */
+    @Override
+    public boolean remove() {
+        try {
+            HibernateUtil.factory.fromTransaction(session -> {
+                this.getQuartzSession().forEach(QuartzSession::remove);
+                session.merge(this);
+                return null;
+            });
+        } catch (Exception e) {
+            LOGGER.error("定时消息信息删除失败！",e);
+            return false;
+        }
+        return true;
     }
 }

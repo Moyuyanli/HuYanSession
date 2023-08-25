@@ -30,7 +30,7 @@ import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static cn.chahuyun.session.HuYanSession.log;
+import static cn.chahuyun.session.HuYanSession.LOGGER;
 
 
 /**
@@ -82,7 +82,7 @@ public class GroupManager {
                 messageChain.append("\n指路人:").append(group.get(invitorId).getNick()).append("(").append(String.valueOf(invitorId)).append(")");
             }
         } catch (Exception e) {
-            log.warning("新人加群申请-欢迎消息构造失败!");
+            LOGGER.warning("新人加群申请-欢迎消息构造失败!");
         }
         assert group != null;
         group.sendMessage(messageChain.build());
@@ -131,7 +131,7 @@ public class GroupManager {
                 return session.createQuery(query).list();
             });
         } catch (Exception e) {
-            log.error("出错啦!", e);
+            LOGGER.error("出错啦!", e);
         }
         GroupWelcomeInfo groupWelcomeInfo = null;
         boolean next = true;
@@ -188,20 +188,23 @@ public class GroupManager {
         assert group != null;
         NormalMember member = group.get(userId);
         if (member == null) {
-            log.warning("该群员不存在！");
+            LOGGER.warning("该群员不存在！");
             return;
         }
+
+        String nameCard = member.getNick();
+        String nick = event.getSender().getNick();
 
         String[] split = code.split(" +");
         if (split.length > 1) {
             String s = split[1];
-            if (s.equals("hmd")) {
+            if ("hmd".equals(s)) {
                 member.kick("再也不见！", true);
-                return;
+            } else {
+                member.kick("送你飞机票~");
             }
         }
-
-        member.kick("送你飞机票~");
+        group.sendMessage(String.format("%s被%s送走了....", nameCard, nick));
     }
 
     /**
@@ -234,7 +237,7 @@ public class GroupManager {
                 return list;
             });
         } catch (Exception e) {
-            log.error("出错啦~", e);
+            LOGGER.error("出错啦~", e);
             return false;
         }
         if (blacklists == null || blacklists.isEmpty()) {
@@ -281,7 +284,7 @@ public class GroupManager {
                 return list;
             });
         } catch (Exception e) {
-            log.error("出错啦~", e);
+            LOGGER.error("出错啦~", e);
             return false;
         }
         if (blacklists == null || blacklists.isEmpty()) {
@@ -335,7 +338,7 @@ public class GroupManager {
 
         Map<String, Power> powerMap = StaticData.getPowerMap(bot);
         MemberPermission permission = event.getGroup().get(event.getSender().getId()).getPermission();
-        boolean owner = HuYanSession.config.getOwner() == sender.getId();
+        boolean owner = HuYanSession.CONFIG.getOwner() == sender.getId();
         if (!owner && permission == MemberPermission.MEMBER) {
             if (!powerMap.containsKey(powerString)) {
                 return ListeningStatus.LISTENING;
@@ -439,7 +442,7 @@ public class GroupManager {
                     messageChain.append("\n指路人:").append(group.get(invitorId).getNick()).append("(").append(String.valueOf(invitorId)).append(")");
                 }
             } catch (Exception e) {
-                log.warning("新人加群申请-欢迎消息构造失败!");
+                LOGGER.warning("新人加群申请-欢迎消息构造失败!");
             }
             group.sendMessage(messageChain.build());
         }
@@ -560,7 +563,7 @@ public class GroupManager {
                 String[] strings = string.split("[~-]");
                 int start = Integer.parseInt(strings[0]);
                 int end = Integer.parseInt(strings[1]);
-                log.info("s-" + start + " e-" + end);
+                LOGGER.info("s-" + start + " e-" + end);
                 records = records.subList(start, end);
             } else {
                 int end = Integer.parseInt(split[1]);
@@ -573,12 +576,12 @@ public class GroupManager {
             try {
                 MessageSource.recall(record.toMessageSource());
             } catch (PermissionDeniedException e) {
-                log.warning("消息撤回冲突-无权操作");
+                LOGGER.warning("消息撤回冲突-无权操作");
             } catch (IllegalStateException e) {
-                log.warning("消息撤回冲突-已被撤回 或 消息未找到");
+                LOGGER.warning("消息撤回冲突-已被撤回 或 消息未找到");
             } catch (Exception e) {
                 subject.sendMessage("消息撤回失败!");
-                log.error("出错啦~", e);
+                LOGGER.error("出错啦~", e);
             }
         }
     }
@@ -674,7 +677,7 @@ public class GroupManager {
                     } else if (mateType == 5) {
                         mate = Mate.PATTERN;
                     }
-                    if (ShareUtils.mateMate(code, mate, trigger)) {
+                    if (ShareUtils.mateMate(code, mate, trigger,code)) {
                         groupProhibited = prohibited;
                     }
                 }
@@ -690,7 +693,7 @@ public class GroupManager {
             try {
                 MessageSource.recall(event.getMessage());
             } catch (PermissionDeniedException e) {
-                log.warning("违禁词撤回失败-权限不足");
+                LOGGER.warning("违禁词撤回失败-权限不足");
             } catch (Exception e) {
                 e.printStackTrace();
             }

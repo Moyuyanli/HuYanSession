@@ -20,7 +20,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import static cn.chahuyun.session.HuYanSession.log;
+import static cn.chahuyun.session.HuYanSession.LOGGER;
 
 /**
  * RepeatMessage
@@ -113,7 +113,7 @@ public class RepeatMessageAction {
             try {
                 group.get(sender.getId()).mute(60);
             } catch (Exception e) {
-                log.error("刷屏处理失败!");
+                LOGGER.error("刷屏处理失败!");
                 subject.sendMessage("检测到刷屏,阻止失败!");
             }
             repeatMessageMap.put(mark, repeatMessage);

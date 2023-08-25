@@ -1,6 +1,9 @@
 package cn.chahuyun.session.entity;
 
+import cn.chahuyun.session.utils.HibernateUtil;
 import jakarta.persistence.*;
+
+import static cn.chahuyun.session.HuYanSession.LOGGER;
 
 /**
  * 说明
@@ -11,7 +14,7 @@ import jakarta.persistence.*;
  */
 @Entity
 @Table(name = "ManySession")
-public class ManySession {
+public class ManySession implements BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -31,9 +34,7 @@ public class ManySession {
     /**
      * 匹配主表消息id
      */
-    @ManyToOne
-    @JoinColumn(name = "manySession_id")
-    private ManySessionInfo manySessionId;
+    private int manySessionId;
 
     /**
      * 回复消息
@@ -76,12 +77,12 @@ public class ManySession {
         this.bot = bot;
     }
 
-    public ManySessionInfo getManySessionId() {
+    public int getManySessionId() {
         return manySessionId;
     }
 
-    public void setManySessionId(ManySessionInfo manySessionID) {
-        this.manySessionId = manySessionID;
+    public void setManySessionId(int manySessionId) {
+        this.manySessionId = manySessionId;
     }
 
     public String getReply() {
@@ -98,5 +99,45 @@ public class ManySession {
 
     public void setOther(boolean other) {
         this.other = other;
+    }
+
+    /**
+     * 修改 this 所保存的数据
+     * 用于保存或更新
+     *
+     * @return boolean t 成功
+     * @author Moyuyanli
+     * @date 2023/8/4 10:33
+     */
+    @Override
+    public boolean merge() {
+        try {
+            HibernateUtil.factory.fromTransaction(session -> session.merge(this));
+        } catch (Exception e) {
+            LOGGER.error("多词条消息保存失败！",e);
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * 删除
+     *
+     * @return boolean t 成功
+     * @author Moyuyanli
+     * @date 2023/8/4 10:34
+     */
+    @Override
+    public boolean remove() {
+        try {
+            HibernateUtil.factory.fromTransaction(session -> {
+                session.remove(this);
+                return null;
+            });
+        } catch (Exception e) {
+            LOGGER.error("多词条消息删除失败！",e);
+            return false;
+        }
+        return true;
     }
 }

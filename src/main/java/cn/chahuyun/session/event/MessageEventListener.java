@@ -65,7 +65,7 @@ public class MessageEventListener extends SimpleListenerHost {
 
 
     @EventHandler()
-    public void onMessage(@NotNull MessageEvent event) throws Exception { // 可以抛出任何异常, 将在 handleException 处理
+    public void onMessage(@NotNull MessageEvent event) { // 可以抛出任何异常, 将在 handleException 处理
         String code = event.getMessage().serializeToMiraiCode();
         Contact subject = event.getSubject();
         User sender = event.getSender();
@@ -471,15 +471,11 @@ public class MessageEventListener extends SimpleListenerHost {
      */
     private void isSessionMessage(@NotNull MessageEvent event) {
         String code = event.getMessage().serializeToMiraiCode();
+        String content = event.getMessage().contentToString();
         Bot bot = event.getBot();
 
         Map<String, Session> sessionMap = StaticData.getSessionMap(bot);
         for (Map.Entry<String, Session> entry : sessionMap.entrySet()) {
-            //先做模糊查询判断存在不存在
-//            if (code.contains(entry.getKey())) {
-//                if (ConfigData.INSTANCE.getDebugSwitch()) {
-//                    l.info("匹配触发内容->存在");
-//                }
             //存在则尝试匹配作用域
             Session sessionInfo = entry.getValue();
             if (ShareUtils.mateScope(event, sessionInfo.getScope())) {
@@ -487,7 +483,7 @@ public class MessageEventListener extends SimpleListenerHost {
                     l.info("匹配作用域->存在");
                 }
                 //尝试匹配匹配方式
-                if (ShareUtils.mateMate(code, sessionInfo.getMate(), sessionInfo.getTerm())) {
+                if (ShareUtils.mateMate(code, sessionInfo.getMate(), sessionInfo.getTerm(),content)) {
                     if (SessionConfig.INSTANCE.getDebugSwitch()) {
                         l.info("匹配匹配方式->成功");
                     }
@@ -512,7 +508,7 @@ public class MessageEventListener extends SimpleListenerHost {
                         l.info("匹配作用域->存在");
                     }
                     //尝试匹配匹配方式
-                    if (ShareUtils.mateMate(code, manySessionInfo.getMate(), manySessionInfo.getKeywords())) {
+                    if (ShareUtils.mateMate(code, manySessionInfo.getMate(), manySessionInfo.getKeywords(),content)) {
                         if (SessionConfig.INSTANCE.getDebugSwitch()) {
                             l.info("匹配匹配方式->成功");
                         }

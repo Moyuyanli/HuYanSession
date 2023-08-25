@@ -1,6 +1,9 @@
 package cn.chahuyun.session.entity;
 
+import cn.chahuyun.session.utils.HibernateUtil;
 import jakarta.persistence.*;
+
+import static cn.chahuyun.session.HuYanSession.LOGGER;
 
 /**
  * 说明
@@ -11,7 +14,7 @@ import jakarta.persistence.*;
  */
 @Entity
 @Table(name = "QuartzSession")
-public class QuartzSession {
+public class QuartzSession implements BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -31,7 +34,6 @@ public class QuartzSession {
     /**
      * 匹配定时任务的多消息
      */
-    @JoinColumn(name = "quartzMessage_id")
     private int quartzMessageId;
 
     /**
@@ -97,5 +99,45 @@ public class QuartzSession {
 
     public void setOther(boolean other) {
         this.other = other;
+    }
+
+    /**
+     * 修改 this 所保存的数据
+     * 用于保存或更新
+     *
+     * @return boolean t 成功
+     * @author Moyuyanli
+     * @date 2023/8/4 10:33
+     */
+    @Override
+    public boolean merge() {
+        try {
+            HibernateUtil.factory.fromTransaction(session -> session.merge(this));
+        } catch (Exception e) {
+            LOGGER.error("定时消息保存失败！",e);
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * 删除
+     *
+     * @return boolean t 成功
+     * @author Moyuyanli
+     * @date 2023/8/4 10:34
+     */
+    @Override
+    public boolean remove() {
+        try {
+            HibernateUtil.factory.fromTransaction(session -> {
+                session.remove(this);
+                return null;
+            });
+        } catch (Exception e) {
+            LOGGER.error("定时消息删除失败！",e);
+            return false;
+        }
+        return true;
     }
 }

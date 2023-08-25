@@ -32,9 +32,8 @@ import java.nio.file.Path;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
-import static cn.chahuyun.session.HuYanSession.log;
+import static cn.chahuyun.session.HuYanSession.LOGGER;
 
 /**
  * 数据管理 导出 导入 excel
@@ -155,7 +154,7 @@ public class DataManager {
         File file = path.toFile();
         if (file.exists()) {
             if (!file.delete()) {
-                log.error("导出失败!-请手动删除data文件夹下的 HuYan.xlsx 文件!");
+                LOGGER.error("导出失败!-请手动删除data文件夹下的 HuYan.xlsx 文件!");
             }
         }
         String xlsxPath = path.toString();
@@ -531,7 +530,7 @@ public class DataManager {
         File file1 = FileUtil.file(url1);
         ExcelReader reader = ExcelUtil.getReader(file1);
         List<Session> sessions = reader.readAll(Session.class);
-        log.info("文件信息->" + sessions);
+        LOGGER.info("文件信息->" + sessions);
     }
 
 

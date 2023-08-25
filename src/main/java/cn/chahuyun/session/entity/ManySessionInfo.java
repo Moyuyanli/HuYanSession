@@ -1,6 +1,7 @@
 package cn.chahuyun.session.entity;
 
 import cn.chahuyun.session.enums.Mate;
+import cn.chahuyun.session.utils.HibernateUtil;
 import cn.chahuyun.session.utils.MateUtil;
 import cn.chahuyun.session.utils.ScopeUtil;
 import cn.chahuyun.session.utils.ShareUtils;
@@ -8,6 +9,8 @@ import jakarta.persistence.*;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static cn.chahuyun.session.HuYanSession.LOGGER;
 
 /**
  * 说明
@@ -18,7 +21,7 @@ import java.util.List;
  */
 @Entity
 @Table(name = "ManySessionInfo")
-public class ManySessionInfo {
+public class ManySessionInfo implements BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -169,5 +172,53 @@ public class ManySessionInfo {
             this.scopeMark = bot + "." + scope.getGroupNumber();
         }
         this.scope = scope;
+    }
+
+    /**
+     * 修改 this 所保存的数据
+     * 用于保存或更新
+     *
+     * @return boolean t 成功
+     * @author Moyuyanli
+     * @date 2023/8/4 10:33
+     */
+    @Override
+    public boolean merge() {
+        try {
+            HibernateUtil.factory.fromTransaction(session -> {
+                ManySessionInfo merge = session.merge(this);
+                merge.getManySessions().forEach(it->{
+                    it.setManySessionId(merge.getId());
+                    it.merge();
+                });
+                return null;
+            });
+        } catch (Exception e) {
+            LOGGER.error("多词条信息保存失败！",e);
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * 删除
+     *
+     * @return boolean t 成功
+     * @author Moyuyanli
+     * @date 2023/8/4 10:34
+     */
+    @Override
+    public boolean remove() {
+        try {
+            HibernateUtil.factory.fromTransaction(session -> {
+                this.getManySessions().forEach(ManySession::remove);
+                session.remove(this);
+                return null;
+            });
+        } catch (Exception e) {
+            LOGGER.error("多词条信息删除失败！",e);
+            return false;
+        }
+        return true;
     }
 }

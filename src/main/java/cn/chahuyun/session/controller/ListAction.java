@@ -17,7 +17,7 @@ import org.hibernate.query.criteria.JpaRoot;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static cn.chahuyun.session.HuYanSession.log;
+import static cn.chahuyun.session.HuYanSession.LOGGER;
 
 /**
  * 说明
@@ -38,7 +38,7 @@ public class ListAction {
      */
     public static void init(boolean type) {
 
-        Map<Long, Map<Integer, GroupList>> parseList = HibernateUtil.factory.fromTransaction(session -> {
+        Map<Long, Map<String, GroupList>> parseList = HibernateUtil.factory.fromTransaction(session -> {
             //创建构造器
             HibernateCriteriaBuilder builder = session.getCriteriaBuilder();
             //创建实体对应查询器
@@ -52,11 +52,11 @@ public class ListAction {
         StaticData.setGroupListMap(parseList);
 
         if (type) {
-            log.info("数据库群组信息初始化成功!");
+            LOGGER.info("数据库群组信息初始化成功!");
             return;
         }
         if (SessionConfig.INSTANCE.getDebugSwitch()) {
-            log.info("群组信息更新成功!");
+            LOGGER.info("群组信息更新成功!");
         }
 
     }
@@ -69,15 +69,15 @@ public class ListAction {
      * @author Moyuyanli
      * @date 2022/7/10 0:26
      */
-    private static Map<Long, Map<Integer, GroupList>> parseList(List<GroupList> groupLists) {
+    private static Map<Long, Map<String, GroupList>> parseList(List<GroupList> groupLists) {
         if (groupLists == null || groupLists.isEmpty()) {
             return null;
         }
-        Map<Long, Map<Integer, GroupList>> listMap = new HashMap<>();
+        Map<Long, Map<String, GroupList>> listMap = new HashMap<>();
 
         for (GroupList entity : groupLists) {
             long bot = entity.getBot();
-            int listId = entity.getListId();
+            String listId = entity.getListId();
 
             if (!listMap.containsKey(bot)) {
                 listMap.put(bot, new HashMap<>() {{
@@ -106,15 +106,15 @@ public class ListAction {
         Bot bot = event.getBot();
 
         if (SessionConfig.INSTANCE.getDebugSwitch()) {
-            log.info("code-" + code);
+            LOGGER.info("code-" + code);
         }
 
         String[] split = code.split("\\s+");
-        int key = Integer.parseInt(split[0].split("\\\\?[:：]")[1]);
+        String key = split[0].split("\\\\?[:：]")[1];
 
         StringBuilder reply = new StringBuilder();
         //判断新加的群号在这个群组中是否存在，存在则拼接回复消息
-        Map<Integer, GroupList> groupListMap = StaticData.getGroupListMap(bot);
+        Map<String, GroupList> groupListMap = StaticData.getGroupListMap(bot);
         if (groupListMap != null && groupListMap.containsKey(key)) {
             GroupList groupList = groupListMap.get(key);
             for (int i = 1; i < split.length; i++) {
@@ -146,18 +146,18 @@ public class ListAction {
                 return 0;
             });
         } catch (Exception e) {
-            log.error("数据库添加群组失败:", e);
+            LOGGER.error("数据库添加群组失败:", e);
             subject.sendMessage("群组" + key + "添加失败！");
             return;
         }
         //我又开始码屎山了，这TM才开始写啊!T_T
         //如果只加了1个群号，并且群号还存在的话返回这条消息
-        if (split.length == 2 && !reply.toString().equals("")) {
+        if (split.length == 2 && !"".equals(reply.toString())) {
             subject.sendMessage("群组" + key + "中" + reply);
             return;
         }
         String message = "群组" + key + "添加群成功！";
-        if (!reply.toString().equals("")) {
+        if (!"".equals(reply.toString())) {
             message += "其中:\n" + reply;
         }
         subject.sendMessage(message);
@@ -180,19 +180,18 @@ public class ListAction {
 
         String[] split = code.split("\\\\?[:：]");
 
-        int key = 0;
+        String key = null;
         if (split.length == 2) {
-            key = Integer.parseInt(split[1]);
+            key = split[1];
         }
         //拿静态资源
-        Map<Integer, GroupList> groupListMap;
+        Map<String, GroupList> groupListMap;
         groupListMap = StaticData.getGroupListMap(bot);
         if (groupListMap == null || groupListMap.isEmpty()) {
             subject.sendMessage("没有群组信息!");
             return;
         }
-
-        if (key != 0 && !groupListMap.containsKey(key)) {
+        if (key!=null && !groupListMap.containsKey(key)) {
             subject.sendMessage("没有这个群组信息!");
             return;
         }
@@ -204,7 +203,7 @@ public class ListAction {
         });
 
         for (GroupList entity : groupListMap.values()) {
-            if (key != 0 && key != entity.getListId()) {
+            if (key != null && key.equals(entity.getListId())) {
                 continue;
             }
             forwardMessageBuilder.add(bot, chain -> {
@@ -271,7 +270,7 @@ public class ListAction {
             boolean finalType = type;
             Long finalValue = value;
             aBoolean = HibernateUtil.factory.fromTransaction(session -> {
-                Map<Integer, GroupList> groupListMap = StaticData.getGroupListMap(bot);
+                Map<String, GroupList> groupListMap = StaticData.getGroupListMap(bot);
                 GroupList groupList = null;
                 //如果有群组，则先从内存拿到群组
                 if (groupListMap != null && groupListMap.containsKey(key)) {
@@ -282,7 +281,7 @@ public class ListAction {
                     session.remove(groupList);
                 } else {
                     if (groupList == null) {
-                        log.error("GroupList remove failed !");
+                        LOGGER.error("GroupList remove failed !");
                         return false;
                     }
 
@@ -294,9 +293,9 @@ public class ListAction {
             });
         } catch (Exception e) {
             if (e instanceof PersistenceException) {
-                log.error("不允许群组为空群组！");
+                LOGGER.error("不允许群组为空群组！");
             } else {
-                log.error("数据库删除群组失败:", e);
+                LOGGER.error("数据库删除群组失败:", e);
             }
         }
         if (Boolean.FALSE.equals(aBoolean)) {

@@ -6,7 +6,7 @@ import cn.chahuyun.config.SessionConfig;
 import cn.chahuyun.session.controller.*;
 import cn.chahuyun.session.event.GroupEventListener;
 import cn.chahuyun.session.event.MessageEventListener;
-import cn.chahuyun.session.utils.HibernateUtil;
+import cn.chahuyun.session.manage.PluginManager;
 import net.mamoe.mirai.console.command.CommandManager;
 import net.mamoe.mirai.console.plugin.jvm.JavaPlugin;
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescriptionBuilder;
@@ -14,7 +14,6 @@ import net.mamoe.mirai.event.Event;
 import net.mamoe.mirai.event.EventChannel;
 import net.mamoe.mirai.event.GlobalEventChannel;
 import net.mamoe.mirai.utils.MiraiLogger;
-import xyz.cssxsh.mirai.hibernate.MiraiHibernateConfiguration;
 
 
 /**
@@ -35,11 +34,11 @@ public final class HuYanSession extends JavaPlugin {
     /**
      * 日志
      */
-    public static final MiraiLogger log = INSTANCE.getLogger();
+    public static final MiraiLogger LOGGER = INSTANCE.getLogger();
     /**
      * 插件配置
      */
-    public static final SessionConfig config = SessionConfig.INSTANCE;
+    public static final SessionConfig CONFIG = SessionConfig.INSTANCE;
 
     private HuYanSession() {
         super(new JvmPluginDescriptionBuilder("cn.chahuyun.HuYanSession", VERSION)
@@ -53,32 +52,29 @@ public final class HuYanSession extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        log.info("===================HuYanSession2===================");
+        LOGGER.info("===================HuYanSession2===================");
         // 确实花里胡哨- -||
 //        log.info("    //    / /      \\\\    / /                   //   ) )                                                 ");
 //        log.info("   //___ / /        \\\\  / /  ___       __     ((         ___      ___      ___     ( )  ___       __    ");
 //        log.info("  / ___   / //   / / \\\\/ / //   ) ) //   ) )    \\\\     //___) ) ((   ) ) ((   ) ) / / //   ) ) //   ) ) ");
 //        log.info(" //    / / //   / /   / / //   / / //   / /       ) ) //         \\ \\      \\ \\    / / //   / / //   / /  ");
 //        log.info("//    / / ((___( (   / / ((___( ( //   / / ((___ / / ((____   //   ) ) //   ) ) / / ((___/ / //   / /   ");
-        log.info("HuYanSession2 当前版本: " + "v" + VERSION);
-        //加载前置
-        MiraiHibernateConfiguration configuration = new MiraiHibernateConfiguration(this);
-        //初始化插件数据库
-        HibernateUtil.init(configuration);
-        //设定事件监听的父域
-        EventChannel<Event> channel = GlobalEventChannel.INSTANCE.parentScope(HuYanSession.INSTANCE);
+        LOGGER.info("HuYanSession2 当前版本: v" + VERSION);
         //加载配置文件
         reloadPluginConfig(SessionConfig.INSTANCE);
         reloadPluginConfig(BlackListData.INSTANCE);
+        PluginManager.init(INSTANCE);
+        //设定事件监听的父域
+        EventChannel<Event> channel = GlobalEventChannel.INSTANCE.parentScope(HuYanSession.INSTANCE);
         getLogger().info("插件配置已加载！");
         if (SessionConfig.INSTANCE.getOwner() == 0) {
             getLogger().warning("主人还没有设置，请设置主人!");
         } else {
-            log.info("主人已设置:" + SessionConfig.INSTANCE.getOwner());
+            LOGGER.info("主人已设置:" + SessionConfig.INSTANCE.getOwner());
         }
         //加载指令
         CommandManager.INSTANCE.registerCommand(SessionCommand.INSTANCE, true);
-        log.info("插件指令已加载！");
+        LOGGER.info("插件指令已加载！");
         //加载数据信息
         ListAction.init(true);
         SessionAction.init(true);
@@ -89,13 +85,13 @@ public final class HuYanSession extends JavaPlugin {
 
         //注册群事件
         channel.registerListenerHost(new MessageEventListener());
-        log.info("群消息监听已注册！");
+        LOGGER.info("群消息监听已注册！");
         channel.registerListenerHost(new GroupEventListener());
-        log.info("群动作监听已注册！");
+        LOGGER.info("群动作监听已注册！");
 
 
-        log.info("壶言会话插件加载完成!");
-        log.info("===================HuYanSession2===================");
+        LOGGER.info("壶言会话插件加载完成!");
+        LOGGER.info("===================HuYanSession2===================");
     }
 
     @Override

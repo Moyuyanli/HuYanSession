@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static cn.chahuyun.session.HuYanSession.log;
+import static cn.chahuyun.session.HuYanSession.LOGGER;
 import static cn.chahuyun.session.utils.ShareUtils.DYNAMIC_MESSAGE_PATTERN;
 
 /**
@@ -110,7 +110,7 @@ public class DynamicMessageUtil {
                 //进行动态消息的转换
                 messages = parseMessage(event, value, valueType, object, trigger);
             } catch (IOException e) {
-                log.error("转换动态消息出错!", e);
+                LOGGER.error("转换动态消息出错!", e);
             }
             //从回复消息中的第一位到动态消息标识的第一位 ' $ ' 截取出来
             assert messages != null;
@@ -118,7 +118,7 @@ public class DynamicMessageUtil {
                     //再把转换的动态消息拼接
                     .append(messages);
             if (SessionConfig.INSTANCE.getDebugSwitch()) {
-                log.info("动态消息-" + group + "->" + messages);
+                LOGGER.info("动态消息-" + group + "->" + messages);
             }
             //记录末尾下标
             index = end;
@@ -161,12 +161,12 @@ public class DynamicMessageUtil {
             try {
                 messages = DynamicMessageUtil.parseMessage((MemberJoinEvent) event, value, valueType, object);
             } catch (IOException e) {
-                log.error("转换动态消息出错!", e);
+                LOGGER.error("转换动态消息出错!", e);
             }
             builder.append(MiraiCode.deserializeMiraiCode(message.substring(index, start)))
                     .append(messages);
             if (SessionConfig.INSTANCE.getDebugSwitch()) {
-                log.info("动态消息-" + group + "->" + messages);
+                LOGGER.info("动态消息-" + group + "->" + messages);
             }
             index = end;
         }
@@ -206,12 +206,12 @@ public class DynamicMessageUtil {
             try {
                 messages = DynamicMessageUtil.parseMessage(value, valueType, object);
             } catch (IOException e) {
-                log.error("转换动态消息出错!", e);
+                LOGGER.error("转换动态消息出错!", e);
             }
             builder.append(MiraiCode.deserializeMiraiCode(message.substring(index, start)))
                     .append(messages);
             if (SessionConfig.INSTANCE.getDebugSwitch()) {
-                log.info("动态消息-" + group + "->" + messages);
+                LOGGER.info("动态消息-" + group + "->" + messages);
             }
             index = end;
         }
@@ -440,7 +440,7 @@ public class DynamicMessageUtil {
             SimpleDateFormat userSimpleDateFormat = new SimpleDateFormat(value);
             userFormat = userSimpleDateFormat.format(new Date());
         } catch (Exception e) {
-            log.warning("动态消息-时间格式化出错!", e);
+            LOGGER.warning("动态消息-时间格式化出错!", e);
             return new PlainText("未识别动态消息:" + SessionConfig.INSTANCE.getVariableSymbol() + valueType + "(" + value + ")");
         }
         String trim = userFormat.replace("\\", "").trim();

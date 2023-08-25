@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import static cn.chahuyun.session.HuYanSession.log;
+import static cn.chahuyun.session.HuYanSession.LOGGER;
 import static cn.chahuyun.session.utils.ShareUtils.DYNAMIC_MESSAGE_PATTERN;
 
 /**
@@ -56,7 +56,7 @@ public class SessionAction {
                 return session.createQuery(query).list();
             });
         } catch (Exception e) {
-            log.error("会话数据加载失败:", e);
+            LOGGER.error("会话数据加载失败:", e);
             return;
         }
 
@@ -80,11 +80,11 @@ public class SessionAction {
             StaticData.setSessionMap(sessionAll);
         }
         if (SessionConfig.INSTANCE.getDebugSwitch() && type) {
-            log.info("数据库会话信息初始化成功!");
+            LOGGER.info("数据库会话信息初始化成功!");
             return;
         }
         if (SessionConfig.INSTANCE.getDebugSwitch()) {
-            log.info("会话数据更新成功!");
+            LOGGER.info("会话数据更新成功!");
         }
 
     }
@@ -473,7 +473,7 @@ public class SessionAction {
                 return 0;
             });
         } catch (Exception e) {
-            log.error("添加对话失败:" + e.getMessage());
+            LOGGER.error("添加对话失败:" + e.getMessage());
             subject.sendMessage("学不废!");
             e.printStackTrace();
             return;
@@ -569,27 +569,27 @@ public class SessionAction {
                             accurate.append(base.getTerm()).append(" ==> ").append(base.getReply()).append(" -> ").append(trigger).append("\n");
                             int accurateLength = accurate.build().toString().length();
                             nodesLength += accurateLength;
-                            log.debug("accurate.toString.length->" + accurateLength);
+                            LOGGER.debug("accurate.toString.length->" + accurateLength);
                             break;
                         case VAGUE:
                             vague.append(base.getTerm()).append(" ==> ").append(base.getReply()).append(" -> ").append(trigger).append("\n");
                             int vagueLength = vague.build().toString().length();
-                            log.debug("vague.toString.length->" + vagueLength);
+                            LOGGER.debug("vague.toString.length->" + vagueLength);
                             break;
                         case START:
                             start.append(base.getTerm()).append(" ==> ").append(base.getReply()).append(" -> ").append(trigger).append("\n");
                             int startLength = start.build().toString().length();
-                            log.debug("start.toString.length->" + startLength);
+                            LOGGER.debug("start.toString.length->" + startLength);
                             break;
                         case END:
                             end.append(base.getTerm()).append(" ==> ").append(base.getReply()).append(" -> ").append(trigger).append("\n");
                             int endLength = end.build().toString().length();
-                            log.debug("end.toString.length->" + endLength);
+                            LOGGER.debug("end.toString.length->" + endLength);
                             break;
                         case PATTERN:
                             pattern.append(base.getTerm()).append(" ==> ").append(base.getReply()).append(" -> ").append(trigger).append("\n");
                             int patternLength = end.build().toString().length();
-                            log.debug("pattern.toString.length->" + patternLength);
+                            LOGGER.debug("pattern.toString.length->" + patternLength);
                             break;
                         default:
                             break;
@@ -605,7 +605,7 @@ public class SessionAction {
                             .append(base.getMate().getMateName())
                             .append("\n");
                     int OtherLength = other.build().toString().length();
-                    log.debug("other.toString.length->" + OtherLength);
+                    LOGGER.debug("other.toString.length->" + OtherLength);
 
                     break;
                 case 5:
@@ -618,13 +618,13 @@ public class SessionAction {
                             .append(base.getMate().getMateName())
                             .append("\n");
                     int specialLength = special.build().toString().length();
-                    log.debug("other.toString.length->" + specialLength);
+                    LOGGER.debug("other.toString.length->" + specialLength);
                 default:
                     break;
             }
             endIndex = i;
             if (nodesLength > 4000) {
-                log.debug("endIndex->" + endIndex);
+                LOGGER.debug("endIndex->" + endIndex);
                 break;
             }
         }
@@ -647,7 +647,7 @@ public class SessionAction {
         map.put("down", endIndex < size);
 
         ForwardMessage build = nodes.build();
-        log.debug("session.toString.length->" + build.toString().length());
+        LOGGER.debug("session.toString.length->" + build.toString().length());
         map.put("build", build);
         return map;
     }

@@ -7,7 +7,7 @@ import org.hibernate.query.criteria.HibernateCriteriaBuilder;
 import org.hibernate.query.criteria.JpaCriteriaQuery;
 import org.hibernate.query.criteria.JpaRoot;
 
-import static cn.chahuyun.session.HuYanSession.log;
+import static cn.chahuyun.session.HuYanSession.LOGGER;
 
 /**
  * BlackHouseUtil
@@ -40,10 +40,10 @@ public class BlackHouseAction {
                 return session.createQuery(query).list().get(0);
             });
         } catch (IndexOutOfBoundsException e) {
-            log.warning("暂时没有小黑屋成员!");
+            LOGGER.warning("暂时没有小黑屋成员!");
             return null;
         } catch (Exception e) {
-            log.error("小黑屋查询失败~", e);
+            LOGGER.error("小黑屋查询失败~", e);
         }
         return null;
     }
@@ -62,7 +62,7 @@ public class BlackHouseAction {
                 return true;
             });
         } catch (Exception e) {
-            log.error("小黑屋更新失败:", e);
+            LOGGER.error("小黑屋更新失败:", e);
         }
         return false;
     }

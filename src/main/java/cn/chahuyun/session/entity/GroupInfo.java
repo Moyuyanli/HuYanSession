@@ -1,6 +1,9 @@
 package cn.chahuyun.session.entity;
 
+import cn.chahuyun.session.utils.HibernateUtil;
 import jakarta.persistence.*;
+
+import static cn.chahuyun.session.HuYanSession.LOGGER;
 
 /**
  * 说明
@@ -11,27 +14,29 @@ import jakarta.persistence.*;
  */
 @Entity
 @Table(name = "GroupInfo")
-public class GroupInfo {
+public class GroupInfo implements BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private int id;
-
+    /**
+     * bot
+     */
     private long bot;
-
+    /**
+     *  所对应的群组信息 id
+     */
     private int listId;
 
+    /**
+     * 群号
+     */
     private long groupId;
 
 
     public GroupInfo() {
     }
 
-    public GroupInfo(long bot, int listId, long groupId) {
-        this.bot = bot;
-        this.listId = listId;
-        this.groupId = groupId;
-    }
 
     public GroupInfo(long bot, long groupId) {
         this.bot = bot;
@@ -71,13 +76,45 @@ public class GroupInfo {
         this.listId = listId;
     }
 
+
+    /**
+     * 修改 this 所保存的数据
+     * 用于保存或更新
+     *
+     * @return boolean t 成功
+     * @author Moyuyanli
+     * @date 2023/8/4 10:33
+     */
     @Override
-    public String toString() {
-        return "GroupNumber{" +
-                "id=" + id +
-                ", bot=" + bot +
-                ", listId=" + listId +
-                ", groupId=" + groupId +
-                '}';
+    public boolean merge() {
+        try {
+            HibernateUtil.factory.fromTransaction(session -> session.merge(this));
+        } catch (Exception e) {
+            LOGGER.error("群组群信息保存失败！",e);
+            return false;
+        }
+        return true;
+    }
+
+
+    /**
+     * 删除
+     *
+     * @return boolean t 成功
+     * @author Moyuyanli
+     * @date 2023/8/4 10:34
+     */
+    @Override
+    public boolean remove() {
+        try {
+            HibernateUtil.factory.fromTransaction(session -> {
+                session.remove(this);
+                return null;
+            });
+        } catch (Exception e) {
+            LOGGER.error("群组群信息删除失败！",e);
+            return false;
+        }
+        return true;
     }
 }

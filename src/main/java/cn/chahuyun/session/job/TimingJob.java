@@ -55,7 +55,7 @@ public class TimingJob implements Task {
 
     @Override
     public void execute() {
-        MiraiLogger log = HuYanSession.log;
+        MiraiLogger log = HuYanSession.LOGGER;
         int id = Integer.parseInt(getId().split("\\.")[0]);
         QuartzInfo base = QuartzAction.getQuartzInfo(id);
         Map<Integer, GroupList> groupList = StaticData.getGroupListMap(base.getBot());
