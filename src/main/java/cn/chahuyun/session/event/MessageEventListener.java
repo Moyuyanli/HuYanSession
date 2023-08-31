@@ -4,20 +4,21 @@ import cn.chahuyun.config.SessionConfig;
 import cn.chahuyun.session.HuYanSession;
 import cn.chahuyun.session.controller.*;
 import cn.chahuyun.session.data.StaticData;
-import cn.chahuyun.session.dialogue.Dialogue;
+import cn.chahuyun.session.dialogue.DialogueImpl;
+import cn.chahuyun.session.dialogue.DialogueProcessing;
 import cn.chahuyun.session.entity.ManySessionInfo;
 import cn.chahuyun.session.entity.Power;
 import cn.chahuyun.session.entity.Session;
 import cn.chahuyun.session.manage.DataManager;
 import cn.chahuyun.session.manage.GroupManager;
 import cn.chahuyun.session.utils.ShareUtils;
-import cn.hutool.core.util.RandomUtil;
-import kotlin.coroutines.CoroutineContext;
 import net.mamoe.mirai.Bot;
-import net.mamoe.mirai.contact.*;
+import net.mamoe.mirai.contact.Contact;
+import net.mamoe.mirai.contact.Group;
+import net.mamoe.mirai.contact.MemberPermission;
+import net.mamoe.mirai.contact.User;
 import net.mamoe.mirai.event.EventHandler;
 import net.mamoe.mirai.event.SimpleListenerHost;
-import net.mamoe.mirai.event.events.EventCancelledException;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.utils.MiraiLogger;
 import org.jetbrains.annotations.NotNull;
@@ -36,33 +37,6 @@ import java.util.regex.Pattern;
 public class MessageEventListener extends SimpleListenerHost {
 
     private static final MiraiLogger l = HuYanSession.INSTANCE.getLogger();
-
-    @Override
-    public void handleException(@NotNull CoroutineContext context, @NotNull Throwable exception) {
-        if (exception instanceof EventCancelledException) {
-            l.error("发送消息被取消:", exception);
-        } else if (exception instanceof BotIsBeingMutedException) {
-            l.error("你的机器人被禁言:", exception);
-        } else if (exception instanceof MessageTooLargeException) {
-            l.error("发送消息过长:", exception);
-        } else if (exception instanceof IllegalArgumentException) {
-            l.error("发送消息为空:", exception);
-        }
-
-        // 处理事件处理时抛出的异常
-        l.error("出错啦~", exception);
-        try {
-            Friend owner = Bot.getInstances().get(RandomUtil.randomInt(1, Bot.getInstances().size())).getFriend(SessionConfig.INSTANCE.getOwner());
-            if (owner == null) {
-                return;
-            }
-            owner.sendMessage("壶言会话出错:" + exception.getMessage());
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-
-    }
-
 
     @EventHandler()
     public void onMessage(@NotNull MessageEvent event) { // 可以抛出任何异常, 将在 handleException 处理
@@ -474,6 +448,8 @@ public class MessageEventListener extends SimpleListenerHost {
         String content = event.getMessage().contentToString();
         Bot bot = event.getBot();
 
+        DialogueProcessing instance = DialogueProcessing.getInstance();
+
         Map<String, Session> sessionMap = StaticData.getSessionMap(bot);
         for (Map.Entry<String, Session> entry : sessionMap.entrySet()) {
             //存在则尝试匹配作用域
@@ -483,15 +459,15 @@ public class MessageEventListener extends SimpleListenerHost {
                     l.info("匹配作用域->存在");
                 }
                 //尝试匹配匹配方式
-                if (ShareUtils.mateMate(code, sessionInfo.getMate(), sessionInfo.getTerm(),content)) {
+                if (ShareUtils.mateMate(code, sessionInfo.getMate(), sessionInfo.getTerm(), content)) {
                     if (SessionConfig.INSTANCE.getDebugSwitch()) {
                         l.info("匹配匹配方式->成功");
                     }
-                    Dialogue.INSTANCE.dialogueSession(event, sessionInfo);
+                    instance.dialogue(event,sessionInfo);
+//                    DialogueImpl.INSTANCE.dialogueSession(event, sessionInfo);
                     return;
                 }
             }
-//            }
         }
 
         Map<String, ManySessionInfo> manySession = StaticData.getManySession(bot);
@@ -508,11 +484,13 @@ public class MessageEventListener extends SimpleListenerHost {
                         l.info("匹配作用域->存在");
                     }
                     //尝试匹配匹配方式
-                    if (ShareUtils.mateMate(code, manySessionInfo.getMate(), manySessionInfo.getKeywords(),content)) {
+                    if (ShareUtils.mateMate(code, manySessionInfo.getMate(), manySessionInfo.getKeywords(), content)) {
                         if (SessionConfig.INSTANCE.getDebugSwitch()) {
                             l.info("匹配匹配方式->成功");
                         }
-                        Dialogue.INSTANCE.dialogueSession(event, manySessionInfo);
+//                        todo
+//                        instance.dialogue(event,manySessionInfo);
+                        DialogueImpl.INSTANCE.dialogueSession(event, manySessionInfo);
                         return;
                     }
                 }
