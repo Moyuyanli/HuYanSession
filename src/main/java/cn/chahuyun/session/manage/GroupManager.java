@@ -6,7 +6,7 @@ import cn.chahuyun.session.controller.BlackHouseAction;
 import cn.chahuyun.session.controller.BlackListAction;
 import cn.chahuyun.session.data.ApplyClusterInfo;
 import cn.chahuyun.session.data.StaticData;
-import cn.chahuyun.session.dialogue.Dialogue;
+import cn.chahuyun.session.dialogue.DialogueImpl;
 import cn.chahuyun.session.entity.*;
 import cn.chahuyun.session.enums.Mate;
 import cn.chahuyun.session.utils.DynamicMessageUtil;
@@ -158,7 +158,7 @@ public class GroupManager {
             map.put(mark, applyClusterInfo);
         }
 
-        Dialogue.INSTANCE.dialogueSession(event, groupWelcomeInfo);
+        DialogueImpl.INSTANCE.dialogueSession(event, groupWelcomeInfo);
 
     }
 
@@ -314,7 +314,7 @@ public class GroupManager {
         Group group = event.getGroup();
         long groupId = group.getId();
 
-        Scope scope = new Scope(botId, "当前", false, false, groupId, 0);
+        Scope scope = new Scope(botId, "当前", false, false, groupId, "null");
         Blacklist blacklist = new Blacklist(botId, userId, BlackListData.INSTANCE.getAutoBlackListReason(), scope);
         BlackListAction.saveBlackList(blacklist, scope);
         group.sendMessage(String.format("%s(%d) 离开了我们,已经加入黑名单!", member.getNick(), userId));
