@@ -1,7 +1,13 @@
 package cn.chahuyun.session.entity;
 
+import cn.chahuyun.session.utils.HibernateUtil;
 import cn.chahuyun.session.utils.ScopeUtil;
 import jakarta.persistence.*;
+import org.hibernate.query.criteria.HibernateCriteriaBuilder;
+import org.hibernate.query.criteria.JpaCriteriaQuery;
+import org.hibernate.query.criteria.JpaRoot;
+
+import static cn.chahuyun.session.HuYanSession.LOGGER;
 
 /**
  * GroupProhibited
@@ -12,7 +18,7 @@ import jakarta.persistence.*;
  */
 @Entity
 @Table(name = "GroupProhibited")
-public class GroupProhibited {
+public class GroupProhibited implements BaseEntity {
 
     /**
      * id
@@ -217,6 +223,59 @@ public class GroupProhibited {
         } else {
             this.scopeMark = bot + "." + scope.getGroupNumber();
         }
+    }
+
+    /**
+     * 修改 this 所保存的数据
+     * 用于保存或更新
+     *
+     * @return boolean t 成功
+     * @author Moyuyanli
+     * @date 2023/8/4 10:33
+     */
+    @Override
+    public boolean merge() {
+        try {
+            HibernateUtil.factory.fromTransaction(session ->{
+                HibernateCriteriaBuilder builder = session.getCriteriaBuilder();
+                JpaCriteriaQuery<GroupProhibited> query = builder.createQuery(GroupProhibited.class);
+                JpaRoot<GroupProhibited> from = query.from(GroupProhibited.class);
+                query.select(from);
+                query.where(builder.equal(from.get("bot"), this.bot));
+                query.where(builder.equal(from.get("keywords"), this.keywords));
+                GroupProhibited singleResult = session.createQuery(query).getSingleResultOrNull();
+                if (singleResult != null) {
+                    this.setId(singleResult.getId());
+                }
+                session.merge(this);
+                return null;
+            });
+        } catch (Exception e) {
+            LOGGER.error("违禁词信息保存失败！",e);
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * 删除
+     *
+     * @return boolean t 成功
+     * @author Moyuyanli
+     * @date 2023/8/4 10:34
+     */
+    @Override
+    public boolean remove() {
+        try {
+            HibernateUtil.factory.fromTransaction(session -> {
+                session.remove(this);
+                return null;
+            });
+        } catch (Exception e) {
+            LOGGER.error("违禁词信息删除失败！",e);
+            return false;
+        }
+        return true;
     }
 }
 

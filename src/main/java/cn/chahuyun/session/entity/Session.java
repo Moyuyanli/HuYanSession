@@ -1,9 +1,15 @@
 package cn.chahuyun.session.entity;
 
 import cn.chahuyun.session.enums.Mate;
+import cn.chahuyun.session.utils.HibernateUtil;
 import cn.chahuyun.session.utils.ScopeUtil;
 import cn.chahuyun.session.utils.ShareUtils;
 import jakarta.persistence.*;
+import org.hibernate.query.criteria.HibernateCriteriaBuilder;
+import org.hibernate.query.criteria.JpaCriteriaQuery;
+import org.hibernate.query.criteria.JpaRoot;
+
+import static cn.chahuyun.session.HuYanSession.LOGGER;
 
 /**
  * 说明
@@ -14,7 +20,7 @@ import jakarta.persistence.*;
  */
 @Entity
 @Table(name = "Session")
-public class Session {
+public class Session extends BaseMessage implements BaseEntity {
 
     /**
      * id
@@ -187,5 +193,58 @@ public class Session {
                 ", mate=" + mate +
                 ", scope=" + scope +
                 '}';
+    }
+
+    /**
+     * 修改 this 所保存的数据
+     * 用于保存或更新
+     *
+     * @return boolean t 成功
+     * @author Moyuyanli
+     * @date 2023/8/4 10:33
+     */
+    @Override
+    public boolean merge() {
+        try {
+            //todo 标记 用于展示Hibernate查询
+            HibernateUtil.factory.fromTransaction(session -> {
+                HibernateCriteriaBuilder builder = session.getCriteriaBuilder();
+                JpaCriteriaQuery<Session> query = builder.createQuery(Session.class);
+                JpaRoot<Session> from = query.from(Session.class);
+                query.select(from);
+                query.where(builder.equal(from.get("term"), this.term));
+                Session singleResult = session.createQuery(query).getSingleResultOrNull();
+                if (singleResult != null) {
+                    setId(singleResult.getId());
+                }
+                session.merge(this);
+                return null;
+            });
+        } catch (Exception e) {
+            LOGGER.error("会话信息保存失败！", e);
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * 删除
+     *
+     * @return boolean t 成功
+     * @author Moyuyanli
+     * @date 2023/8/4 10:34
+     */
+    @Override
+    public boolean remove() {
+        try {
+            HibernateUtil.factory.fromTransaction(session -> {
+                session.remove(this);
+                return null;
+            });
+        } catch (Exception e) {
+            LOGGER.error("会话信息删除失败！", e);
+            return false;
+        }
+        return true;
     }
 }

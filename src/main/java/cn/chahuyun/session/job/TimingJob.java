@@ -58,7 +58,7 @@ public class TimingJob implements Task {
         MiraiLogger log = HuYanSession.LOGGER;
         int id = Integer.parseInt(getId().split("\\.")[0]);
         QuartzInfo base = QuartzAction.getQuartzInfo(id);
-        Map<Integer, GroupList> groupList = StaticData.getGroupListMap(base.getBot());
+        Map<String, GroupList> groupList = StaticData.getGroupListMap(base.getBot());
 
         Scope scope = base.getScope();
         if (SessionConfig.INSTANCE.getDebugSwitch()) {
@@ -97,7 +97,7 @@ public class TimingJob implements Task {
     private void dialogue(QuartzInfo quartzInfo, Group group) {
         boolean random = quartzInfo.isRandom();
         boolean polling = quartzInfo.isPolling();
-        List<QuartzSession> manySessions = quartzInfo.getManySessions();
+        List<QuartzSession> manySessions = quartzInfo.getQuartzSession();
 
         if (!random && !polling) {
             sendMessage(group, quartzInfo.isDynamic(), quartzInfo.isOther(), quartzInfo.getReply());

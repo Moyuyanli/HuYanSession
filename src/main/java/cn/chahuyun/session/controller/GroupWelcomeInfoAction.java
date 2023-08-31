@@ -97,7 +97,7 @@ public class GroupWelcomeInfoAction {
         }
         String param = nextParamMessageEventFromUser.getMessage().serializeToMiraiCode();
 
-        Scope scope = new Scope(bot.getId(), "当前", false, false, subject.getId(), 0);
+        Scope scope = new Scope(bot.getId(), "当前", false, false, subject.getId(), "null");
 
         //解析参数
         String[] split = param.split(" +");
@@ -109,12 +109,12 @@ public class GroupWelcomeInfoAction {
                     break;
                 case "0":
                 case "全局":
-                    scope = new Scope(bot.getId(), "全局", true, false, subject.getId(), -1);
+                    scope = new Scope(bot.getId(), "全局", true, false, subject.getId(), "null");
                     break;
                 default:
-                    String listPattern = "gr\\d+|群组\\d+";
+                    String listPattern = "gr[\\dA-z]+|群组[\\dA-z]+";
                     if (Pattern.matches(listPattern, s)) {
-                        int listId = Integer.parseInt(s.substring(2));
+                        String listId = s.substring(2);
                         if (ListUtil.isContainsList(bot, listId)) {
                             subject.sendMessage("该群组不存在!");
                             return;
@@ -206,7 +206,6 @@ public class GroupWelcomeInfoAction {
     public void deleteGroupWelcomeInfo(MessageEvent event) {
         String code = event.getMessage().serializeToMiraiCode();
         Contact subject = event.getSubject();
-        Bot bot = event.getBot();
 
         String[] split = code.split("[:：]")[1].split(" +");
         int key = Integer.parseInt(split[0]);

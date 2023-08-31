@@ -83,7 +83,7 @@ public class BlackListAction {
         boolean kick = true;
         boolean prohibit = true;
         boolean withdraw = true;
-        Scope scope = new Scope(bot.getId(), "当前", false, false, subject.getId(), 0);
+        Scope scope = new Scope(bot.getId(), "当前", false, false, subject.getId(), "null");
         if (split.length > 1) {
             for (int i = 1; i < split.length; i++) {
                 String s = split[i];
@@ -108,10 +108,10 @@ public class BlackListAction {
                         reason = ShareUtils.getNextMessageEventFromUser(user).getMessage().serializeToMiraiCode();
                         break;
                     default:
-                        if (Pattern.matches("gr\\d+", s)) {
+                        if (Pattern.matches("gr[\\dA-z]+", s)) {
                             scope.setScopeName("群组" + s.substring(1));
                             scope.setGroupInfo(true);
-                            scope.setListId(Integer.parseInt(s.substring(1)));
+                            scope.setListId(s.substring(1));
                         }
                         break;
                 }

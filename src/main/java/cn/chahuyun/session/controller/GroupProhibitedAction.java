@@ -128,7 +128,7 @@ public class GroupProhibitedAction {
         String[] strings = code.split(" +");
         String key = strings[1];
 
-        Scope scope = new Scope(bot.getId(), "当前", false, false, subject.getId(), -1);
+        Scope scope = new Scope(bot.getId(), "当前", false, false, subject.getId(), "null");
         GroupProhibited groupProhibited = new GroupProhibited(bot.getId(), key, SessionConfig.INSTANCE.getVariableSymbol() + "at(this)触发天条," + SessionConfig.INSTANCE.getVariableSymbol() + "message(prohibitString)", 60, "1m", true, true, false, 0, scope);
 
         if (strings.length > 2) {
@@ -198,10 +198,10 @@ public class GroupProhibitedAction {
                             }
                             groupProhibited.setProhibitTime(time);
                             groupProhibited.setProhibitString(messages);
-                        } else if (Pattern.matches("gr\\d+", string)) {
+                        } else if (Pattern.matches("gr[\\dA-z]+", string)) {
                             scope.setScopeName("群组" + string.substring(1));
                             scope.setGroupInfo(true);
-                            scope.setListId(Integer.parseInt(string.substring(2)));
+                            scope.setListId(string.substring(2));
                             groupProhibited.setScopeInfo(scope);
                         } else if (Pattern.matches("hmd\\d+", string)) {
                             int number = Integer.parseInt(string.substring(3));

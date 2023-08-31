@@ -139,7 +139,7 @@ public class ManySessionAction {
             isRandom = manySessionInfo.isRandom();
         } else {
             //不是就新建
-            scope = new Scope(bot.getId(), "当前", false, false, subject.getId(), -1);
+            scope = new Scope(bot.getId(), "当前", false, false, subject.getId(), "null");
             mate = Mate.ACCURATE;
             isRandom = false;
         }
@@ -155,11 +155,11 @@ public class ManySessionAction {
             switch (param) {
                 case "-1":
                 case "当前":
-                    scope = new Scope(bot.getId(), "当前", false, false, subject.getId(), -1);
+                    scope = new Scope(bot.getId(), "当前", false, false, subject.getId(), "null");
                     break;
                 case "0":
                 case "全局":
-                    scope = new Scope(bot.getId(), "全局", true, false, subject.getId(), -1);
+                    scope = new Scope(bot.getId(), "全局", true, false, subject.getId(), "null");
                     break;
                 case "1":
                 case "精准":
@@ -186,9 +186,9 @@ public class ManySessionAction {
                     isRandom = false;
                     break;
                 default:
-                    String listPattern = "gr\\d+|群组\\d+";
+                    String listPattern = "gr[\\dA-z]+|群组[\\dA-z]+";
                     if (Pattern.matches(listPattern, param)) {
-                        int listId = Integer.parseInt(param.substring(2));
+                        String listId = param.substring(2);
                         if (ListUtil.isContainsList(bot, listId)) {
                             subject.sendMessage("该群组不存在!");
                             return;
@@ -219,12 +219,12 @@ public class ManySessionAction {
             MessageChain nextEventMessage = nextEvent.getMessage();
             String miraiCode = nextEventMessage.serializeToMiraiCode();
             //退出循环保存
-            if (miraiCode.equals("！！") || miraiCode.equals("!!")) {
+            if ("！！".equals(miraiCode) || "!!".equals(miraiCode)) {
                 isQuit = true;
                 continue;
             }
             //删除上一条
-            if (miraiCode.equals("！") || miraiCode.equals("!")) {
+            if ("！".equals(miraiCode) || "!".equals(miraiCode)) {
                 if (sessionList.size() > 2) {
                     sessionList.remove(sessionList.size() - 1);
                     subject.sendMessage("删除上一条回复消息成功！");

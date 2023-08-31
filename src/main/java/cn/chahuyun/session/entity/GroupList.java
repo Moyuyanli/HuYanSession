@@ -2,6 +2,9 @@ package cn.chahuyun.session.entity;
 
 import cn.chahuyun.session.utils.HibernateUtil;
 import jakarta.persistence.*;
+import org.hibernate.query.criteria.HibernateCriteriaBuilder;
+import org.hibernate.query.criteria.JpaCriteriaQuery;
+import org.hibernate.query.criteria.JpaRoot;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -125,6 +128,16 @@ public class GroupList implements BaseEntity{
     public boolean merge() {
         try {
             HibernateUtil.factory.fromTransaction(session ->{
+                HibernateCriteriaBuilder builder = session.getCriteriaBuilder();
+                JpaCriteriaQuery<GroupInfo> query = builder.createQuery(GroupInfo.class);
+                JpaRoot<GroupInfo> from = query.from(GroupInfo.class);
+                query.select(from);
+                query.where(builder.equal(from.get("bot"), this.bot));
+                query.where(builder.equal(from.get("listId"), this.listId));
+                GroupInfo singleResult = session.createQuery(query).getSingleResultOrNull();
+                if (singleResult != null) {
+                    this.setId(singleResult.getId());
+                }
                 GroupList merge = session.merge(this);
                 merge.getGroups().forEach(it->{
                     it.setListId(merge.id);

@@ -44,15 +44,14 @@ public class ScopeUtil {
         String[] split = scopeMark.split("\\.");
         long bot = Long.parseLong(split[0]);
         if (split.length == 1) {
-            return new Scope(bot, "全局", true, false, 0, 0);
+            return new Scope(bot, "全局", true, false, 0, "0");
         } else {
             String s = split[1];
             if (s.contains("gr")) {
                 String gr = s.replace("gr", "");
-                int anInt = Integer.parseInt(gr);
-                return new Scope(bot, "群组", false, true, 0, anInt);
+                return new Scope(bot, "群组", false, true, 0, gr);
             } else {
-                return new Scope(bot, "当前群", false, false, Long.parseLong(s), 0);
+                return new Scope(bot, "当前群", false, false, Long.parseLong(s), "0");
             }
         }
     }

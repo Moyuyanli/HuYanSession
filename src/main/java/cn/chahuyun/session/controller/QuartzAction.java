@@ -48,7 +48,6 @@ public class QuartzAction {
             HibernateCriteriaBuilder builder = session.getCriteriaBuilder();
             JpaCriteriaQuery<QuartzInfo> query = builder.createQuery(QuartzInfo.class);
             JpaRoot<QuartzInfo> from = query.from(QuartzInfo.class);
-
             query.select(from);
             return session.createQuery(query).list();
         });
@@ -158,7 +157,7 @@ public class QuartzAction {
 
         boolean isPolling = false;
         boolean isRandom = false;
-        Scope scope = new Scope(bot.getId(), "当前", false, false, subject.getId(), -1);
+        Scope scope = new Scope(bot.getId(), "当前", false, false, subject.getId(), "null");
         //识别参数
         String[] params = nextParamsEvent.getMessage().serializeToMiraiCode().split(" +");
         for (String param : params) {
@@ -173,12 +172,12 @@ public class QuartzAction {
                     break;
                 case "0":
                 case "全局":
-                    scope = new Scope(bot.getId(), "全局", true, false, subject.getId(), -1);
+                    scope = new Scope(bot.getId(), "全局", true, false, subject.getId(), "null");
                     break;
                 default:
-                    String listPattern = "gr\\d+|群组\\d+";
+                    String listPattern = "gr[\\dA-z]+|群组[\\dA-z]+";
                     if (Pattern.matches(listPattern, param)) {
-                        int listId = Integer.parseInt(param.substring(2));
+                        String listId = param.substring(2);
                         if (ListUtil.isContainsList(bot, listId)) {
                             subject.sendMessage("该群组不存在!");
                             return;
@@ -222,7 +221,7 @@ public class QuartzAction {
 
         //多条消息的定时任务
         QuartzInfo quartzInfo = new QuartzInfo(bot.getId(), name, cron, false, false, "miraiCode", isPolling, isRandom, scope);
-        List<QuartzSession> quartzSessions = quartzInfo.getManySessions();
+        List<QuartzSession> quartzSessions = quartzInfo.getQuartzSession();
 
         boolean isQuit = false;
         while (!isQuit) {
@@ -309,7 +308,7 @@ public class QuartzAction {
         builder.add(bot, new PlainText("以下是所有多词条消息↓"));
 
         for (QuartzInfo value : quartzInfos) {
-            List<QuartzSession> manySessions = value.getManySessions();
+            List<QuartzSession> manySessions = value.getQuartzSession();
             MessageChainBuilder chainBuilder = new MessageChainBuilder();
             chainBuilder.add(new PlainText(String.format("定时器条编号:%d%n定时器名称:%s%n定时器频率: %s%n", value.getId(), value.getName(), value.getCronString())));
             chainBuilder.add(new PlainText(String.format("定时器是否开启:%s%n", value.isStatus() ? "开启" : "关闭")));

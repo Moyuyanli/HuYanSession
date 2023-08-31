@@ -23,8 +23,8 @@ public class ListUtil {
      * @author Moyuyanli
      * @date 2022/7/11 12:13
      */
-    public static boolean isContainsList(Bot bot, int listId) {
-        Map<Integer, GroupList> groupListMap;
+    public static boolean isContainsList(Bot bot, String listId) {
+        Map<String, GroupList> groupListMap;
         try {
             groupListMap = StaticData.getGroupListMap(bot);
             if (groupListMap == null || groupListMap.isEmpty()) {
