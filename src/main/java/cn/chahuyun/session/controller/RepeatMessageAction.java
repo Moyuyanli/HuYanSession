@@ -111,7 +111,7 @@ public class RepeatMessageAction {
                 repeatMessage.setReplyTo(true);
             }
             try {
-                group.get(sender.getId()).mute(60);
+                group.get(sender.getId()).mute(SessionConfig.INSTANCE.getForbiddenTime());
             } catch (Exception e) {
                 LOGGER.error("刷屏处理失败!");
                 subject.sendMessage("检测到刷屏,阻止失败!");
