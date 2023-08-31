@@ -18,7 +18,7 @@ import static cn.chahuyun.session.HuYanSession.LOGGER;
  */
 @Entity
 @Table(name = "GroupWelcomeInfo")
-public class GroupWelcomeInfo implements BaseEntity {
+public class GroupWelcomeInfo extends BaseMessage implements BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

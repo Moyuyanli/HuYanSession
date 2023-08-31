@@ -1,8 +1,14 @@
 package cn.chahuyun.session.entity;
 
+import cn.chahuyun.session.utils.HibernateUtil;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import org.hibernate.query.criteria.HibernateCriteriaBuilder;
+import org.hibernate.query.criteria.JpaCriteriaQuery;
+import org.hibernate.query.criteria.JpaRoot;
+
+import static cn.chahuyun.session.HuYanSession.LOGGER;
 
 /**
  * 说明
@@ -13,7 +19,7 @@ import jakarta.persistence.Table;
  */
 @Entity
 @Table(name = "Scope")
-public class Scope {
+public class Scope implements BaseEntity {
     /**
      * id
      */
@@ -166,4 +172,56 @@ public class Scope {
         this.id = bot + "." + isGlobal + "." + isGroupInfo + "." + groupNumber + "." + listId;
     }
 
+    /**
+     * 修改 this 所保存的数据
+     * 用于保存或更新
+     *
+     * @return boolean t 成功
+     * @author Moyuyanli
+     * @date 2023/8/4 10:33
+     */
+    @Override
+    public boolean merge() {
+        try {
+            HibernateUtil.factory.fromTransaction(session -> {
+                HibernateCriteriaBuilder builder = session.getCriteriaBuilder();
+                JpaCriteriaQuery<Scope> query = builder.createQuery(Scope.class);
+                JpaRoot<Scope> from = query.from(Scope.class);
+                query.select(from);
+                query.where(builder.equal(from.get("bot"), this.bot));
+                query.where(builder.equal(from.get("listId"), this.listId));
+                Scope singleResult = session.createQuery(query).getSingleResultOrNull();
+                if (singleResult != null) {
+                    this.setId(singleResult.getId());
+                }
+                session.merge(this);
+                return null;
+            });
+        } catch (Exception e) {
+            LOGGER.error("作用域信息保存失败！", e);
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * 删除
+     *
+     * @return boolean t 成功
+     * @author Moyuyanli
+     * @date 2023/8/4 10:34
+     */
+    @Override
+    public boolean remove() {
+        try {
+            HibernateUtil.factory.fromTransaction(session -> {
+                session.remove(this);
+                return null;
+            });
+        } catch (Exception e) {
+            LOGGER.error("作用域信息删除失败！", e);
+            return false;
+        }
+        return true;
+    }
 }

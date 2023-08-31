@@ -6,6 +6,9 @@ import cn.chahuyun.session.utils.MateUtil;
 import cn.chahuyun.session.utils.ScopeUtil;
 import cn.chahuyun.session.utils.ShareUtils;
 import jakarta.persistence.*;
+import org.hibernate.query.criteria.HibernateCriteriaBuilder;
+import org.hibernate.query.criteria.JpaCriteriaQuery;
+import org.hibernate.query.criteria.JpaRoot;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +24,7 @@ import static cn.chahuyun.session.HuYanSession.LOGGER;
  */
 @Entity
 @Table(name = "ManySessionInfo")
-public class ManySessionInfo implements BaseEntity {
+public class ManySessionInfo extends BaseMessage implements BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -186,6 +189,16 @@ public class ManySessionInfo implements BaseEntity {
     public boolean merge() {
         try {
             HibernateUtil.factory.fromTransaction(session -> {
+                HibernateCriteriaBuilder builder = session.getCriteriaBuilder();
+                JpaCriteriaQuery<ManySessionInfo> query = builder.createQuery(ManySessionInfo.class);
+                JpaRoot<ManySessionInfo> from = query.from(ManySessionInfo.class);
+                query.select(from);
+                query.where(builder.equal(from.get("bot"), this.bot));
+                query.where(builder.equal(from.get("keywords"), this.keywords));
+                ManySessionInfo singleResult = session.createQuery(query).getSingleResultOrNull();
+                if (singleResult != null) {
+                    this.setId(singleResult.getId());
+                }
                 ManySessionInfo merge = session.merge(this);
                 merge.getManySessions().forEach(it->{
                     it.setManySessionId(merge.getId());
