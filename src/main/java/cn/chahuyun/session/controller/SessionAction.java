@@ -126,7 +126,7 @@ public class SessionAction {
         }
 
         Mate mate = Mate.ACCURATE;
-        Scope scope = new Scope(bot.getId(), "当前", false, false, subject.getId(), -1);
+        Scope scope = new Scope(bot.getId(), "当前", false, false, subject.getId(), "null");
 
         //解析参数
         //最小分割大小
@@ -154,12 +154,12 @@ public class SessionAction {
                         return;
                     case "0":
                     case "全局":
-                        scope = new Scope(bot.getId(), "全局", true, false, subject.getId(), -1);
+                        scope = new Scope(bot.getId(), "全局", true, false, subject.getId(), "null");
                         break;
                     default:
                         String listPattern = "gr\\d+|群组\\d+";
                         if (Pattern.matches(listPattern, s)) {
-                            int listId = Integer.parseInt(s.substring(2));
+                            String listId = s.substring(2);
 
                             if (ListUtil.isContainsList(bot, listId)) {
                                 subject.sendMessage("该群组不存在!");
@@ -176,6 +176,7 @@ public class SessionAction {
             subject.sendMessage("私发学习请输入作用域！");
             return;
         }
+//        value = ShareUtils.saveImage(event.getMessage(), value, type==1);
         //保存
         saveSession(subject, bot, key, value, mate, scope, type, dynamic);
     }
@@ -246,9 +247,9 @@ public class SessionAction {
                 return;
             }
             String string = nextMessageEventFromUser.getMessage().contentToString();
-            if (up && string.equals("上一页")) {
+            if (up && "上一页".equals(string)) {
                 startIndex = start - 1;
-            } else if (down && string.equals("下一页")) {
+            } else if (down && "下一页".equals(string)) {
                 startIndex = end;
             } else {
                 return;
@@ -296,7 +297,7 @@ public class SessionAction {
         String param = nextMessageEventFromUser.getMessage().serializeToMiraiCode();
 
         Mate mate = Mate.ACCURATE;
-        Scope scope = new Scope(bot.getId(), "当前", false, false, subject.getId(), 0);
+        Scope scope = new Scope(bot.getId(), "当前", false, false, subject.getId(), "0");
 
         String[] split = param.split(" +");
         for (String s : split) {
@@ -320,12 +321,12 @@ public class SessionAction {
                     break;
                 case "0":
                 case "全局":
-                    scope = new Scope(bot.getId(), "全局", true, false, subject.getId(), -1);
+                    scope = new Scope(bot.getId(), "全局", true, false, subject.getId(), "null");
                     break;
                 default:
                     String listPattern = "gr\\d+|群组\\d+";
                     if (Pattern.matches(listPattern, s)) {
-                        int listId = Integer.parseInt(s.substring(2));
+                        String listId = s.substring(2);
                         if (ListUtil.isContainsList(bot, listId)) {
                             subject.sendMessage("该群组不存在!");
                             return;
@@ -360,8 +361,9 @@ public class SessionAction {
             dynamic = false;
             value = MessageChain.serializeToJsonString(valueChain);
         }
-        saveSession(subject, bot, key, value, mate, scope, type, dynamic);
 
+        value = ShareUtils.saveImage(valueChain, value, type==1);
+        saveSession(subject, bot, key, value, mate, scope, type, dynamic);
     }
 
 

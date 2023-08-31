@@ -34,7 +34,7 @@ object SessionConfig : AutoSavePluginConfig("config") {
     /**
      * 入群申请开关
      */
-    @ValueDescription("多个bot之间是否互相响应")
+    @ValueDescription("入群申请开关")
     val requestSwitch: Boolean by value(true)
 
 
@@ -44,14 +44,23 @@ object SessionConfig : AutoSavePluginConfig("config") {
     @ValueDescription("动态消息的变量符号")
     val variableSymbol: String by value("$")
 
+    @ValueDescription("图片消息本地缓存")
+    val localCache : Boolean by value(false)
+
     @ValueDescription("是否开启DEBUG级别日志显示(不建议开启)")
     val debugSwitch: Boolean by value()
+
+    @ValueDescription("异常输出消息开关")
+    val exceptionSwitch: Boolean by value(false)
 
     @ValueDescription("刷屏消息的时间间隔(单位:秒)")
     val matchingNumber: Int by value(2)
 
     @ValueDescription("最大刷屏次数")
     val screen: Int by value(10)
+
+    @ValueDescription("刷屏禁言时间(秒)")
+    val forbiddenTime: Int by value(60)
 
 
     /**

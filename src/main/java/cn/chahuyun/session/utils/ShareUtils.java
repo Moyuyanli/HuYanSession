@@ -2,11 +2,13 @@ package cn.chahuyun.session.utils;
 
 import cn.chahuyun.config.SessionConfig;
 import cn.chahuyun.session.HuYanSession;
+import cn.chahuyun.session.constant.Constant;
 import cn.chahuyun.session.data.StaticData;
 import cn.chahuyun.session.entity.GroupInfo;
 import cn.chahuyun.session.entity.GroupList;
 import cn.chahuyun.session.entity.Scope;
 import cn.chahuyun.session.enums.Mate;
+import cn.hutool.core.io.FileUtil;
 import kotlin.coroutines.EmptyCoroutineContext;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.Contact;
@@ -17,11 +19,12 @@ import net.mamoe.mirai.event.EventChannel;
 import net.mamoe.mirai.event.EventPriority;
 import net.mamoe.mirai.event.GlobalEventChannel;
 import net.mamoe.mirai.event.events.MessageEvent;
-import net.mamoe.mirai.message.data.At;
-import net.mamoe.mirai.message.data.MessageChain;
-import net.mamoe.mirai.message.data.SingleMessage;
+import net.mamoe.mirai.message.data.*;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +33,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static cn.chahuyun.session.HuYanSession.CONFIG;
 import static cn.chahuyun.session.HuYanSession.LOGGER;
 
 /**
@@ -47,7 +51,7 @@ public class ShareUtils {
      * format 替换 %s ， 下一个String字符
      */
     public static final String DYNAMIC_MESSAGE_PATTERN = String.format("\\%s\\w+\\((\\S+?)\\)", SessionConfig.INSTANCE.getVariableSymbol());
-    private static final Map<String, Integer> map = new HashMap<>();
+    private static final Map<String, Integer> MAP = new HashMap<>();
 
 
     private ShareUtils() {
@@ -102,7 +106,7 @@ public class ShareUtils {
 
         String mark = botQq + "." + sender.getId();
 
-        map.put(mark, num);
+        MAP.put(mark, num);
         subject.sendMessage(bot.getNick() + "(" + botQq + ")开始忽略接下来你的 " + num + " 条消息");
     }
 
@@ -120,13 +124,13 @@ public class ShareUtils {
 
         String mark = bot.getId() + "." + sender.getId();
 
-        if (map.containsKey(mark)) {
-            Integer integer = map.get(mark);
+        if (MAP.containsKey(mark)) {
+            Integer integer = MAP.get(mark);
             if (integer > 0) {
-                map.put(mark, integer - 1);
+                MAP.put(mark, integer - 1);
                 return true;
             }
-            map.remove(mark);
+            MAP.remove(mark);
             return false;
         }
         return false;
@@ -284,6 +288,42 @@ public class ShareUtils {
             default:
                 return Mate.ACCURATE;
         }
+    }
+
+
+    /**
+     * 保存本地图片
+     *
+     * @param chain 消息链
+     * @param reply 回复消息
+     * @param type 是否含有图片消息 t 有
+     * @return java.lang.String
+     * @author Moyuyanli
+     * @date 2023/8/29 10:13
+     */
+    public static String saveImage(MessageChain chain, String reply, boolean type) {
+        //未开启缓存和不是图片消息直接返回
+        if (!CONFIG.getLocalCache() && !type) {
+            return reply;
+        }
+        for (SingleMessage singleMessage : chain) {
+            if (singleMessage.contentToString().equals(Constant.IMAGE_TYPE)) {
+                Image image = (Image) singleMessage;
+                String imageId = image.getImageId();
+                String imageAddress = Constant.IMG_PREFIX_ADDRESS +"/cache/"+ imageId;
+
+                LOGGER.info("imageAddress->"+imageAddress);
+
+                String imageUrl = Image.queryUrl(image);
+                try(InputStream inputStream = new URL(imageUrl).openStream()) {
+                    //写入图片
+                    FileUtil.writeFromStream(inputStream, imageAddress);
+                } catch (IOException e) {
+                    throw new RuntimeException("HuYanSession2 image cache exception !");
+                }
+            }
+        }
+        return reply;
     }
 
 }
