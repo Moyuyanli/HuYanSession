@@ -49,6 +49,7 @@ public class ShareUtils {
     /**
      * String.format用法
      * format 替换 %s ， 下一个String字符
+     * 用于动态消息的变量字符
      */
     public static final String DYNAMIC_MESSAGE_PATTERN = String.format("\\%s\\w+\\((\\S+?)\\)", SessionConfig.INSTANCE.getVariableSymbol());
     private static final Map<String, Integer> MAP = new HashMap<>();
@@ -66,7 +67,7 @@ public class ShareUtils {
      * @date 2022/7/29 12:43
      */
     public static boolean isQuit(MessageEvent event) {
-        String messagePattern = "^!!!|^！！！";
+        String messagePattern = "^[!！]{3}";
         Pattern pattern = Pattern.compile(messagePattern);
         Matcher matcher = pattern.matcher(event.getMessage().serializeToMiraiCode());
         return matcher.find();
@@ -147,25 +148,14 @@ public class ShareUtils {
      */
     public static boolean mateScope(MessageEvent event, Scope scope) {
         Bot bot = event.getBot();
-        long group = event.getSubject().getId();
-
-        Map<String, GroupList> groupListMap = StaticData.getGroupListMap(bot);
-
-        if (scope.getGroupInfo()) {
-            GroupList groupList = groupListMap.get(scope.getListId());
-            List<GroupInfo> groupNumbers = groupList.getGroups();
-            for (GroupInfo aLong : groupNumbers) {
-                if (group == aLong.getGroupId()) {
-                    return true;
-                }
-            }
-        } else if (scope.getGlobal()) {
-            return true;
+        Contact subject = event.getSubject();
+        Group group;
+        if (subject instanceof Group) {
+            group = (Group) subject;
         } else {
-            long l = scope.getGroupNumber();
-            return l == group;
+            return scope.getGlobal();
         }
-        return false;
+        return mateScope(bot, group, scope);
     }
 
     /**
@@ -192,8 +182,8 @@ public class ShareUtils {
         } else if (scope.getGlobal()) {
             return true;
         } else {
-            long l = scope.getGroupNumber();
-            return l == group.getId();
+            long groupNumber = scope.getGroupNumber();
+            return groupNumber == group.getId();
         }
         return false;
     }
