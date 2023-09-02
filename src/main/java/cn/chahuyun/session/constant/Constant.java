@@ -20,4 +20,20 @@ public class Constant {
      */
     public static final String IMG_PREFIX_ADDRESS = HuYanSession.INSTANCE.getDataFolderPath().toString();
 
+
+    /**
+     * h2数据库驱动类型
+     */
+    public static final String HIBERNATE_CONNECTION_DRIVER_CLASS_H2 = "org.h2.Driver";
+    /**
+     * MySQL数据库驱动类型
+     */
+    public static final String HIBERNATE_CONNECTION_DRIVER_CLASS_MYSQL = "com.mysql.cj.jdbc.Driver";
+
+    /**
+     * hibernate 驱动类型配置名
+     */
+    public static final String HIBERNATE_CONNECTION_DRIVER_CLASS = "hibernate.connection.driver_class";
+
+
 }
