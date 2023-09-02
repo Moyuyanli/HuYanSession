@@ -116,6 +116,24 @@ public class GroupList implements BaseEntity{
         return false;
     }
 
+
+    /**
+     * 获取对应的groupInfo
+     *
+     * @param groupId 群id
+     * @return cn.chahuyun.session.entity.GroupInfo
+     * @author Moyuyanli
+     * @date 2023/9/2 21:41
+     */
+    public GroupInfo getGroupInfo(long groupId) {
+        for (GroupInfo group : groups) {
+            if (group.getGroupId() == groupId) {
+                return group;
+            }
+        }
+        return null;
+    }
+
     /**
      * 修改 this 所保存的数据
      * 用于保存或更新

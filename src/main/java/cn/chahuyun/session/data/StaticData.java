@@ -54,8 +54,12 @@ public class StaticData {
     private StaticData() {
     }
 
+    /**
+     * 获取对应bot的群组信息
+     * @param bot bot
+     * @return 群组信息
+     */
     public static Map<String, GroupList> getGroupListMap(Bot bot) {
-
         if (groupListMap == null) {
             groupListMap = new HashMap<>();
             return new HashMap<>();
@@ -67,7 +71,6 @@ public class StaticData {
     }
 
     public static Map<String, GroupList> getGroupListMap(long bot) {
-
         if (groupListMap == null) {
             groupListMap = new HashMap<>();
             return new HashMap<>();
@@ -140,7 +143,7 @@ public class StaticData {
      * @author Moyuyanli
      * @date 2022/8/11 14:15
      */
-    public static boolean isGrouper(Bot bot, int key) {
+    public static boolean isGrouper(Bot bot, String key) {
         if (groupListMap.containsKey(bot.getId())) {
             return groupListMap.get(bot.getId()).containsKey(key);
         }

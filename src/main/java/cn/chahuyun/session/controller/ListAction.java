@@ -10,6 +10,7 @@ import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.Contact;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.data.ForwardMessageBuilder;
+import net.mamoe.mirai.message.data.MessageChainBuilder;
 import org.hibernate.query.criteria.HibernateCriteriaBuilder;
 import org.hibernate.query.criteria.JpaCriteriaQuery;
 import org.hibernate.query.criteria.JpaRoot;
@@ -37,60 +38,25 @@ public class ListAction {
      * @date 2022/7/10 16:18
      */
     public static void init(boolean type) {
-
-        Map<Long, Map<String, GroupList>> parseList = HibernateUtil.factory.fromTransaction(session -> {
+        List<GroupList> lists = HibernateUtil.factory.fromTransaction(session -> {
             //创建构造器
             HibernateCriteriaBuilder builder = session.getCriteriaBuilder();
             //创建实体对应查询器
             JpaCriteriaQuery<GroupList> query = builder.createQuery(GroupList.class);
             JpaRoot<GroupList> from = query.from(GroupList.class);
             query.select(from);
-            List<GroupList> groupLists = session.createQuery(query).list();
-            return parseList(groupLists);
+            return session.createQuery(query).list();
         });
 
-        StaticData.setGroupListMap(parseList);
+        StaticData.setGroupListMap(parseList(lists));
 
         if (type) {
             LOGGER.info("数据库群组信息初始化成功!");
-            return;
-        }
-        if (SessionConfig.INSTANCE.getDebugSwitch()) {
+        } else if (SessionConfig.INSTANCE.getDebugSwitch()) {
             LOGGER.info("群组信息更新成功!");
         }
-
     }
 
-    /**
-     * 解析查询参数
-     *
-     * @param groupLists 查询参数
-     * @return java.util.Map<java.lang.Integer, cn.chahuyun.session.entity.GroupList>
-     * @author Moyuyanli
-     * @date 2022/7/10 0:26
-     */
-    private static Map<Long, Map<String, GroupList>> parseList(List<GroupList> groupLists) {
-        if (groupLists == null || groupLists.isEmpty()) {
-            return null;
-        }
-        Map<Long, Map<String, GroupList>> listMap = new HashMap<>();
-
-        for (GroupList entity : groupLists) {
-            long bot = entity.getBot();
-            String listId = entity.getListId();
-
-            if (!listMap.containsKey(bot)) {
-                listMap.put(bot, new HashMap<>() {{
-                    put(listId, entity);
-                }});
-                continue;
-            }
-            if (!listMap.get(bot).containsKey(listId)) {
-                listMap.get(bot).put(listId, entity);
-            }
-        }
-        return listMap;
-    }
 
     /**
      * 添加群组
@@ -100,30 +66,44 @@ public class ListAction {
      * @date 2022/7/10 0:25
      */
     public void addGroupListInfo(MessageEvent event) {
-        //gr:id id id...
-        String code = event.getMessage().serializeToMiraiCode();
+        //gr:key id id...
+        String content = event.getMessage().contentToString();
         Contact subject = event.getSubject();
         Bot bot = event.getBot();
 
         if (SessionConfig.INSTANCE.getDebugSwitch()) {
-            LOGGER.info("code-" + code);
+            LOGGER.info("content->" + content);
         }
+        String[] split = content.replace(":", " ").replace("：", " ").split("\\s+");
+        String key = split[1];
 
-        String[] split = code.split("\\s+");
-        String key = split[0].split("\\\\?[:：]")[1];
+        MessageChainBuilder reply = new MessageChainBuilder();
 
-        StringBuilder reply = new StringBuilder();
         //判断新加的群号在这个群组中是否存在，存在则拼接回复消息
         Map<String, GroupList> groupListMap = StaticData.getGroupListMap(bot);
-        if (groupListMap != null && groupListMap.containsKey(key)) {
-            GroupList groupList = groupListMap.get(key);
-            for (int i = 1; i < split.length; i++) {
-                long groupId = Long.parseLong(split[i]);
-                if (groupList.containsGroupId(groupId)) {
-                    reply.append("群").append(groupId).append("已存在\n");
-                }
+        GroupList groupList;
+        if (groupListMap.containsKey(key)) {
+            groupList = groupListMap.get(key);
+        } else {
+            groupList = new GroupList(bot.getId(), key);
+        }
+        for (int i = 2; i < split.length; i++) {
+            long groupId = Long.parseLong(split[i]);
+            if (groupList.containsGroupId(groupId)) {
+                reply.append("群").append(Long.toString(groupId)).append("已存在于").append(key).append("中\n");
+            } else {
+                groupList.getGroups().add(new GroupInfo(bot.getId(), groupId));
+                reply.append("群").append(Long.toString(groupId)).append("已添加于").append(key).append("中\n");
             }
         }
+        if (groupList.merge()) {
+            subject.sendMessage(reply.build());
+        } else {
+            subject.sendMessage("群组信息报错失败~");
+        }
+
+        /*
+        以下代码是旧版代码
 
         try {
             //开始添加群组
@@ -161,6 +141,8 @@ public class ListAction {
             message += "其中:\n" + reply;
         }
         subject.sendMessage(message);
+
+         */
         init(false);
     }
 
@@ -173,12 +155,12 @@ public class ListAction {
      */
     public void queryGroupListInfo(MessageEvent event) {
         //gr:id?
-        String code = event.getMessage().serializeToMiraiCode();
+        String content = event.getMessage().contentToString();
         Contact subject = event.getSubject();
         Bot bot = event.getBot();
         init(false);
 
-        String[] split = code.split("\\\\?[:：]");
+        String[] split = content.replace("：", " ").split("\\s+");
 
         String key = null;
         if (split.length == 2) {
@@ -230,7 +212,6 @@ public class ListAction {
     }
 
 
-    //==========================================================================================
 
     /**
      * 删除群组
@@ -241,69 +222,71 @@ public class ListAction {
      */
     public void deleteGroupListInfo(MessageEvent event) {
         //-gr:id id?
-        String code = event.getMessage().serializeToMiraiCode();
+        String content = event.getMessage().contentToString();
         Contact subject = event.getSubject();
         Bot bot = event.getBot();
 
-        String[] split = code.split("\\\\?[:：]");
-        String[] strings = split[1].split("\\s+");
+        String[] split = content.replace("：", " ").replace(":", " ").split("\\s+");
 
-        int key = Integer.parseInt(strings[0]);
+        String key = split[1];
 
-        int minSplit = 2;
-        Long value = null;
-        boolean type = true;
-        if (strings.length == minSplit) {
-            value = Long.parseLong(strings[1]);
-            type = false;
-        }
+        MessageChainBuilder builder = new MessageChainBuilder();
 
-        if (type) {
-            if (!StaticData.isGrouper(bot, key)) {
-                subject.sendMessage("没有找到要忘掉的群组~");
-                return;
-            }
-        }
+        Map<String, GroupList> groupListMap = StaticData.getGroupListMap(bot);
+        if (groupListMap.containsKey(key)) {
+            GroupList groupList = groupListMap.get(key);
 
-        Boolean aBoolean = false;
-        try {
-            boolean finalType = type;
-            Long finalValue = value;
-            aBoolean = HibernateUtil.factory.fromTransaction(session -> {
-                Map<String, GroupList> groupListMap = StaticData.getGroupListMap(bot);
-                GroupList groupList = null;
-                //如果有群组，则先从内存拿到群组
-                if (groupListMap != null && groupListMap.containsKey(key)) {
-                    groupList = groupListMap.get(key);
-                }
-                //如果是删除群组
-                if (finalType) {
-                    session.remove(groupList);
-                } else {
-                    if (groupList == null) {
-                        LOGGER.error("GroupList remove failed !");
-                        return false;
+            if (split.length == 2) {
+                groupList.remove();
+                builder.append("群组").append(key).append("删除成功!");
+            }else {
+                for (int i = 2; i < split.length; i++) {
+                    long groupId = Long.parseLong(split[i]);
+                    if (groupList.containsGroupId(groupId)) {
+                        groupList.getGroupInfo(groupId).remove();
+                        builder.append("群").append(Long.toString(groupId)).append("删除于").append(key).append("中");
+                    } else {
+                        builder.append("群").append(Long.toString(groupId)).append("不存在于").append(key).append("中");
                     }
-
-                    GroupInfo groupInfo = groupList.getGroups().stream().filter(item -> item.getGroupId() == finalValue)
-                            .collect(Collectors.toList()).get(0);
-                    session.merge(groupInfo);
                 }
-                return true;
-            });
-        } catch (Exception e) {
-            if (e instanceof PersistenceException) {
-                LOGGER.error("不允许群组为空群组！");
-            } else {
-                LOGGER.error("数据库删除群组失败:", e);
+            }
+        } else {
+            builder.append("群组").append(key).append("不存在!");
+        }
+        subject.sendMessage(builder.build());
+        init(false);
+    }
+
+
+
+    //====================================private====================================
+
+
+    /**
+     * 解析查询参数
+     *
+     * @param groupLists 查询参数
+     * @return java.util.Map<java.lang.Integer, cn.chahuyun.session.entity.GroupList>
+     * @author Moyuyanli
+     * @date 2022/7/10 0:26
+     */
+    private static Map<Long, Map<String, GroupList>> parseList(List<GroupList> groupLists) {
+        if (groupLists == null || groupLists.isEmpty()) {
+            return null;
+        }
+        Map<Long, Map<String, GroupList>> listMap = new HashMap<>();
+        for (GroupList entity : groupLists) {
+            long bot = entity.getBot();
+            String listId = entity.getListId();
+            if (listMap.containsKey(bot)) {
+                listMap.get(bot).put(listId, entity);
+            }else {
+                listMap.put(bot, new HashMap<>() {{
+                    put(listId, entity);
+                }});
             }
         }
-        if (Boolean.FALSE.equals(aBoolean)) {
-            subject.sendMessage("群组删除失败!");
-            return;
-        }
-        subject.sendMessage("群组" + key + "删除" + ((value == null) ? "成功!" : value + "群成功!"));
-        init(false);
+        return listMap;
     }
 
 

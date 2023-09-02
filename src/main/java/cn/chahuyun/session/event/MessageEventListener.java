@@ -149,9 +149,9 @@ public class MessageEventListener extends SimpleListenerHost {
         /*
         群组正则
          */
-        String addListPattern = "^\\+?gr\\\\?[:：]\\d+( +\\d+)+|^添加群组\\\\?[:：]\\d+( +\\d+)+";
-        String queryListPattern = "^gr\\\\?[:：](\\d+)?|^查询群组\\\\?[:：](\\d+)?";
-        String deleteListPattern = "^-gr\\\\?[：:]\\d+( +\\d+)?|^删除群组\\\\?[:：]\\d+( +\\d+)?";
+        String addListPattern = "^\\+gr\\\\?[:：]\\w+( +\\d+)+|^添加群组\\\\?[:：]\\w+( +\\d+)+";
+        String queryListPattern = "^gr\\\\?[:：](\\w+)?|^查询群组\\\\?[:：](\\w+)?";
+        String deleteListPattern = "^-gr\\\\?[：:]\\w+( +\\d+)?|^删除群组\\\\?[:：]\\w+( +\\d+)?";
 
         if (owner || admin || power.isGroupList()) {
             ListAction listAction = new ListAction();
