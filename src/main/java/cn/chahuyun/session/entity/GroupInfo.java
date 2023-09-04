@@ -17,7 +17,7 @@ import static cn.chahuyun.session.HuYanSession.LOGGER;
 public class GroupInfo implements BaseEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     /**
      * bot

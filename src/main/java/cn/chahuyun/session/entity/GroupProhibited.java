@@ -19,12 +19,11 @@ import static cn.chahuyun.session.HuYanSession.LOGGER;
 @Entity
 @Table(name = "GroupProhibited")
 public class GroupProhibited implements BaseEntity {
-
     /**
      * id
      */
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     /**
      * 所属机器人

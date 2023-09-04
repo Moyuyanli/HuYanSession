@@ -21,7 +21,7 @@ import static cn.chahuyun.session.HuYanSession.LOGGER;
 public class GroupWelcomeInfo extends BaseMessage implements BaseEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     /**
      * 所属机器人

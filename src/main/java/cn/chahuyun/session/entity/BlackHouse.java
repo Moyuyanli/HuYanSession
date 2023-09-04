@@ -14,7 +14,7 @@ import jakarta.persistence.*;
 public class BlackHouse {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     /**
      * 所属机器人

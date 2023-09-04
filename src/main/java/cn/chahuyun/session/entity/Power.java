@@ -19,7 +19,7 @@ public class Power {
      * 唯一识别符
      */
     @Id
-//    @GeneratedValue(strategy = GenerationType.AUTO)
+//    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private String id;
     /**
      * 所属bot

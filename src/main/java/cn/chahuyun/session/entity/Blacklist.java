@@ -15,7 +15,7 @@ import jakarta.persistence.*;
 public class Blacklist {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     /**
      * 所属机器人

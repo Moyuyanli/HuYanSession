@@ -26,7 +26,7 @@ public class GroupList implements BaseEntity{
      * id
      */
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     /**
      * 所属机器人
