@@ -17,10 +17,7 @@ import org.hibernate.query.criteria.HibernateCriteriaBuilder;
 import org.hibernate.query.criteria.JpaCriteriaQuery;
 import org.hibernate.query.criteria.JpaRoot;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.regex.Pattern;
 
 import static cn.chahuyun.session.HuYanSession.LOGGER;
@@ -48,6 +45,11 @@ public class GroupWelcomeInfoAction {
         HibernateUtil.factory.fromTransaction(session -> session.merge(welcomeInfo));
     }
 
+    /**
+     * 添加欢迎词
+     *
+     * @param event 消息事件
+     */
     public void addGroupWelcomeInfo(MessageEvent event) {
         Contact subject = event.getSubject();
         User user = event.getSender();
@@ -164,7 +166,7 @@ public class GroupWelcomeInfoAction {
                 return list;
             });
         } catch (Exception e) {
-            LOGGER.error("出错啦!", e);
+            LOGGER.error("查询欢迎词出错！");
         }
 
         if (welcomeInfoList == null || welcomeInfoList.isEmpty()) {
@@ -178,7 +180,7 @@ public class GroupWelcomeInfoAction {
             List<WelcomeMessage> welcomeMessages = welcomeInfo.getWelcomeMessages();
             Scope scope = welcomeInfo.getScope();
             MessageChainBuilder messages = new MessageChainBuilder();
-            messages.add(new PlainText("欢迎词集合编号:" + welcomeInfo.getRandomMark()));
+            messages.add(new PlainText("欢迎词集合编号:" + welcomeInfo.getId()));
             messages.add(new PlainText("\n作用方式:" + scope.getScopeName()));
             if (scope.isGroupInfo()) {
                 messages.add(new PlainText("\n群组编号:" + scope.getListId()));
@@ -213,21 +215,9 @@ public class GroupWelcomeInfoAction {
         if (split.length > 1) {
             toKey = Integer.parseInt(split[1]);
         }
-        GroupWelcomeInfo groupWelcomeInfo = null;
-        try {
-            groupWelcomeInfo = HibernateUtil.factory.fromTransaction(session -> {
-                HibernateCriteriaBuilder builder = session.getCriteriaBuilder();
-                JpaCriteriaQuery<GroupWelcomeInfo> query = builder.createQuery(GroupWelcomeInfo.class);
-                JpaRoot<GroupWelcomeInfo> from = query.from(GroupWelcomeInfo.class);
-
-                query.select(from);
-                query.where(builder.equal(from.get("id"), key));
-                return session.createQuery(query).getSingleResult();
-            });
-        } catch (Exception e) {
-            LOGGER.error("删除欢迎词查询出错!", e);
-        }
-
+        Map<String, Object> params = new HashMap<>();
+        params.put("id", key);
+        GroupWelcomeInfo groupWelcomeInfo = HibernateUtil.getSingleResult(params, GroupWelcomeInfo.class);
         if (groupWelcomeInfo == null) {
             subject.sendMessage("没有要删除的欢迎词!");
             return;

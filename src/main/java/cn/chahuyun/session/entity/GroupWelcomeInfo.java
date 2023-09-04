@@ -46,7 +46,7 @@ public class GroupWelcomeInfo extends BaseMessage implements BaseEntity {
     /**
      * 欢迎消息集合
      */
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, targetEntity = WelcomeMessage.class,mappedBy = "mark")
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, targetEntity = WelcomeMessage.class,mappedBy = "groupWelcomeInfoId")
     private List<WelcomeMessage> welcomeMessages = new ArrayList<>();
     /**
      * 作用域
@@ -159,7 +159,6 @@ public class GroupWelcomeInfo extends BaseMessage implements BaseEntity {
                 GroupWelcomeInfo merge = session.merge(this);
                 merge.getWelcomeMessages().forEach(it -> {
                     it.setMark(merge.getId());
-                    it.merge();
                 });
                 return null;
             });
@@ -169,8 +168,10 @@ public class GroupWelcomeInfo extends BaseMessage implements BaseEntity {
                     session.createNativeQuery("drop table WELCOMEMESSAGE").executeUpdate();
                     return null;
                 });
+                LOGGER.error("请重启MiraiConsole！");
+                return false;
             }
-            LOGGER.error("欢迎词保存失败！",e);
+            LOGGER.error("欢迎词保存失败！");
             return false;
         }
         return true;
@@ -187,12 +188,11 @@ public class GroupWelcomeInfo extends BaseMessage implements BaseEntity {
     public boolean remove() {
         try {
             HibernateUtil.factory.fromTransaction(session -> {
-                this.getWelcomeMessages().forEach(WelcomeMessage::remove);
                 session.remove(this);
                 return null;
             });
         } catch (Exception e) {
-            LOGGER.error("群组信息删除失败！",e);
+            LOGGER.error("群组信息删除失败！");
             return false;
         }
         return true;
