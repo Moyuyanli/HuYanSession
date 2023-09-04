@@ -97,7 +97,7 @@ public class ListAction {
             }
         }
         if (groupList.merge()) {
-            subject.sendMessage(reply.build());
+            subject.sendMessage(reply.append("群组信息保存成功~").build());
         } else {
             subject.sendMessage("群组信息保存失败~");
         }
