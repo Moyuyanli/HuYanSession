@@ -84,8 +84,6 @@ public final class HuYanSession extends JavaPlugin {
         ManySessionAction.init(true);
         QuartzAction.init();
 
-        //注册异常处理器
-        channel.registerListenerHost(new ExceptionProcessing());
         //注册群事件
         channel.registerListenerHost(new MessageEventListener());
         LOGGER.info("群消息监听已注册！");
