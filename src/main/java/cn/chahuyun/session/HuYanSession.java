@@ -1,11 +1,12 @@
 package cn.chahuyun.session;
 
-import cn.chahuyun.command.SessionCommand;
-import cn.chahuyun.config.BlackListData;
-import cn.chahuyun.config.SessionConfig;
+import cn.chahuyun.session.command.SessionCommand;
+import cn.chahuyun.session.config.BlackListData;
+import cn.chahuyun.session.config.SessionConfig;
 import cn.chahuyun.session.controller.*;
 import cn.chahuyun.session.event.GroupEventListener;
 import cn.chahuyun.session.event.MessageEventListener;
+import cn.chahuyun.session.exception.ExceptionProcessing;
 import cn.chahuyun.session.manage.PluginManager;
 import net.mamoe.mirai.console.command.CommandManager;
 import net.mamoe.mirai.console.plugin.jvm.JavaPlugin;
@@ -30,7 +31,7 @@ public final class HuYanSession extends JavaPlugin {
     /**
      * 当前插件版本
      */
-    public static final String VERSION = "2.4.0";
+    public static final String VERSION = "2.4.1";
     /**
      * 日志
      */
@@ -83,6 +84,8 @@ public final class HuYanSession extends JavaPlugin {
         ManySessionAction.init(true);
         QuartzAction.init();
 
+        //注册异常处理器
+        channel.registerListenerHost(new ExceptionProcessing());
         //注册群事件
         channel.registerListenerHost(new MessageEventListener());
         LOGGER.info("群消息监听已注册！");
