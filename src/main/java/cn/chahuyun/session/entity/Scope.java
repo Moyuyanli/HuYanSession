@@ -198,7 +198,7 @@ public class Scope implements BaseEntity {
                 return null;
             });
         } catch (Exception e) {
-            LOGGER.error("作用域信息保存失败！", e);
+            LOGGER.error("作用域信息保存失败！");
             return false;
         }
         return true;
@@ -219,7 +219,7 @@ public class Scope implements BaseEntity {
                 return null;
             });
         } catch (Exception e) {
-            LOGGER.error("作用域信息删除失败！", e);
+            LOGGER.error("作用域信息删除失败！");
             return false;
         }
         return true;

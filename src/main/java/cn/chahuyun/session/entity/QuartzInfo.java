@@ -239,12 +239,11 @@ public class QuartzInfo implements BaseEntity {
                 QuartzInfo merge = session.merge(this);
                 merge.getQuartzSession().forEach(it->{
                     it.setQuartzMessageId(merge.getId());
-                    it.merge();
                 });
                 return null;
             });
         } catch (Exception e) {
-            LOGGER.error("定时消息信息保存失败！",e);
+            LOGGER.error("定时消息信息保存失败！");
             return false;
         }
         return true;
@@ -261,12 +260,11 @@ public class QuartzInfo implements BaseEntity {
     public boolean remove() {
         try {
             HibernateUtil.factory.fromTransaction(session -> {
-                this.getQuartzSession().forEach(QuartzSession::remove);
                 session.merge(this);
                 return null;
             });
         } catch (Exception e) {
-            LOGGER.error("定时消息信息删除失败！",e);
+            LOGGER.error("定时消息信息删除失败！");
             return false;
         }
         return true;

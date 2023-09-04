@@ -59,7 +59,7 @@ public class QuartzAction {
                 try {
                     CronUtil.schedule(id, quartzInfo.getCronString(), timingJob);
                 } catch (Exception e) {
-                    LOGGER.error("!!!∑(ﾟДﾟノ)ノ 添加定时任务出错:" + quartzInfo.getName(), e);
+                    LOGGER.error("!!!∑(ﾟДﾟノ)ノ 添加定时任务出错:" + quartzInfo.getName());
                     continue;
                 }
                 quartzInfo.setStatus(true);
@@ -294,7 +294,7 @@ public class QuartzAction {
                 return session.createQuery(query).list();
             });
         } catch (Exception e) {
-            LOGGER.error("出错拉~", e);
+            LOGGER.error("出错拉~");
             subject.sendMessage("查询定时任务出错!");
             return;
         }

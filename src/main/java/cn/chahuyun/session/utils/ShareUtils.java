@@ -1,6 +1,6 @@
 package cn.chahuyun.session.utils;
 
-import cn.chahuyun.config.SessionConfig;
+import cn.chahuyun.session.config.SessionConfig;
 import cn.chahuyun.session.HuYanSession;
 import cn.chahuyun.session.constant.Constant;
 import cn.chahuyun.session.data.StaticData;
@@ -257,7 +257,7 @@ public class ShareUtils {
         try {
             event = future.get();
         } catch (InterruptedException | ExecutionException e) {
-            LOGGER.error("获取下一条消息出错!", e);
+            LOGGER.error("获取下一条消息出错!");
         }
         assert event != null;
         return event;

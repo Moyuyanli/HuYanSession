@@ -1,6 +1,6 @@
 package cn.chahuyun.session.controller;
 
-import cn.chahuyun.config.SessionConfig;
+import cn.chahuyun.session.config.SessionConfig;
 import cn.chahuyun.session.data.StaticData;
 import cn.chahuyun.session.entity.Scope;
 import cn.chahuyun.session.entity.Session;
@@ -56,7 +56,7 @@ public class SessionAction {
                 return session.createQuery(query).list();
             });
         } catch (Exception e) {
-            LOGGER.error("会话数据加载失败:", e);
+            LOGGER.error("会话数据加载失败:");
             return;
         }
 

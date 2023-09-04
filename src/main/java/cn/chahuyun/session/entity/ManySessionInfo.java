@@ -202,12 +202,11 @@ public class ManySessionInfo extends BaseMessage implements BaseEntity {
                 ManySessionInfo merge = session.merge(this);
                 merge.getManySessions().forEach(it->{
                     it.setManySessionId(merge.getId());
-                    it.merge();
                 });
                 return null;
             });
         } catch (Exception e) {
-            LOGGER.error("多词条信息保存失败！",e);
+            LOGGER.error("多词条信息保存失败！");
             return false;
         }
         return true;
@@ -224,12 +223,11 @@ public class ManySessionInfo extends BaseMessage implements BaseEntity {
     public boolean remove() {
         try {
             HibernateUtil.factory.fromTransaction(session -> {
-                this.getManySessions().forEach(ManySession::remove);
                 session.remove(this);
                 return null;
             });
         } catch (Exception e) {
-            LOGGER.error("多词条信息删除失败！",e);
+            LOGGER.error("多词条信息删除失败！");
             return false;
         }
         return true;

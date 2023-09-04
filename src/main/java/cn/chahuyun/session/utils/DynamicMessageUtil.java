@@ -1,6 +1,6 @@
 package cn.chahuyun.session.utils;
 
-import cn.chahuyun.config.SessionConfig;
+import cn.chahuyun.session.config.SessionConfig;
 import cn.chahuyun.session.data.ApplyClusterInfo;
 import cn.chahuyun.session.entity.GroupProhibited;
 import cn.chahuyun.session.entity.GroupWelcomeInfo;
@@ -110,7 +110,7 @@ public class DynamicMessageUtil {
                 //进行动态消息的转换
                 messages = parseMessage(event, value, valueType, object, trigger);
             } catch (IOException e) {
-                LOGGER.error("转换动态消息出错!", e);
+                LOGGER.error("转换动态消息出错!");
             }
             //从回复消息中的第一位到动态消息标识的第一位 ' $ ' 截取出来
             assert messages != null;
@@ -161,7 +161,7 @@ public class DynamicMessageUtil {
             try {
                 messages = DynamicMessageUtil.parseMessage((MemberJoinEvent) event, value, valueType, object);
             } catch (IOException e) {
-                LOGGER.error("转换动态消息出错!", e);
+                LOGGER.error("转换动态消息出错!");
             }
             builder.append(MiraiCode.deserializeMiraiCode(message.substring(index, start)))
                     .append(messages);
@@ -206,7 +206,7 @@ public class DynamicMessageUtil {
             try {
                 messages = DynamicMessageUtil.parseMessage(value, valueType, object);
             } catch (IOException e) {
-                LOGGER.error("转换动态消息出错!", e);
+                LOGGER.error("转换动态消息出错!");
             }
             builder.append(MiraiCode.deserializeMiraiCode(message.substring(index, start)))
                     .append(messages);
@@ -440,7 +440,7 @@ public class DynamicMessageUtil {
             SimpleDateFormat userSimpleDateFormat = new SimpleDateFormat(value);
             userFormat = userSimpleDateFormat.format(new Date());
         } catch (Exception e) {
-            LOGGER.warning("动态消息-时间格式化出错!", e);
+            LOGGER.warning("动态消息-时间格式化出错!");
             return new PlainText("未识别动态消息:" + SessionConfig.INSTANCE.getVariableSymbol() + valueType + "(" + value + ")");
         }
         String trim = userFormat.replace("\\", "").trim();

@@ -27,7 +27,7 @@ import java.util.Objects;
  */
 public class GroupEventListener extends SimpleListenerHost {
 
-    private static final MiraiLogger l = HuYanSession.INSTANCE.getLogger();
+    private static final MiraiLogger LOGGER = HuYanSession.INSTANCE.getLogger();
 
     @Override
     public void handleException(@NotNull CoroutineContext context, @NotNull Throwable exception) {

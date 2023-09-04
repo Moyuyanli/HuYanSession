@@ -61,7 +61,7 @@ public class PluginManager {
                         LOGGER.error("旧数据迁移失败！");
                     }
                 } catch (IOException e) {
-                    LOGGER.error("旧数据迁移失败！",e);
+                    LOGGER.error("旧数据迁移失败！");
                 }
             }
         }

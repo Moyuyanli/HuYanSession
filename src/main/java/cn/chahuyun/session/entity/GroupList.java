@@ -159,7 +159,6 @@ public class GroupList implements BaseEntity{
                 GroupList merge = session.merge(this);
                 merge.getGroups().forEach(it->{
                     it.setListId(merge.id);
-                    it.merge();
                 });
                 return null;
             });

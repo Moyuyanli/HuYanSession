@@ -1,6 +1,6 @@
 package cn.chahuyun.session.manage;
 
-import cn.chahuyun.config.BlackListData;
+import cn.chahuyun.session.config.BlackListData;
 import cn.chahuyun.session.HuYanSession;
 import cn.chahuyun.session.controller.BlackHouseAction;
 import cn.chahuyun.session.controller.BlackListAction;

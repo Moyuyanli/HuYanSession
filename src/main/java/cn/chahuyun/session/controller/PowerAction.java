@@ -1,6 +1,6 @@
 package cn.chahuyun.session.controller;
 
-import cn.chahuyun.config.SessionConfig;
+import cn.chahuyun.session.config.SessionConfig;
 import cn.chahuyun.session.HuYanSession;
 import cn.chahuyun.session.data.StaticData;
 import cn.chahuyun.session.entity.Power;

@@ -114,7 +114,7 @@ public class QuartzSession implements BaseEntity {
         try {
             HibernateUtil.factory.fromTransaction(session -> session.merge(this));
         } catch (Exception e) {
-            LOGGER.error("定时消息保存失败！",e);
+            LOGGER.error("定时消息保存失败！");
             return false;
         }
         return true;
@@ -135,7 +135,7 @@ public class QuartzSession implements BaseEntity {
                 return null;
             });
         } catch (Exception e) {
-            LOGGER.error("定时消息删除失败！",e);
+            LOGGER.error("定时消息删除失败！");
             return false;
         }
         return true;

@@ -1,6 +1,6 @@
 package cn.chahuyun.session.controller;
 
-import cn.chahuyun.config.SessionConfig;
+import cn.chahuyun.session.config.SessionConfig;
 import cn.chahuyun.session.data.StaticData;
 import cn.chahuyun.session.entity.GroupProhibited;
 import cn.chahuyun.session.entity.Scope;
@@ -54,7 +54,7 @@ public class GroupProhibitedAction {
                 return session.createQuery(query).list();
             });
         } catch (Exception e) {
-            LOGGER.error("数据库违禁词信息初始化失败!", e);
+            LOGGER.error("数据库违禁词信息初始化失败!");
         }
 
         StaticData.setProhibitedMap(parseList(groupProhibits));
@@ -231,7 +231,7 @@ public class GroupProhibitedAction {
             });
         } catch (Exception e) {
             subject.sendMessage("违禁词添加失败!");
-            LOGGER.error("出错啦~", e);
+            LOGGER.error("出错啦~");
             return;
         }
 
@@ -325,7 +325,7 @@ public class GroupProhibitedAction {
                 return 0;
             });
         } catch (Exception e) {
-            LOGGER.error("出错啦~", e);
+            LOGGER.error("出错啦~");
             subject.sendMessage("违禁词 " + MiraiCode.deserializeMiraiCode(groupProhibited.getKeywords()) + " 删除失败");
             return;
         }

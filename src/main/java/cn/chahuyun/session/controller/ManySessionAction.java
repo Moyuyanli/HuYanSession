@@ -1,6 +1,6 @@
 package cn.chahuyun.session.controller;
 
-import cn.chahuyun.config.SessionConfig;
+import cn.chahuyun.session.config.SessionConfig;
 import cn.chahuyun.session.data.StaticData;
 import cn.chahuyun.session.entity.ManySession;
 import cn.chahuyun.session.entity.ManySessionInfo;
@@ -59,7 +59,7 @@ public class ManySessionAction {
             });
         } catch (Exception e) {
             if (type) {
-                LOGGER.warning("多词条加载消息出错!", e);
+                LOGGER.warning("多词条加载消息出错!");
                 return;
             }
         }

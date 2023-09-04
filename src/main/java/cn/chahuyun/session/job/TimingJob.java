@@ -1,6 +1,6 @@
 package cn.chahuyun.session.job;
 
-import cn.chahuyun.config.SessionConfig;
+import cn.chahuyun.session.config.SessionConfig;
 import cn.chahuyun.session.HuYanSession;
 import cn.chahuyun.session.controller.QuartzAction;
 import cn.chahuyun.session.data.StaticData;

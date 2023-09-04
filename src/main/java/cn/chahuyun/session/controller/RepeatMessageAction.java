@@ -1,6 +1,6 @@
 package cn.chahuyun.session.controller;
 
-import cn.chahuyun.config.SessionConfig;
+import cn.chahuyun.session.config.SessionConfig;
 import cn.chahuyun.session.data.RepeatMessage;
 import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;

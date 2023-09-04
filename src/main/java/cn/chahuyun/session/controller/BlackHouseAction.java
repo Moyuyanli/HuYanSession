@@ -43,7 +43,7 @@ public class BlackHouseAction {
             LOGGER.warning("暂时没有小黑屋成员!");
             return null;
         } catch (Exception e) {
-            LOGGER.error("小黑屋查询失败~", e);
+            LOGGER.error("小黑屋查询失败~");
         }
         return null;
     }
@@ -62,7 +62,7 @@ public class BlackHouseAction {
                 return true;
             });
         } catch (Exception e) {
-            LOGGER.error("小黑屋更新失败:", e);
+            LOGGER.error("小黑屋更新失败:");
         }
         return false;
     }

@@ -45,7 +45,7 @@ public class BlackListAction {
                 return null;
             });
         } catch (Exception e) {
-            LOGGER.error("出错啦~", e);
+            LOGGER.error("出错啦~");
             return false;
         }
         return true;
@@ -132,7 +132,7 @@ public class BlackListAction {
                 group.get(userId).kick(reason);
                 subject.sendMessage("检测到黑名单用户->" + userId + " 已踢出,理由:" + reason);
             } catch (Exception e) {
-                LOGGER.error("出错啦~", e);
+                LOGGER.error("出错啦~");
                 subject.sendMessage("检测到黑名单用户->" + userId + " 踢出失败!");
             }
         } else {
@@ -172,7 +172,7 @@ public class BlackListAction {
                 return list;
             });
         } catch (Exception e) {
-            LOGGER.error("出错啦~", e);
+            LOGGER.error("出错啦~");
             return;
         }
 
@@ -274,7 +274,7 @@ public class BlackListAction {
                 return list;
             });
         } catch (Exception e) {
-            LOGGER.error("出错啦~", e);
+            LOGGER.error("出错啦~");
             return;
         }
         if (blacklists == null || blacklists.isEmpty()) {
