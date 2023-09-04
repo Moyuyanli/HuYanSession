@@ -1,6 +1,6 @@
 package cn.chahuyun.session.exception;
 
-import cn.chahuyun.config.SessionConfig;
+import cn.chahuyun.session.config.SessionConfig;
 import cn.chahuyun.session.HuYanSession;
 import kotlin.coroutines.CoroutineContext;
 import net.mamoe.mirai.Bot;
@@ -21,6 +21,8 @@ import org.jetbrains.annotations.NotNull;
 public class ExceptionProcessing extends SimpleListenerHost {
 
     private static final MiraiLogger LOGGER = HuYanSession.LOGGER;
+
+    public static final ExceptionProcessing INSTANCE = new ExceptionProcessing();
 
     @Override
     public void handleException(@NotNull CoroutineContext context, @NotNull Throwable exception) {

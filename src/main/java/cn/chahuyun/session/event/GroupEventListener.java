@@ -1,9 +1,11 @@
 package cn.chahuyun.session.event;
 
-import cn.chahuyun.config.BlackListData;
-import cn.chahuyun.config.SessionConfig;
+import cn.chahuyun.session.config.BlackListData;
+import cn.chahuyun.session.config.SessionConfig;
 import cn.chahuyun.session.HuYanSession;
+import cn.chahuyun.session.exception.ExceptionProcessing;
 import cn.chahuyun.session.manage.GroupManager;
+import kotlin.coroutines.CoroutineContext;
 import net.mamoe.mirai.contact.MemberPermission;
 import net.mamoe.mirai.event.EventHandler;
 import net.mamoe.mirai.event.SimpleListenerHost;
@@ -27,6 +29,10 @@ public class GroupEventListener extends SimpleListenerHost {
 
     private static final MiraiLogger l = HuYanSession.INSTANCE.getLogger();
 
+    @Override
+    public void handleException(@NotNull CoroutineContext context, @NotNull Throwable exception) {
+        ExceptionProcessing.INSTANCE.handleException(context, exception);
+    }
 
     /**
      * 其他群事件

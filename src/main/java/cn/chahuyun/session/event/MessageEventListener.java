@@ -1,6 +1,6 @@
 package cn.chahuyun.session.event;
 
-import cn.chahuyun.config.SessionConfig;
+import cn.chahuyun.session.config.SessionConfig;
 import cn.chahuyun.session.HuYanSession;
 import cn.chahuyun.session.controller.*;
 import cn.chahuyun.session.data.StaticData;
@@ -9,9 +9,11 @@ import cn.chahuyun.session.dialogue.DialogueProcessing;
 import cn.chahuyun.session.entity.ManySessionInfo;
 import cn.chahuyun.session.entity.Power;
 import cn.chahuyun.session.entity.Session;
+import cn.chahuyun.session.exception.ExceptionProcessing;
 import cn.chahuyun.session.manage.DataManager;
 import cn.chahuyun.session.manage.GroupManager;
 import cn.chahuyun.session.utils.ShareUtils;
+import kotlin.coroutines.CoroutineContext;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.Contact;
 import net.mamoe.mirai.contact.Group;
@@ -36,7 +38,16 @@ import java.util.regex.Pattern;
  */
 public class MessageEventListener extends SimpleListenerHost {
 
-    private static final MiraiLogger l = HuYanSession.INSTANCE.getLogger();
+    private static final MiraiLogger LOGGER = HuYanSession.INSTANCE.getLogger();
+
+
+    /**
+     * 转移异常处理
+     */
+    @Override
+    public void handleException(@NotNull CoroutineContext context, @NotNull Throwable exception) {
+        ExceptionProcessing.INSTANCE.handleException(context, exception);
+    }
 
     @EventHandler()
     public void onMessage(@NotNull MessageEvent event) { // 可以抛出任何异常, 将在 handleException 处理
@@ -56,7 +67,7 @@ public class MessageEventListener extends SimpleListenerHost {
         }
 
         if (SessionConfig.INSTANCE.getDebugSwitch()) {
-            l.info("MiraiCode-> " + code);
+            LOGGER.info("MiraiCode-> " + code);
         }
 
 
@@ -68,7 +79,7 @@ public class MessageEventListener extends SimpleListenerHost {
 
         Map<String, Power> powerMap = StaticData.getPowerMap(bot);
         if (SessionConfig.INSTANCE.getDebugSwitch()) {
-            l.info("owner-" + owner + " power-" + powerMap.containsKey(powerString));
+            LOGGER.info("owner-" + owner + " power-" + powerMap.containsKey(powerString));
         }
         //是否是有权限的用户 true 是有权限的用户
         boolean powerUser = powerMap.containsKey(powerString);
@@ -133,14 +144,14 @@ public class MessageEventListener extends SimpleListenerHost {
         //是否忽略下一条消息
         if (ShareUtils.isPause(event)) {
             if (SessionConfig.INSTANCE.getDebugSwitch()) {
-                l.info("本" + bot.getNick() + "(Bot)还不是很想理你");
+                LOGGER.info("本" + bot.getNick() + "(Bot)还不是很想理你");
             }
             return;
         }
 
         //添加忽略消息
         if (Pattern.matches(pauseEventPattern, code)) {
-            l.info("添加忽略消息指令");
+            LOGGER.info("添加忽略消息指令");
             ShareUtils.spotPause(event);
             return;
         }
@@ -156,15 +167,15 @@ public class MessageEventListener extends SimpleListenerHost {
         if (owner || admin || power.isGroupList()) {
             ListAction listAction = new ListAction();
             if (Pattern.matches(addListPattern, code)) {
-                l.info("添加群组指令");
+                LOGGER.info("添加群组指令");
                 listAction.addGroupListInfo(event);
                 return;
             } else if (Pattern.matches(queryListPattern, code)) {
-                l.info("查询群组指令");
+                LOGGER.info("查询群组指令");
                 listAction.queryGroupListInfo(event);
                 return;
             } else if (Pattern.matches(deleteListPattern, code)) {
-                l.info("删除群组指令");
+                LOGGER.info("删除群组指令");
                 listAction.deleteGroupListInfo(event);
                 return;
             }
@@ -182,23 +193,23 @@ public class MessageEventListener extends SimpleListenerHost {
         if (owner || admin || power.isSession() || power.isSessionX()) {
             SessionAction sessionAction = new SessionAction();
             if (Pattern.matches(addStudyPattern, code)) {
-                l.info("学习会话指令");
+                LOGGER.info("学习会话指令");
                 sessionAction.studySession(event);
                 return;
             } else if (Pattern.matches(queryStudyPattern, code)) {
-                l.info("查询会话指令");
+                LOGGER.info("查询会话指令");
                 sessionAction.querySession(event);
                 return;
             } else if (Pattern.matches(addsStudyPattern, code)) {
-                l.info("添加会话指令");
+                LOGGER.info("添加会话指令");
                 sessionAction.studyDialogue(event);
                 return;
             } else if (Pattern.matches(deleteStudyPattern, code)) {
-                l.info("删除会话指令");
+                LOGGER.info("删除会话指令");
                 sessionAction.deleteSession(event);
                 return;
             } else if (Pattern.matches(deleteDialogueStudyPattern, code)) {
-                l.info("删除会话指令");
+                LOGGER.info("删除会话指令");
                 sessionAction.deleteInformationSession(event);
                 return;
             }
@@ -215,15 +226,15 @@ public class MessageEventListener extends SimpleListenerHost {
         if (owner || admin) {
             PowerAction powerAction = new PowerAction();
             if (Pattern.matches(addPowerPattern, code)) {
-                l.info("添加权限指令");
+                LOGGER.info("添加权限指令");
                 powerAction.addOrUpdatePower(event, true);
                 return;
             } else if (Pattern.matches(deletePowerPattern, code)) {
-                l.info("删除权限指令");
+                LOGGER.info("删除权限指令");
                 powerAction.addOrUpdatePower(event, false);
                 return;
             } else if (Pattern.matches(queryPowerPattern, code)) {
-                l.info("查询权限指令");
+                LOGGER.info("查询权限指令");
                 powerAction.queryPower(event);
                 return;
             }
@@ -236,7 +247,7 @@ public class MessageEventListener extends SimpleListenerHost {
 
         if ((owner || admin || power.isGroupManage() || power.isGroupJy()) && (isGroupAdmin || isGroupOwner)) {
             if (Pattern.matches(groupProhibitPattern, code)) {
-                l.info("禁言指令");
+                LOGGER.info("禁言指令");
                 GroupManager.INSTANCE.prohibit(event);
                 return;
             }
@@ -250,7 +261,7 @@ public class MessageEventListener extends SimpleListenerHost {
 
         if ((owner || admin || power.isGroupManage() || power.isGroupCh()) && (isGroupAdmin || isGroupOwner)) {
             if (Pattern.matches(groupRecallPattern, code)) {
-                l.info("撤回消息指令");
+                LOGGER.info("撤回消息指令");
                 GroupManager.INSTANCE.recall(event);
                 return;
             }
@@ -262,7 +273,7 @@ public class MessageEventListener extends SimpleListenerHost {
         String kickPattern = "^tr?\\[mirai:at:\\d+] ?(hmd)?|^踢人\\[mirai:at:\\d+] ?(hmd)?";
         if ((owner || admin || power.isGroupManage() || power.isGroupTr()) && (isGroupAdmin || isGroupOwner)) {
             if (Pattern.matches(kickPattern, code)) {
-                l.info("踢人指令");
+                LOGGER.info("踢人指令");
                 GroupManager.kick(event);
                 return;
             }
@@ -274,7 +285,7 @@ public class MessageEventListener extends SimpleListenerHost {
         String editGroupUserTitlePattern = "^%\\[mirai:at:\\d+] \\S+|^设置头衔 \\S+";
         if (owner || admin || power.isGroupManage()) {
             if (Pattern.matches(editGroupUserTitlePattern, code)) {
-                l.info("设置头衔指令");
+                LOGGER.info("设置头衔指令");
                 GroupManager.INSTANCE.editUserTitle(event);
                 return;
             }
@@ -293,15 +304,15 @@ public class MessageEventListener extends SimpleListenerHost {
         if (owner || admin || power.isGroupManage() || power.isGroupWjc()) {
             GroupProhibitedAction groupProhibitedAction = new GroupProhibitedAction();
             if (Pattern.matches(addProhibitedPattern, code)) {
-                l.info("添加违禁词指令");
+                LOGGER.info("添加违禁词指令");
                 groupProhibitedAction.addProhibited(event);
                 return;
             } else if (Pattern.matches(deleteProhibitedPattern, code)) {
-                l.info("删除违禁词指令");
+                LOGGER.info("删除违禁词指令");
                 groupProhibitedAction.deleteProhibited(event);
                 return;
             } else if (Pattern.matches(queryProhibitedPattern, code)) {
-                l.info("查询违禁词指令");
+                LOGGER.info("查询违禁词指令");
                 groupProhibitedAction.queryGroupProhibited(event);
                 return;
             }
@@ -311,21 +322,21 @@ public class MessageEventListener extends SimpleListenerHost {
           欢迎词正则
          */
         String addGroupWelcomeMessagePattern = "^%hyc|^添加欢迎词";
-        String queryGroupWelcomeMessagePattern = "^hyc\\\\?[：:]|^查询欢迎词";
+        String queryGroupWelcomeMessagePattern = "^hyc\\\\?[:：]|^查询欢迎词";
         String deleteGroupWelcomeMessagePattern = "^-hyc[:：]\\d+( +\\d+)?|^删除欢迎词\\\\?[：:]\\d+( +\\d+)?";
 
         if (owner || admin || power.isGroupManage() || power.isGroupHyc()) {
             GroupWelcomeInfoAction groupWelcomeInfoAction = new GroupWelcomeInfoAction();
             if (Pattern.matches(addGroupWelcomeMessagePattern, code)) {
-                l.info("添加欢迎词指令");
+                LOGGER.info("添加欢迎词指令");
                 groupWelcomeInfoAction.addGroupWelcomeInfo(event);
                 return;
             } else if (Pattern.matches(queryGroupWelcomeMessagePattern, code)) {
-                l.info("查询欢迎词指令");
+                LOGGER.info("查询欢迎词指令");
                 groupWelcomeInfoAction.queryGroupWelcomeInfo(event);
                 return;
             } else if (Pattern.matches(deleteGroupWelcomeMessagePattern, code)) {
-                l.info("删除欢迎词指令");
+                LOGGER.info("删除欢迎词指令");
                 groupWelcomeInfoAction.deleteGroupWelcomeInfo(event);
                 return;
             }
@@ -341,15 +352,15 @@ public class MessageEventListener extends SimpleListenerHost {
 
         if (owner || admin || power.isGroupManage() || power.isGroupHmd()) {
             if (Pattern.matches(addBlackListPattern, code)) {
-                l.info("添加黑名单指令");
+                LOGGER.info("添加黑名单指令");
                 blackListAction.addBlackList(event);
                 return;
             } else if (Pattern.matches(queryBlackListPattern, code)) {
-                l.info("查询黑名单指令");
+                LOGGER.info("查询黑名单指令");
                 blackListAction.queryBlackList(event);
                 return;
             } else if (Pattern.matches(deleteBlackListPattern, code)) {
-                l.info("删除黑名单指令");
+                LOGGER.info("删除黑名单指令");
                 blackListAction.deleteBlackList(event);
                 return;
             }
@@ -365,15 +376,15 @@ public class MessageEventListener extends SimpleListenerHost {
         if (owner || admin || power.isSession() || power.isSessionDct()) {
             ManySessionAction manySessionAction = new ManySessionAction();
             if (Pattern.matches(addManySessionPattern, code)) {
-                l.info("添加多词条指令");
+                LOGGER.info("添加多词条指令");
                 manySessionAction.addManySession(event);
                 return;
             } else if (Pattern.matches(queryManySessionPattern, code)) {
-                l.info("查询多词条指令");
+                LOGGER.info("查询多词条指令");
                 manySessionAction.queryManySession(event);
                 return;
             } else if (Pattern.matches(deleteManySessionPattern, code)) {
-                l.info("删除多词条指令");
+                LOGGER.info("删除多词条指令");
                 manySessionAction.deleteManySession(event);
                 return;
             }
@@ -391,22 +402,22 @@ public class MessageEventListener extends SimpleListenerHost {
 
         if (owner || admin || power.isDs() || power.isDscz()) {
             if (Pattern.matches(switchQuartzPattern, code)) {
-                l.info("切换定时器指令");
+                LOGGER.info("切换定时器指令");
                 quartzAction.switchQuartz(event);
                 return;
             } else if (Pattern.matches(queryQuartzPattern, code)) {
-                l.info("查询定时器指令");
+                LOGGER.info("查询定时器指令");
                 quartzAction.queryQuartz(event);
                 return;
             }
         }
         if (owner || admin || power.isDs()) {
             if (Pattern.matches(addQuartzPattern, code)) {
-                l.info("添加定时器指令");
+                LOGGER.info("添加定时器指令");
                 quartzAction.addQuartz(event);
                 return;
             } else if (Pattern.matches(deleteQuartzPattern, code)) {
-                l.info("删除定时器指令");
+                LOGGER.info("删除定时器指令");
                 quartzAction.deleteQuartz(event);
                 return;
             }
@@ -421,11 +432,11 @@ public class MessageEventListener extends SimpleListenerHost {
 
         if (owner) {
             if (Pattern.matches(outputDataPattern, code)) {
-                l.info("导出数据指令");
+                LOGGER.info("导出数据指令");
                 DataManager.outputData(event);
                 return;
             } else if (Pattern.matches(inputDataPattern, code)) {
-                l.info("导入数据指令");
+                LOGGER.info("导入数据指令");
                 DataManager.inputData(event);
                 return;
             }
@@ -456,12 +467,12 @@ public class MessageEventListener extends SimpleListenerHost {
             Session sessionInfo = entry.getValue();
             if (ShareUtils.mateScope(event, sessionInfo.getScope())) {
                 if (SessionConfig.INSTANCE.getDebugSwitch()) {
-                    l.info("匹配作用域->存在");
+                    LOGGER.info("匹配作用域->存在");
                 }
                 //尝试匹配匹配方式
                 if (ShareUtils.mateMate(code, sessionInfo.getMate(), sessionInfo.getTerm(), content)) {
                     if (SessionConfig.INSTANCE.getDebugSwitch()) {
-                        l.info("匹配匹配方式->成功");
+                        LOGGER.info("匹配匹配方式->成功");
                     }
                     instance.dialogue(event,sessionInfo);
 //                    DialogueImpl.INSTANCE.dialogueSession(event, sessionInfo);
@@ -475,18 +486,18 @@ public class MessageEventListener extends SimpleListenerHost {
             //先做模糊查询判断存在不存在
             if (code.contains(entry.getKey())) {
                 if (SessionConfig.INSTANCE.getDebugSwitch()) {
-                    l.info("匹配触发内容->存在");
+                    LOGGER.info("匹配触发内容->存在");
                 }
                 //存在则尝试匹配作用域
                 ManySessionInfo manySessionInfo = entry.getValue();
                 if (ShareUtils.mateScope(event, manySessionInfo.getScope())) {
                     if (SessionConfig.INSTANCE.getDebugSwitch()) {
-                        l.info("匹配作用域->存在");
+                        LOGGER.info("匹配作用域->存在");
                     }
                     //尝试匹配匹配方式
                     if (ShareUtils.mateMate(code, manySessionInfo.getMate(), manySessionInfo.getKeywords(), content)) {
                         if (SessionConfig.INSTANCE.getDebugSwitch()) {
-                            l.info("匹配匹配方式->成功");
+                            LOGGER.info("匹配匹配方式->成功");
                         }
 //                        todo
 //                        instance.dialogue(event,manySessionInfo);
