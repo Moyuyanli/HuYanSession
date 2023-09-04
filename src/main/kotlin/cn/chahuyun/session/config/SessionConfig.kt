@@ -1,4 +1,4 @@
-package cn.chahuyun.config
+package cn.chahuyun.session.config
 
 
 import net.mamoe.mirai.console.data.AutoSavePluginConfig
@@ -94,7 +94,7 @@ object SessionConfig : AutoSavePluginConfig("config") {
     @ValueDescription("数据库类型:H2(H2/MYSQL/SQLITE)")
     var databaseType : BaseType by value(BaseType.H2)
 
-    @ValueDescription("MySQL连接默认库为huyan，用户root")
+    @ValueDescription("数据库默认库为huyan，用户root")
     var mysqlPwd : String by value("123456")
 
     enum class BaseType{

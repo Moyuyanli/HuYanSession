@@ -1,4 +1,4 @@
-package cn.chahuyun.config
+package cn.chahuyun.session.config
 
 
 import net.mamoe.mirai.console.data.AutoSavePluginConfig

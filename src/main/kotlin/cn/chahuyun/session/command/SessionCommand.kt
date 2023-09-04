@@ -1,6 +1,6 @@
-package cn.chahuyun.command
+package cn.chahuyun.session.command
 
-import cn.chahuyun.config.SessionConfig
+import cn.chahuyun.session.config.SessionConfig
 import cn.chahuyun.session.HuYanSession
 import cn.chahuyun.session.manage.DataManager
 import net.mamoe.mirai.Bot
