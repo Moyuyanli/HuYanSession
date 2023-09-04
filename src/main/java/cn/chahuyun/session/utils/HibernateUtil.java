@@ -1,16 +1,17 @@
 package cn.chahuyun.session.utils;
 
-import org.hibernate.HibernateException;
+import cn.chahuyun.session.HuYanSession;
+import cn.hutool.core.io.FileUtil;
+import cn.hutool.core.io.IORuntimeException;
 import org.hibernate.SessionFactory;
 import org.hibernate.query.criteria.HibernateCriteriaBuilder;
 import org.hibernate.query.criteria.JpaCriteriaQuery;
 import org.hibernate.query.criteria.JpaRoot;
-import xyz.cssxsh.mirai.hibernate.MiraiHibernateConfiguration;
 
+import java.io.File;
 import java.util.List;
 import java.util.Map;
-
-import static cn.chahuyun.session.HuYanSession.LOGGER;
+import java.util.Properties;
 
 /**
  * 说明
@@ -30,18 +31,12 @@ public class HibernateUtil {
     /**
      * Hibernate初始化
      *
-     * @param configuration Configuration
+     * @param factory 数据库工厂
      * @author Moyuyanli
      * @date 2022/7/30 23:04
      */
-    public static void init(MiraiHibernateConfiguration configuration) {
-        try {
-            factory = configuration.buildSessionFactory();
-        } catch (HibernateException e) {
-            LOGGER.error("请删除data中的HuYan.mv.db后重新启动！", e);
-            return;
-        }
-        LOGGER.info("H2数据库初始化成功!");
+    public static void init(SessionFactory factory) {
+        HibernateUtil.factory = factory;
     }
 
     /**
@@ -87,6 +82,20 @@ public class HibernateUtil {
             }
             return session.createQuery(query).list();
         });
+    }
+
+
+    /**
+     * 手动更新数据库配置文件
+     *
+     * @param properties 配置文件
+     * @return t 保存成功
+     */
+    public static void saveProperties(Properties properties) throws IORuntimeException {
+        File tmp = FileUtil.createTempFile();
+        FileUtil.appendLines(properties.entrySet(), tmp, "UTF-8");
+        File file = HuYanSession.INSTANCE.resolveConfigFile("hibernate.properties");
+        FileUtil.copy(tmp, file, true);
     }
 
 
