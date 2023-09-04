@@ -147,12 +147,12 @@ public class GroupList implements BaseEntity{
         try {
             HibernateUtil.factory.fromTransaction(session ->{
                 HibernateCriteriaBuilder builder = session.getCriteriaBuilder();
-                JpaCriteriaQuery<GroupInfo> query = builder.createQuery(GroupInfo.class);
-                JpaRoot<GroupInfo> from = query.from(GroupInfo.class);
+                JpaCriteriaQuery<GroupList> query = builder.createQuery(GroupList.class);
+                JpaRoot<GroupList> from = query.from(GroupList.class);
                 query.select(from);
-                query.where(builder.equal(from.get("bot"), this.bot));
-                query.where(builder.equal(from.get("listId"), this.listId));
-                GroupInfo singleResult = session.createQuery(query).getSingleResultOrNull();
+                query.where(builder.equal(from.get("bot"), getBot()));
+                query.where(builder.equal(from.get("listId"), getListId()));
+                GroupList singleResult = session.createQuery(query).getSingleResultOrNull();
                 if (singleResult != null) {
                     this.setId(singleResult.getId());
                 }
@@ -164,7 +164,13 @@ public class GroupList implements BaseEntity{
                 return null;
             });
         } catch (Exception e) {
-            LOGGER.error("群组信息保存失败！",e);
+            if (e.getMessage().equals("Converting `org.hibernate.exception.DataException` to JPA `PersistenceException` : could not execute statement")) {
+                HibernateUtil.factory.fromTransaction(session ->
+                        session.createNativeQuery("alter table GROUPLIST alter column LISTID varchar(12);", GroupList.class)
+                                .executeUpdate());
+                return this.merge();
+            }
+            LOGGER.error("群组信息保存失败！");
             return false;
         }
         return true;
@@ -181,12 +187,11 @@ public class GroupList implements BaseEntity{
     public boolean remove() {
         try {
             HibernateUtil.factory.fromTransaction(session -> {
-                this.getGroups().forEach(GroupInfo::remove);
                 session.remove(this);
                 return null;
             });
         } catch (Exception e) {
-            LOGGER.error("群组信息删除失败！",e);
+            LOGGER.error("群组信息删除失败！");
             return false;
         }
         return true;

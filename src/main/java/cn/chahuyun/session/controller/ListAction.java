@@ -1,6 +1,6 @@
 package cn.chahuyun.session.controller;
 
-import cn.chahuyun.config.SessionConfig;
+import cn.chahuyun.session.config.SessionConfig;
 import cn.chahuyun.session.data.StaticData;
 import cn.chahuyun.session.entity.GroupInfo;
 import cn.chahuyun.session.entity.GroupList;
@@ -99,7 +99,7 @@ public class ListAction {
         if (groupList.merge()) {
             subject.sendMessage(reply.build());
         } else {
-            subject.sendMessage("群组信息报错失败~");
+            subject.sendMessage("群组信息保存失败~");
         }
 
         /*

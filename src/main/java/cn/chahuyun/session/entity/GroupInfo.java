@@ -90,7 +90,7 @@ public class GroupInfo implements BaseEntity {
         try {
             HibernateUtil.factory.fromTransaction(session -> session.merge(this));
         } catch (Exception e) {
-            LOGGER.error("群组群信息保存失败！", e);
+            LOGGER.error("群组群信息保存失败！");
             return false;
         }
         return true;
@@ -112,7 +112,7 @@ public class GroupInfo implements BaseEntity {
                 return null;
             });
         } catch (Exception e) {
-            LOGGER.error("群组群信息删除失败！", e);
+            LOGGER.error("群组群信息删除失败！");
             return false;
         }
         return true;
