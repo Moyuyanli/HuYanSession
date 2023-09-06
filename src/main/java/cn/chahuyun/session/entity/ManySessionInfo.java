@@ -202,6 +202,7 @@ public class ManySessionInfo extends BaseMessage implements BaseEntity {
                 ManySessionInfo merge = session.merge(this);
                 merge.getManySessions().forEach(it->{
                     it.setManySessionId(merge.getId());
+//                    it.merge();
                 });
                 return null;
             });

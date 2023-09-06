@@ -8,7 +8,6 @@ import cn.chahuyun.session.entity.Scope;
 import cn.chahuyun.session.enums.Mate;
 import cn.chahuyun.session.utils.HibernateUtil;
 import cn.chahuyun.session.utils.ListUtil;
-import cn.chahuyun.session.utils.ScopeUtil;
 import cn.chahuyun.session.utils.ShareUtils;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.Contact;
@@ -250,31 +249,18 @@ public class ManySessionAction {
             subject.sendMessage("添加成功!");
         }
 
-
-        try {
-            Scope finalScope = scope;
-            ManySessionInfo finalManySessionInfo = manySessionInfo;
-            HibernateUtil.factory.fromTransaction(session -> {
-                if (ScopeUtil.isScopeEmpty(finalScope)) {
-                    //不存在则先添加作用域
-                    session.persist(finalScope);
-                }
-                session.merge(finalManySessionInfo);
-                return 0;
-            });
-        } catch (Exception e) {
+        if (manySessionInfo.merge()) {
+            if (editOrAdd) {
+                subject.sendMessage("多词条修改成功!");
+            } else {
+                subject.sendMessage("多词条保存成功!");
+            }
+        } else {
             if (editOrAdd) {
                 subject.sendMessage("多词条修改失败!");
             } else {
                 subject.sendMessage("多词条保存失败!");
             }
-            LOGGER.error("出错啦~", e);
-            return;
-        }
-        if (editOrAdd) {
-            subject.sendMessage("多词条修改成功!");
-        } else {
-            subject.sendMessage("多词条保存成功!");
         }
         init(false);
     }
