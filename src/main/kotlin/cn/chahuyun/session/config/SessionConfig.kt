@@ -91,7 +91,7 @@ object SessionConfig : AutoSavePluginConfig("config") {
         }
     }
 
-    @ValueDescription("数据库类型:H2(H2/MYSQL/SQLITE)")
+    @ValueDescription("数据库类型:(H2/MYSQL/SQLITE)")
     var databaseType : BaseType by value(BaseType.H2)
 
     @ValueDescription("数据库默认库为huyan，用户root")

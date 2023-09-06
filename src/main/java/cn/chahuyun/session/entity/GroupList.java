@@ -158,6 +158,11 @@ public class GroupList implements BaseEntity{
                 }
                 GroupList merge = session.merge(this);
                 merge.getGroups().forEach(it->{
+                    /*
+                    不明白为啥这里不需要再进行子表信息保存就可以修改
+                    或许是通过对资源的监听来做到同步更新？
+                    但不论为啥，这个情况都方便了我。
+                     */
                     it.setListId(merge.id);
                 });
                 return null;
