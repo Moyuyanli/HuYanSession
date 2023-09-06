@@ -46,6 +46,7 @@ public class PluginManager {
         MiraiHibernateConfiguration configuration = new MiraiHibernateConfiguration(install);
         Properties properties;
         String log = "";
+        //noinspection AlibabaSwitchStatement
         switch (HuYanSession.CONFIG.getDatabaseType()) {
             case MYSQL:
                 properties = mySqlBase(configuration);
@@ -63,19 +64,6 @@ public class PluginManager {
             exists = false;
         }
 
-        try {
-            //初始化插件数据库
-            HibernateUtil.init(configuration.buildSessionFactory());
-        } catch (HibernateException e) {
-            LOGGER.error("数据库加载失败，请重新加载！", e);
-//            if (HuYanSession.CONFIG.getDatabaseType().equals(SessionConfig.BaseType.MYSQL)) {
-//                LOGGER.warning("mysql8.0及以上请手动修改数据库方面为:org.hibernate.dialect.MySQL8Dialect");
-//                LOGGER.warning("hibernate.dialect:org.hibernate.dialect.MySQL8Dialect");
-//            }
-            return;
-        }
-        LOGGER.info(log + "数据库初始化成功!");
-
         //对比配置
         if (exists && !oldConfiguration.getProperty(HIBERNATE_CONNECTION_URL).equals(configuration.getProperty(HIBERNATE_CONNECTION_URL))) {
             File oldFile = HuYanSession.INSTANCE.resolveConfigFile("hibernate.backup.properties");
@@ -86,13 +74,23 @@ public class PluginManager {
                     }
                 }
                 FileUtil.copy(oldFile, file, true);
-                configuration.restore(oldConfiguration.getProperties());
+                //todo 转移数据报错，目前无法解决
+//                configuration.restore(oldConfiguration.getProperties());
             } catch (IOException e) {
                 LOGGER.error("旧数据迁移失败！");
                 return;
             }
             LOGGER.error("旧数据迁移成功！");
         }
+
+        try {
+            //初始化插件数据库
+            HibernateUtil.init(configuration.buildSessionFactory());
+        } catch (HibernateException e) {
+            LOGGER.error("数据库加载失败，请重新加载！", e);
+            return;
+        }
+        LOGGER.info(log + "数据库初始化成功!");
     }
 
     /**
