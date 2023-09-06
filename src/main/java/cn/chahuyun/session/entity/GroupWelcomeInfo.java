@@ -158,7 +158,7 @@ public class GroupWelcomeInfo extends BaseMessage implements BaseEntity {
             HibernateUtil.factory.fromTransaction(session -> {
                 GroupWelcomeInfo merge = session.merge(this);
                 merge.getWelcomeMessages().forEach(it -> {
-                    it.setMark(merge.getId());
+                    it.setGroupWelcomeInfoId(merge.getId());
                 });
                 return null;
             });
