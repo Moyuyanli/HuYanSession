@@ -54,7 +54,9 @@ public class PluginManager {
         }
 
         try {
-            HibernateUtil.saveProperties(properties);
+            if (HuYanSession.CONFIG.isFirstLoad()) {
+                HibernateUtil.saveProperties(properties);
+            }
             //初始化插件数据库
             HibernateUtil.init(configuration.buildSessionFactory());
         } catch (HibernateException e) {

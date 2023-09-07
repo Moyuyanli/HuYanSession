@@ -62,6 +62,19 @@ object SessionConfig : AutoSavePluginConfig("config") {
     @ValueDescription("刷屏禁言时间(秒)")
     val forbiddenTime: Int by value(60)
 
+    @ValueDescription("第一次加载插件")
+    private var firstLoad: Boolean by value(true)
+
+
+    fun isFirstLoad() : Boolean {
+        return if (firstLoad) {
+            firstLoad = false
+            true
+        } else {
+            firstLoad
+        }
+
+    }
 
     /**
      * 群号
