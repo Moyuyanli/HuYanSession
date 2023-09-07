@@ -8,6 +8,7 @@ import xyz.cssxsh.mirai.hibernate.MiraiHibernateConfiguration;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.module.Configuration;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -30,18 +31,6 @@ public class PluginManager {
     private static final String DEFAULT_H2_BASE_PATH = "jdbc:h2:file:./data/cn.chahuyun.HuYanSession/hibernate.h2";
 
     public static void init(HuYanSession install) {
-        //加载旧配置
-        File file = HuYanSession.INSTANCE.resolveConfigFile("hibernate.properties");
-        MiraiHibernateConfiguration oldConfiguration = new MiraiHibernateConfiguration(install);
-        boolean exists = file.exists();
-        if (exists) {
-            List<String> strings = FileUtil.readLines(file, "UTF-8");
-            for (String string : strings) {
-                int i = string.indexOf("=");
-                oldConfiguration.setProperty(string.substring(0, i), string.substring(i + 1));
-            }
-        }
-
         //加载新配置
         MiraiHibernateConfiguration configuration = new MiraiHibernateConfiguration(install);
         Properties properties;
@@ -59,31 +48,13 @@ public class PluginManager {
             default:
                 properties = h2Base(configuration);
         }
-        if (oldConfiguration.getProperty(HIBERNATE_CONNECTION_URL).equals(DEFAULT_H2_BASE_PATH)) {
-            HibernateUtil.saveProperties(properties);
-            exists = false;
-        }
 
-        //对比配置
-        if (exists && !oldConfiguration.getProperty(HIBERNATE_CONNECTION_URL).equals(configuration.getProperty(HIBERNATE_CONNECTION_URL))) {
-            File oldFile = HuYanSession.INSTANCE.resolveConfigFile("hibernate.backup.properties");
-            try {
-                if (!oldFile.exists()) {
-                    if (!oldFile.createNewFile()) {
-                        LOGGER.error("旧数据配置文件创建失败,请手动创建!");
-                    }
-                }
-                FileUtil.copy(oldFile, file, true);
-                //todo 转移数据报错，目前无法解决
-//                configuration.restore(oldConfiguration.getProperties());
-            } catch (IOException e) {
-                LOGGER.error("旧数据迁移失败！");
-                return;
-            }
-            LOGGER.error("旧数据迁移成功！");
+        if (false) {
+            transfer(install, configuration);
         }
 
         try {
+            HibernateUtil.saveProperties(properties);
             //初始化插件数据库
             HibernateUtil.init(configuration.buildSessionFactory());
         } catch (HibernateException e) {
@@ -138,6 +109,52 @@ public class PluginManager {
             configuration.setProperty((String) entry.getKey(), (String) entry.getValue());
         }
         return properties;
+    }
+
+
+    /**
+     * 数据迁移
+     *
+     * @param install 插件
+     * @param configuration 配置
+     * @author Moyuyanli
+     * @date 2023/9/7 14:53
+     */
+    private static void transfer(HuYanSession install, MiraiHibernateConfiguration configuration) {
+        //加载旧配置
+        File file = HuYanSession.INSTANCE.resolveConfigFile("hibernate.properties");
+        MiraiHibernateConfiguration oldConfiguration = new MiraiHibernateConfiguration(install);
+        boolean exists = file.exists();
+        if (exists) {
+            List<String> strings = FileUtil.readLines(file, "UTF-8");
+            for (String string : strings) {
+                int i = string.indexOf("=");
+                oldConfiguration.setProperty(string.substring(0, i), string.substring(i + 1));
+            }
+        }
+
+        if (oldConfiguration.getProperty(HIBERNATE_CONNECTION_URL).equals(DEFAULT_H2_BASE_PATH)) {
+            exists = false;
+        }
+
+        //对比配置
+        if (exists && !oldConfiguration.getProperty(HIBERNATE_CONNECTION_URL).equals(configuration.getProperty(HIBERNATE_CONNECTION_URL))) {
+            File oldFile = HuYanSession.INSTANCE.resolveConfigFile("hibernate.backup.properties");
+            try {
+                if (!oldFile.exists()) {
+                    if (!oldFile.createNewFile()) {
+                        LOGGER.error("旧数据配置文件创建失败,请手动创建!");
+                    }
+                }
+                FileUtil.copy(oldFile, file, true);
+                //todo 转移数据报错，目前无法解决
+                configuration.restore(oldConfiguration.getProperties());
+            } catch (IOException e) {
+                LOGGER.error("旧数据迁移失败！");
+                return;
+            }
+            LOGGER.error("旧数据迁移成功！");
+        }
     }
 
 
