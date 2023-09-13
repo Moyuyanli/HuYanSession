@@ -2,6 +2,8 @@ package cn.chahuyun.session.utils;
 
 import cn.chahuyun.session.entity.Scope;
 
+import java.util.regex.Pattern;
+
 /**
  * ScopeUtil
  *
@@ -47,11 +49,12 @@ public class ScopeUtil {
             return new Scope(bot, "全局", true, false, 0, "0");
         } else {
             String s = split[1];
-            if (s.contains("gr")) {
+            String pattern = "^\\d+";
+            if (Pattern.matches(pattern, s)) {
+                return new Scope(bot, "当前群", false, false, Long.parseLong(s), "0");
+            }else {
                 String gr = s.replace("gr", "");
                 return new Scope(bot, "群组", false, true, 0, gr);
-            } else {
-                return new Scope(bot, "当前群", false, false, Long.parseLong(s), "0");
             }
         }
     }
