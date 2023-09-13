@@ -82,6 +82,8 @@ public class PluginManager {
         properties.setProperty("hibernate.hbm2ddl.auto", "update");
         properties.setProperty("hibernate-connection-autocommit", "true");
         properties.setProperty("hibernate.autoReconnect", "true");
+        properties.setProperty("hibernate.connection.username", "");
+        properties.setProperty("hibernate.connection.password", "");
         properties.setProperty("hibernate.current_session_context_class", "thread");
         for (Map.Entry<Object, Object> entry : properties.entrySet()) {
             configuration.setProperty((String) entry.getKey(), (String) entry.getValue());
