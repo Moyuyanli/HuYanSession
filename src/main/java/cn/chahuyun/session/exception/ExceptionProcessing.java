@@ -48,7 +48,7 @@ public class ExceptionProcessing extends SimpleListenerHost {
             if (owner == null) {
                 return;
             }
-            owner.sendMessage("壶言会话出错:" + exception.getMessage());
+            owner.sendMessage("壶言会话出错:" + exception.getCause().getCause().toString());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
