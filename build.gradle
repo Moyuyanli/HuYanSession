@@ -7,7 +7,7 @@ plugins {
 }
 
 group = 'cn.chahuyun'
-version = '2.4.1'
+version = '2.4.2'
 
 repositories {
     maven { url 'https://maven.aliyun.com/repository/public' }

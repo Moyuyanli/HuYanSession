@@ -48,7 +48,7 @@ public class SessionDialogue extends AbstractDialogue {
                 if (singleMessage.contentToString().equals(Constant.IMAGE_TYPE)) {
                     Image image = (Image) singleMessage;
                     String imageId = image.getImageId();
-                    String imageAddress = Constant.IMG_PREFIX_ADDRESS + "/" + imageId;
+                    String imageAddress = Constant.IMG_PREFIX_ADDRESS +"/cache/"+ imageId;
                     Image imageMessage = Contact.uploadImage(subject, FileUtil.file(imageAddress));
                     chainBuilder.append(imageMessage);
                 } else {

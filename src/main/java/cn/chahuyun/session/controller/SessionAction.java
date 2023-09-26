@@ -176,7 +176,7 @@ public class SessionAction {
             subject.sendMessage("私发学习请输入作用域！");
             return;
         }
-//        value = ShareUtils.saveImage(event.getMessage(), value, type==1);
+        value = ShareUtils.saveImage(event.getMessage(), value, type==1);
         //保存
         saveSession(subject, bot, key, value, mate, scope, type, dynamic);
     }
