@@ -60,7 +60,7 @@ public class GroupWelcomeInfoAction {
         while (true) {
             subject.sendMessage("请输入欢迎消息:");
 
-            MessageEvent nextMessageEventFromUser = ShareUtils.getNextMessageEventFromUser(user);
+            MessageEvent nextMessageEventFromUser = ShareUtils.getNextMessageEventByUser(user);
             if (ShareUtils.isQuit(nextMessageEventFromUser)) {
                 return;
             }
@@ -93,7 +93,7 @@ public class GroupWelcomeInfoAction {
         boolean random = false;
 
         subject.sendMessage("请发送参数(一次发送，多参数中间隔开):");
-        MessageEvent nextParamMessageEventFromUser = ShareUtils.getNextMessageEventFromUser(user);
+        MessageEvent nextParamMessageEventFromUser = ShareUtils.getNextMessageEventByUser(user);
         if (ShareUtils.isQuit(nextParamMessageEventFromUser)) {
             return;
         }

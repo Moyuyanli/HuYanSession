@@ -105,7 +105,7 @@ public class BlackListAction {
                     case "%":
                         //获取下一次消息
                         subject.sendMessage("请输入封禁理由:");
-                        reason = ShareUtils.getNextMessageEventFromUser(user).getMessage().serializeToMiraiCode();
+                        reason = ShareUtils.getNextMessageEventByUser(user).getMessage().serializeToMiraiCode();
                         break;
                     default:
                         if (Pattern.matches("gr[\\dA-z]+", s)) {

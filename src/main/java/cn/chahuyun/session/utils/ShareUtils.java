@@ -240,7 +240,7 @@ public class ShareUtils {
      * @date 2022/8/20 12:37
      */
     @NotNull
-    public static MessageEvent getNextMessageEventFromUser(User user) {
+    public static MessageEvent getNextMessageEventByUser(User user) {
         EventChannel<MessageEvent> channel = GlobalEventChannel.INSTANCE.parentScope(HuYanSession.INSTANCE)
                 .filterIsInstance(MessageEvent.class)
                 .filter(event -> event.getSender().getId() == user.getId());

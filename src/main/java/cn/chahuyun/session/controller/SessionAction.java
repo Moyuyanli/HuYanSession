@@ -242,7 +242,7 @@ public class SessionAction {
             int end = (int) stringObjectMap.get("end");
             boolean up = (boolean) stringObjectMap.get("up");
             boolean down = (boolean) stringObjectMap.get("down");
-            MessageEvent nextMessageEventFromUser = ShareUtils.getNextMessageEventFromUser(user);
+            MessageEvent nextMessageEventFromUser = ShareUtils.getNextMessageEventByUser(user);
             if (ShareUtils.isQuit(nextMessageEventFromUser)) {
                 return;
             }
@@ -273,7 +273,7 @@ public class SessionAction {
 
         subject.sendMessage("开始添加对话，请输入触发内容:");
         event.intercept();
-        MessageEvent nextMessageEventFromUser = ShareUtils.getNextMessageEventFromUser(user);
+        MessageEvent nextMessageEventFromUser = ShareUtils.getNextMessageEventByUser(user);
         if (ShareUtils.isQuit(nextMessageEventFromUser)) {
             return;
         }
@@ -282,7 +282,7 @@ public class SessionAction {
 
 
         subject.sendMessage("请发送回复消息:");
-        nextMessageEventFromUser = ShareUtils.getNextMessageEventFromUser(user);
+        nextMessageEventFromUser = ShareUtils.getNextMessageEventByUser(user);
         if (ShareUtils.isQuit(nextMessageEventFromUser)) {
             return;
         }
@@ -290,7 +290,7 @@ public class SessionAction {
 
 
         subject.sendMessage("请发送参数(一次发送，多参数中间隔开):");
-        nextMessageEventFromUser = ShareUtils.getNextMessageEventFromUser(user);
+        nextMessageEventFromUser = ShareUtils.getNextMessageEventByUser(user);
         if (ShareUtils.isQuit(nextMessageEventFromUser)) {
             return;
         }
@@ -402,7 +402,7 @@ public class SessionAction {
         User user = event.getSender();
 
         subject.sendMessage("请发送需要删除的消息");
-        MessageEvent eventFromUser = ShareUtils.getNextMessageEventFromUser(user);
+        MessageEvent eventFromUser = ShareUtils.getNextMessageEventByUser(user);
 
         String key = eventFromUser.getMessage().serializeToMiraiCode();
         String patternString = eventFromUser.getMessage().contentToString();

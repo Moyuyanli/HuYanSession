@@ -166,7 +166,7 @@ public class GroupProhibitedAction {
                     case "%":
                         //获取下一次消息
                         subject.sendMessage("请输入触发违禁词回复内容:");
-                        String reply = ShareUtils.getNextMessageEventFromUser(user).getMessage().serializeToMiraiCode();
+                        String reply = ShareUtils.getNextMessageEventByUser(user).getMessage().serializeToMiraiCode();
                         groupProhibited.setReply(reply);
                         break;
                     default:
