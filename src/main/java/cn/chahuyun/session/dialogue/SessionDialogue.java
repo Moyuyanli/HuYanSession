@@ -3,6 +3,7 @@ package cn.chahuyun.session.dialogue;
 import cn.chahuyun.session.HuYanSession;
 import cn.chahuyun.session.constant.Constant;
 import cn.chahuyun.session.entity.Session;
+import cn.chahuyun.session.utils.DynamicMessageUtil;
 import cn.hutool.core.io.FileUtil;
 import net.mamoe.mirai.contact.Contact;
 import net.mamoe.mirai.event.events.MessageEvent;
@@ -41,6 +42,7 @@ public class SessionDialogue extends AbstractDialogue {
         MessageEvent event = getEvent();
         Contact subject = event.getSubject();
         MessageChain singleMessages = MessageChain.deserializeFromMiraiCode(session.getReply(), subject);
+
         if (HuYanSession.CONFIG.getLocalCache()) {
             MessageChainBuilder chainBuilder = new MessageChainBuilder();
             //开启本地缓存，通过本地图片进行替换图片消息
@@ -49,7 +51,12 @@ public class SessionDialogue extends AbstractDialogue {
                     Image image = (Image) singleMessage;
                     String imageId = image.getImageId();
                     String imageAddress = Constant.IMG_PREFIX_ADDRESS +"/cache/"+ imageId;
-                    Image imageMessage = Contact.uploadImage(subject, FileUtil.file(imageAddress));
+                    Image imageMessage;
+                    try {
+                        imageMessage = Contact.uploadImage(subject, FileUtil.file(imageAddress));
+                    } catch (Exception e) {
+                        throw new RuntimeException("本地缓存图片加载错误!");
+                    }
                     chainBuilder.append(imageMessage);
                 } else {
                     chainBuilder.append(singleMessage);
@@ -57,6 +64,14 @@ public class SessionDialogue extends AbstractDialogue {
             }
             subject.sendMessage(chainBuilder.build());
         } else {
+            if (getSession().isDynamic()) {
+                MessageChain reply = DynamicMessageUtil.parseMessageParameter(event, getSession().getReply(), session);
+                if (reply == null) {
+                    throw new RuntimeException("动态消息构造失败!");
+                }
+                subject.sendMessage(reply);
+                return;
+            }
             subject.sendMessage(singleMessages);
         }
     }

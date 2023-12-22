@@ -432,12 +432,12 @@ public class MessageEventListener extends SimpleListenerHost {
 
         if (owner) {
             if (Pattern.matches(outputDataPattern, code)) {
-                LOGGER.info("导出数据指令");
-                DataManager.outputData(event);
+//                LOGGER.info("导出数据指令");
+//                DataManager.outputData(event);
                 return;
             } else if (Pattern.matches(inputDataPattern, code)) {
-                LOGGER.info("导入数据指令");
-                DataManager.inputData(event);
+//                LOGGER.info("导入数据指令");
+//                DataManager.inputData(event);
                 return;
             }
         }
@@ -462,18 +462,19 @@ public class MessageEventListener extends SimpleListenerHost {
         DialogueProcessing instance = DialogueProcessing.getInstance();
 
         Map<String, Session> sessionMap = StaticData.getSessionMap(bot);
+
         for (Map.Entry<String, Session> entry : sessionMap.entrySet()) {
             //存在则尝试匹配作用域
             Session sessionInfo = entry.getValue();
             if (ShareUtils.mateScope(event, sessionInfo.getScope())) {
-                if (SessionConfig.INSTANCE.getDebugSwitch()) {
-                    LOGGER.info("匹配作用域->存在");
-                }
+//                if (SessionConfig.INSTANCE.getDebugSwitch()) {
+//                    LOGGER.debug("匹配作用域->存在");
+//                }
                 //尝试匹配匹配方式
                 if (ShareUtils.mateMate(code, sessionInfo.getMate(), sessionInfo.getTerm(), content)) {
-                    if (SessionConfig.INSTANCE.getDebugSwitch()) {
-                        LOGGER.info("匹配匹配方式->成功");
-                    }
+//                    if (SessionConfig.INSTANCE.getDebugSwitch()) {
+//                        LOGGER.info("匹配匹配方式->成功");
+//                    }
                     instance.dialogue(event,sessionInfo);
 //                    DialogueImpl.INSTANCE.dialogueSession(event, sessionInfo);
                     return;
