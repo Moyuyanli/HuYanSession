@@ -727,7 +727,7 @@ public class GroupManager {
             blackHouseAction.saveOrUpdate(blackHouse);
         }
         //回复消息
-        MessageChain messages = DynamicMessageUtil.parseMessageParameter(event, groupProhibited.getReply(), groupProhibited);
+        MessageChain messages = DynamicMessageUtil.parseMessageParameter((GroupEvent) event, groupProhibited.getReply(), groupProhibited);
         if (messages != null) {
             subject.sendMessage(messages);
         }
