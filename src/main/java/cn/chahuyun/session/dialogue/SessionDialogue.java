@@ -11,6 +11,7 @@ import net.mamoe.mirai.message.data.Image;
 import net.mamoe.mirai.message.data.MessageChain;
 import net.mamoe.mirai.message.data.MessageChainBuilder;
 import net.mamoe.mirai.message.data.SingleMessage;
+import net.mamoe.mirai.utils.MiraiLogger;
 
 /**
  * 对话消息
@@ -19,6 +20,8 @@ import net.mamoe.mirai.message.data.SingleMessage;
  * @date 2023/8/31 9:46
  */
 public class SessionDialogue extends AbstractDialogue {
+
+    public MiraiLogger logger = HuYanSession.LOGGER;
 
     private Session session;
 
@@ -41,12 +44,20 @@ public class SessionDialogue extends AbstractDialogue {
     public void sendMessage() {
         MessageEvent event = getEvent();
         Contact subject = event.getSubject();
-        MessageChain singleMessages = MessageChain.deserializeFromMiraiCode(session.getReply(), subject);
+        MessageChain reply = MessageChain.deserializeFromMiraiCode(session.getReply(), subject);
+
+        if (getSession().isDynamic()) {
+            reply = DynamicMessageUtil.parseMessageParameter(event, getSession().getReply(), session);
+            if (reply == null) {
+                throw new RuntimeException("动态消息构造失败!");
+            }
+        }
+
 
         if (HuYanSession.CONFIG.getLocalCache()) {
             MessageChainBuilder chainBuilder = new MessageChainBuilder();
             //开启本地缓存，通过本地图片进行替换图片消息
-            for (SingleMessage singleMessage : singleMessages) {
+            for (SingleMessage singleMessage : reply) {
                 if (singleMessage.contentToString().equals(Constant.IMAGE_TYPE)) {
                     Image image = (Image) singleMessage;
                     String imageId = image.getImageId();
@@ -64,15 +75,7 @@ public class SessionDialogue extends AbstractDialogue {
             }
             subject.sendMessage(chainBuilder.build());
         } else {
-            if (getSession().isDynamic()) {
-                MessageChain reply = DynamicMessageUtil.parseMessageParameter(event, getSession().getReply(), session);
-                if (reply == null) {
-                    throw new RuntimeException("动态消息构造失败!");
-                }
-                subject.sendMessage(reply);
-                return;
-            }
-            subject.sendMessage(singleMessages);
+            subject.sendMessage(reply);
         }
     }
 }
