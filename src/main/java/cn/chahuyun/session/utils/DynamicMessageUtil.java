@@ -2,6 +2,7 @@ package cn.chahuyun.session.utils;
 
 import cn.chahuyun.session.config.SessionConfig;
 import cn.chahuyun.session.data.ApplyClusterInfo;
+import cn.chahuyun.session.entity.BaseMessage;
 import cn.chahuyun.session.entity.GroupProhibited;
 import cn.chahuyun.session.entity.GroupWelcomeInfo;
 import cn.chahuyun.session.entity.Session;
@@ -48,7 +49,7 @@ public class DynamicMessageUtil {
      * @author Moyuyanli
      * @date 2022/8/17 14:23
      */
-    public static MessageChain parseMessageParameter(MessageEvent event, String message, Object... object) {
+    public static MessageChain parseMessageParameter(MessageEvent event, String message, BaseMessage baseMessage, Object... object) {
         if (message.contains(SessionConfig.INSTANCE.getVariableSymbol() + "message(null)")) {
             return null;
         }
@@ -60,28 +61,26 @@ public class DynamicMessageUtil {
         List<String> trigger = new ArrayList<>();
 
         //匹配 session
-        if (object[0] instanceof Session) {
-            Session session = (Session) object[0];
+        if (baseMessage instanceof Session) {
+            Session session = (Session) baseMessage;
             //匹配正则匹配
             if (session.getMateInter() == 5) {
                 //获取发送消息
-                if (object[1] instanceof MessageChain) {
-                    MessageChain messageChain = (MessageChain) object[1];
-                    String term = session.getTerm();
-                    //还原正则匹配
-                    term = term.replace("$pattern", "");
-                    Matcher find = Pattern.compile(term).matcher(messageChain.serializeToMiraiCode());
-                    //matches匹配模式
-                    if (find.matches()) {
+                MessageChain messageChain = event.getMessage();
+                String term = session.getTerm();
+                //还原正则匹配
+                term = term.replace("$pattern", "");
+                Matcher find = Pattern.compile(term).matcher(messageChain.serializeToMiraiCode());
+                //matches匹配模式
+                if (find.matches()) {
                         /*
                         group(0) 是获取匹配到的全部信息
                         之后的1就是第一个不定正则匹配到的信息
                         依次递增
                          */
-                        int count = find.groupCount();
-                        for (int i = 1; i <= count; i++) {
-                            trigger.add(find.group(i));
-                        }
+                    int count = find.groupCount();
+                    for (int i = 1; i <= count; i++) {
+                        trigger.add(find.group(i));
                     }
                 }
             }
