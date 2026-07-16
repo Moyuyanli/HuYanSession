@@ -1,17 +1,13 @@
 package cn.chahuyun.session.controller;
 
 import cn.chahuyun.session.config.SessionConfig;
-import cn.chahuyun.session.HuYanSession;
 import cn.chahuyun.session.data.StaticData;
 import cn.chahuyun.session.entity.Power;
 import cn.chahuyun.session.utils.HibernateUtil;
-import kotlin.coroutines.EmptyCoroutineContext;
+import cn.chahuyun.session.utils.ShareUtils;
+import cn.chahuyun.session.manage.PluginRuntime;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.*;
-import net.mamoe.mirai.event.ConcurrencyKind;
-import net.mamoe.mirai.event.EventChannel;
-import net.mamoe.mirai.event.EventPriority;
-import net.mamoe.mirai.event.GlobalEventChannel;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.data.*;
 import org.hibernate.query.criteria.HibernateCriteriaBuilder;
@@ -403,23 +399,13 @@ public class PowerAction {
         });
         subject.sendMessage(forwardMessageBuilder.build());
 
-        //循环判断是否进行下一页的显示
-        EventChannel<MessageEvent> channel = GlobalEventChannel.INSTANCE.parentScope(HuYanSession.INSTANCE)
-                .filterIsInstance(MessageEvent.class)
-                .filter(nextEvent -> nextEvent.getSender().getId() == user.getId());
-        channel.subscribeOnce(MessageEvent.class, EmptyCoroutineContext.INSTANCE,
-                ConcurrencyKind.LOCKED, EventPriority.HIGH, nextEvent -> {
-                    String string = nextEvent.getMessage().contentToString();
-                    if (string.equals("下一页")) {
-                        if (pageNo + 1 <= pageTotal) {
-                            paginationQueryAll(nextEvent, pageNo + 1);
-                        }
-                    } else if (string.equals("上一页")) {
-                        if (pageNo - 1 > 0) {
-                            paginationQueryAll(nextEvent, pageNo - 1);
-                        }
-                    }
-                });
+        MessageEvent nextEvent = ShareUtils.getNextMessageEventFromUser(user);
+        String nextPage = nextEvent.getMessage().contentToString();
+        if ("下一页".equals(nextPage) && pageNo + 1 <= pageTotal) {
+            continuePagination(nextEvent, () -> paginationQueryAll(nextEvent, pageNo + 1));
+        } else if ("上一页".equals(nextPage) && pageNo - 1 > 0) {
+            continuePagination(nextEvent, () -> paginationQueryAll(nextEvent, pageNo - 1));
+        }
     }
 
     /**
@@ -506,23 +492,19 @@ public class PowerAction {
         });
         subject.sendMessage(forwardMessageBuilder.build());
 
-        //循环判断是否进行下一页的显示
-        EventChannel<MessageEvent> channel = GlobalEventChannel.INSTANCE.parentScope(HuYanSession.INSTANCE)
-                .filterIsInstance(MessageEvent.class)
-                .filter(nextEvent -> nextEvent.getSender().getId() == user.getId());
-        channel.subscribeOnce(MessageEvent.class, EmptyCoroutineContext.INSTANCE,
-                ConcurrencyKind.LOCKED, EventPriority.HIGH, nextEvent -> {
-                    String string = nextEvent.getMessage().contentToString();
-                    if (string.equals("下一页")) {
-                        if (pageNo + 1 <= pageTotal) {
-                            paginationQueryAll(nextEvent, pageNo + 1);
-                        }
-                    } else if (string.equals("上一页")) {
-                        if (pageNo - 1 > 0) {
-                            paginationQueryAll(nextEvent, pageNo - 1);
-                        }
-                    }
-                });
+        MessageEvent nextEvent = ShareUtils.getNextMessageEventFromUser(user);
+        String nextPage = nextEvent.getMessage().contentToString();
+        if ("下一页".equals(nextPage) && pageNo + 1 <= pageTotal) {
+            continuePagination(nextEvent, () -> paginationQueryGroup(nextEvent, pageNo + 1));
+        } else if ("上一页".equals(nextPage) && pageNo - 1 > 0) {
+            continuePagination(nextEvent, () -> paginationQueryGroup(nextEvent, pageNo - 1));
+        }
+    }
+
+    private static void continuePagination(MessageEvent event, Runnable nextPage) {
+        if (!PluginRuntime.submitInteraction(nextPage)) {
+            event.getSubject().sendMessage("当前进行中的交互操作过多，请稍后重新查询。");
+        }
     }
 
 

@@ -4,7 +4,6 @@ import cn.chahuyun.session.config.BlackListData;
 import cn.chahuyun.session.HuYanSession;
 import cn.chahuyun.session.controller.BlackHouseAction;
 import cn.chahuyun.session.controller.BlackListAction;
-import cn.chahuyun.session.data.ApplyClusterInfo;
 import cn.chahuyun.session.data.StaticData;
 import cn.chahuyun.session.dialogue.DialogueImpl;
 import cn.chahuyun.session.entity.*;
@@ -13,10 +12,8 @@ import cn.chahuyun.session.utils.DynamicMessageUtil;
 import cn.chahuyun.session.utils.HibernateUtil;
 import cn.chahuyun.session.utils.ScopeUtil;
 import cn.chahuyun.session.utils.ShareUtils;
-import kotlin.coroutines.EmptyCoroutineContext;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.*;
-import net.mamoe.mirai.event.*;
 import net.mamoe.mirai.event.events.*;
 import net.mamoe.mirai.message.data.*;
 import org.hibernate.query.criteria.HibernateCriteriaBuilder;
@@ -44,9 +41,6 @@ public class GroupManager {
 
     public final static GroupManager INSTANCE = new GroupManager();
 
-    public final static Map<String, ApplyClusterInfo> map = new HashMap<>();
-    private static int doorNumber = 0;
-
     /**
      * 有人申请入群
      *
@@ -64,11 +58,10 @@ public class GroupManager {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         String format = simpleDateFormat.format(new Date());
 
-        Map<Integer, Long> eventMap = new HashMap<>();
-        eventMap.put(doorNumber, event.getEventId());
+        int doorNumber = JoinRequestManager.register(event);
         MessageChainBuilder messageChain = new MessageChainBuilder();
         messageChain.append(new PlainText("来人啦~!\n" +
-                "门牌号:" + doorNumber++ + "\n" +
+                "门牌号:" + doorNumber + "\n" +
                 "时间:" + format + "\n" +
                 "敲门人:" + fromNick + "(" + fromId + ")"));
         if (message.isEmpty()) {
@@ -87,23 +80,6 @@ public class GroupManager {
         assert group != null;
         group.sendMessage(messageChain.build());
 
-        EventChannel<GroupMessageEvent> channel = GlobalEventChannel.INSTANCE.parentScope(HuYanSession.INSTANCE)
-                .filterIsInstance(GroupMessageEvent.class)
-                .filter(nextGroup -> nextGroup.getGroup() == group)
-                .filter(nextEvent -> {
-                    String toString = nextEvent.getMessage().contentToString();
-                    return Pattern.matches("(同意|拒绝|开门|关门) +(\\d+|all)|[!！]申请列表", toString);
-                });
-
-
-        map.put(event.getGroupId() + "." + event.getFromId(), new ApplyClusterInfo() {{
-            setJoinRequestEvent(event);
-        }});
-
-        //手动控制监听什么时候结束
-        channel.subscribe(GroupMessageEvent.class, EmptyCoroutineContext.INSTANCE,
-                ConcurrencyKind.LOCKED, EventPriority.HIGH, messageEvent -> AgreeOrRefuseToApply(event, messageEvent, eventMap));
-
     }
 
     /**
@@ -116,6 +92,7 @@ public class GroupManager {
     public static void userJoinGroup(MemberJoinEvent event) {
         Bot bot = event.getBot();
         Group group = event.getGroup();
+        JoinRequestManager.markJoined(event);
 
 
         List<GroupWelcomeInfo> welcomeInfoList = null;
@@ -147,15 +124,8 @@ public class GroupManager {
         }
 
         if (next) {
+            JoinRequestManager.remove(group.getId(), event.getMember().getId());
             return;
-        }
-        String mark = group.getId() + "." + event.getMember().getId();
-        if (map.containsKey(mark)) {
-            map.get(mark).setJoinEvent(event);
-        } else {
-            ApplyClusterInfo applyClusterInfo = new ApplyClusterInfo();
-            applyClusterInfo.setJoinEvent(event);
-            map.put(mark, applyClusterInfo);
         }
 
         DialogueImpl.INSTANCE.dialogueSession(event, groupWelcomeInfo);
@@ -318,135 +288,6 @@ public class GroupManager {
         Blacklist blacklist = new Blacklist(botId, userId, BlackListData.INSTANCE.getAutoBlackListReason(), scope);
         BlackListAction.saveBlackList(blacklist, scope);
         group.sendMessage(String.format("%s(%d) 离开了我们,已经加入黑名单!", member.getNick(), userId));
-    }
-
-    /**
-     * 同意或拒绝这个请求
-     *
-     * @param apply 申请
-     * @param event 消息
-     * @return net.mamoe.mirai.event.ListeningStatus
-     * @author Moyuyanli
-     * @date 2022/8/22 11:10
-     */
-    private static ListeningStatus AgreeOrRefuseToApply(MemberJoinRequestEvent apply, GroupMessageEvent event, Map<Integer, Long> numbers) {
-        Group group = event.getGroup();
-        Member sender = event.getSender();
-        Bot bot = event.getBot();
-        //权限用户识别符
-        String powerString = group.getId() + "." + sender.getId();
-
-        Map<String, Power> powerMap = StaticData.getPowerMap(bot);
-        MemberPermission permission = event.getGroup().get(event.getSender().getId()).getPermission();
-        boolean owner = HuYanSession.CONFIG.getOwner() == sender.getId();
-        if (!owner && permission == MemberPermission.MEMBER) {
-            if (!powerMap.containsKey(powerString)) {
-                return ListeningStatus.LISTENING;
-            }
-            Power power = powerMap.get(powerString);
-            /*
-            不是机器人管理员
-            不是群管理员
-            没有欢迎词操作权限
-            继续监听
-             */
-            if (!power.isAdmin() && !power.isGroupManage() && !power.isGroupHyc()) {
-                return ListeningStatus.LISTENING;
-            }
-        }
-        String content = event.getMessage().contentToString();
-        if (Pattern.matches("同意 \\d+", content)) {
-            int number = Integer.parseInt(content.substring(3));
-            if (!numbers.containsKey(number)) {
-                return ListeningStatus.LISTENING;
-            }
-            Long eventId = numbers.get(number);
-            if (apply.getEventId() == eventId) {
-                apply.accept();
-                map.get(apply.getGroupId() + "." + apply.getFromId()).setMessageEvent(event);
-            }
-            return ListeningStatus.STOPPED;
-        } else if (Pattern.matches("开门 \\d+", content)) {
-            int number = Integer.parseInt(content.substring(3));
-            if (!numbers.containsKey(number)) {
-                return ListeningStatus.LISTENING;
-            }
-            Long eventId = numbers.get(number);
-            if (apply.getEventId() == eventId) {
-                event.getSubject().sendMessage("好的，我这就开门");
-                apply.accept();
-                map.get(apply.getGroupId() + "." + apply.getFromId()).setMessageEvent(event);
-            }
-            return ListeningStatus.STOPPED;
-        } else if (Pattern.matches("开门 all", content)) {
-            event.getSubject().sendMessage("大门开着的，都进来了");
-            apply.accept();
-            map.get(apply.getGroupId() + "." + apply.getFromId()).setMessageEvent(event);
-            return ListeningStatus.STOPPED;
-        } else if (Pattern.matches("同意 all", content)) {
-            apply.accept();
-            map.get(apply.getGroupId() + "." + apply.getFromId()).setMessageEvent(event);
-            return ListeningStatus.STOPPED;
-        } else if (Pattern.matches("拒绝 \\d+", content)) {
-            int number = Integer.parseInt(content.substring(3));
-            if (!numbers.containsKey(number)) {
-                return ListeningStatus.LISTENING;
-            }
-            Long eventId = numbers.get(number);
-            if (apply.getEventId() == eventId) {
-                apply.reject();
-                map.get(apply.getGroupId() + "." + apply.getFromId()).setMessageEvent(event);
-            }
-            return ListeningStatus.STOPPED;
-        } else if (Pattern.matches("关门 \\d+", content)) {
-            int number = Integer.parseInt(content.substring(3));
-            if (!numbers.containsKey(number)) {
-                return ListeningStatus.LISTENING;
-            }
-            Long eventId = numbers.get(number);
-            if (apply.getEventId() == eventId) {
-                event.getSubject().sendMessage("门我反锁了！");
-                apply.reject();
-                map.get(apply.getGroupId() + "." + apply.getFromId()).setMessageEvent(event);
-            }
-            return ListeningStatus.STOPPED;
-        } else if (Pattern.matches("拒绝 all", content)) {
-            apply.reject();
-            map.get(apply.getGroupId() + "." + apply.getFromId()).setMessageEvent(event);
-            return ListeningStatus.STOPPED;
-        } else if (Pattern.matches("锁大门", content)) {
-            event.getSubject().sendMessage("大门我上锁了！");
-            apply.reject();
-            map.get(apply.getGroupId() + "." + apply.getFromId()).setMessageEvent(event);
-            return ListeningStatus.STOPPED;
-        } else {
-            String fromNick = apply.getFromNick();
-            long fromId = apply.getFromId();
-            String message = apply.getMessage();
-            Long invitorId = apply.getInvitorId();
-            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            String format = simpleDateFormat.format(new Date());
-            MessageChainBuilder messageChain = new MessageChainBuilder();
-            messageChain.append(new PlainText("门外还有人呢!\n" +
-                    "门牌号:" + doorNumber + "\n" +
-                    "时间:" + format + "\n" +
-                    "敲门人:" + fromNick + "(" + fromId + ")"));
-            if (message.isEmpty()) {
-                messageChain.append("\n敲门口令:(这个人啥也没说!)");
-            } else {
-                messageChain.append("\n敲门口令:").append(message);
-            }
-
-            try {
-                if (invitorId != null) {
-                    messageChain.append("\n指路人:").append(group.get(invitorId).getNick()).append("(").append(String.valueOf(invitorId)).append(")");
-                }
-            } catch (Exception e) {
-                LOGGER.warning("新人加群申请-欢迎消息构造失败!");
-            }
-            group.sendMessage(messageChain.build());
-        }
-        return ListeningStatus.LISTENING;
     }
 
     /**

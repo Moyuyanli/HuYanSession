@@ -8,6 +8,10 @@ import cn.chahuyun.session.event.GroupEventListener;
 import cn.chahuyun.session.event.MessageEventListener;
 import cn.chahuyun.session.exception.ExceptionProcessing;
 import cn.chahuyun.session.manage.PluginManager;
+import cn.chahuyun.session.manage.PluginRuntime;
+import cn.chahuyun.session.data.StaticData;
+import cn.chahuyun.session.utils.HibernateUtil;
+import cn.chahuyun.session.utils.ShareUtils;
 import net.mamoe.mirai.console.command.CommandManager;
 import net.mamoe.mirai.console.plugin.jvm.JavaPlugin;
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescriptionBuilder;
@@ -64,6 +68,7 @@ public final class HuYanSession extends JavaPlugin {
         //加载配置文件
         reloadPluginConfig(SessionConfig.INSTANCE);
         reloadPluginConfig(BlackListData.INSTANCE);
+        PluginRuntime.start(CONFIG.getInteractionWorkerThreads(), CONFIG.getInteractionQueueCapacity());
         PluginManager.init(INSTANCE);
         //设定事件监听的父域
         EventChannel<Event> channel = GlobalEventChannel.INSTANCE.parentScope(HuYanSession.INSTANCE);
@@ -97,6 +102,24 @@ public final class HuYanSession extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        try {
+            CommandManager.INSTANCE.unregisterCommand(SessionCommand.INSTANCE);
+        } catch (Exception exception) {
+            LOGGER.warning("注销指令失败: " + exception.getMessage());
+        }
+        try {
+            PluginRuntime.stop();
+        } catch (Exception exception) {
+            LOGGER.warning("停止后台任务失败: " + exception.getMessage());
+        }
+        RepeatMessageAction.clear();
+        ShareUtils.clearRuntimeState();
+        StaticData.clear();
+        try {
+            HibernateUtil.close();
+        } catch (Exception exception) {
+            LOGGER.warning("关闭数据库失败: " + exception.getMessage());
+        }
         getLogger().info("HuYanSession已卸载!感谢您的使用!");
     }
 
