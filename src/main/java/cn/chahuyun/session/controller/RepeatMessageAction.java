@@ -2,8 +2,9 @@ package cn.chahuyun.session.controller;
 
 import cn.chahuyun.session.config.SessionConfig;
 import cn.chahuyun.session.data.RepeatMessage;
-import cn.hutool.core.date.DateUnit;
-import cn.hutool.core.date.DateUtil;
+import cn.chahuyun.session.manage.PluginRuntime;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import net.mamoe.mirai.contact.Contact;
 import net.mamoe.mirai.contact.Group;
 import net.mamoe.mirai.contact.MemberPermission;
@@ -14,10 +15,6 @@ import net.mamoe.mirai.message.data.MessageUtils;
 import net.mamoe.mirai.message.data.PlainText;
 
 import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import static cn.chahuyun.session.HuYanSession.LOGGER;
@@ -37,13 +34,10 @@ public class RepeatMessageAction {
      * 跟这条消息的时间
      * 相差 config 设定的值时，就会自动清除已保证内存
      */
-    private static final Map<String, RepeatMessage> repeatMessageMap = new LinkedHashMap<>(2000, 0.75f, true) {
-        @Override
-        protected boolean removeEldestEntry(Map.Entry<String, RepeatMessage> eldest) {
-            RepeatMessage value = eldest.getValue();
-            return DateUtil.between(new Date(), value.getOldDate(), DateUnit.SECOND, true) > SessionConfig.INSTANCE.getMatchingNumber();
-        }
-    };
+    private static final Cache<String, RepeatMessage> REPEAT_MESSAGES = Caffeine.newBuilder()
+            .maximumSize(Math.max(1L, SessionConfig.INSTANCE.getRuntimeCacheMaximumSize()))
+            .expireAfterAccess(Math.max(1, SessionConfig.INSTANCE.getMatchingNumber()), TimeUnit.SECONDS)
+            .build();
 
     /**
      * 检测刷屏和机器人冲突
@@ -59,68 +53,61 @@ public class RepeatMessageAction {
         Group group = (Group) subject;
 
         String mark = group.getId() + "." + sender.getId();
-        RepeatMessage repeatMessage;
-        if (repeatMessageMap.containsKey(mark)) {
-            repeatMessage = repeatMessageMap.get(mark);
-        } else {
-            repeatMessage = new RepeatMessage(new Date(), 1);
-            repeatMessageMap.put(mark, repeatMessage);
+        RepeatMessage repeatMessage = REPEAT_MESSAGES.getIfPresent(mark);
+        if (repeatMessage == null) {
+            REPEAT_MESSAGES.put(mark, new RepeatMessage(new Date(), 1));
             return false;
         }
 
-        long timeThreshold = 1000L * SessionConfig.INSTANCE.getMatchingNumber();
+        synchronized (repeatMessage) {
+            repeatMessage.setOldDate(new Date());
+            repeatMessage.setNumberOf(repeatMessage.getNumberOf() + 1);
+            int screen = SessionConfig.INSTANCE.getScreen();
 
-        long time = new Date().getTime();
-        if (time - repeatMessage.getOldDate().getTime() > timeThreshold) {
-            return false;
-        }
-
-        repeatMessage.setOldDate(new Date());
-        repeatMessage.setNumberOf(repeatMessage.getNumberOf() + 1);
-
-        //刷屏判定次数
-        int screen = SessionConfig.INSTANCE.getScreen();
-
-        //突破3次
-        if (repeatMessage.getNumberOf() >= screen + 3) {
-            if (group.getBotPermission() == MemberPermission.MEMBER) {
+            if (repeatMessage.getNumberOf() >= screen + 3) {
+                if (group.getBotPermission() == MemberPermission.MEMBER) {
+                    return true;
+                }
+                // Only the first event crossing this threshold schedules recovery.
+                if (repeatMessage.getNumberOf() == screen + 3) {
+                    group.getSettings().setMuteAll(true);
+                    subject.sendMessage(MessageUtils.newChain().plus(new At(SessionConfig.INSTANCE.getOwner()))
+                            .plus(new PlainText("检测到有机器人冲突，已开启全体禁言，5秒后将会自动解除！")));
+                    PluginRuntime.schedule(() -> {
+                        try {
+                            group.getSettings().setMuteAll(false);
+                            subject.sendMessage(MessageUtils.newChain()
+                                    .plus(new At(SessionConfig.INSTANCE.getOwner()))
+                                    .plus(new PlainText("机器人冲突已处理，全体禁言解除！")));
+                        } catch (Exception exception) {
+                            LOGGER.warning("解除全体禁言失败: " + exception.getMessage());
+                        }
+                    }, 5, TimeUnit.SECONDS);
+                }
+                return true;
+            } else if (repeatMessage.getNumberOf() >= screen) {
+                if (group.getBotPermission() == MemberPermission.MEMBER) {
+                    return true;
+                }
+                if (!repeatMessage.isReplyTo()) {
+                    subject.sendMessage("检测到刷屏,已阻止!");
+                    repeatMessage.setReplyTo(true);
+                }
+                try {
+                    group.get(sender.getId()).mute(SessionConfig.INSTANCE.getForbiddenTime());
+                } catch (Exception e) {
+                    LOGGER.error("刷屏处理失败!");
+                    subject.sendMessage("检测到刷屏,阻止失败!");
+                }
                 return true;
             }
-            group.getSettings().setMuteAll(true);
-            subject.sendMessage(MessageUtils.newChain().plus(new At(SessionConfig.INSTANCE.getOwner()))
-                    .plus(new PlainText("检测到有机器人冲突，已开启全体禁言，5秒后将会自动解除！")));
-
-            //延时任务解除禁言
-            ScheduledExecutorService botScheduledExecutorService = new ScheduledThreadPoolExecutor(5);
-            botScheduledExecutorService.schedule(() -> {
-                subject.sendMessage(MessageUtils.newChain()
-                        .plus(new At(SessionConfig.INSTANCE.getOwner()))
-                        .plus(new PlainText("机器人冲突已处理，全体禁言解除！")));
-                group.getSettings().setMuteAll(false);
-                repeatMessage.setReplyTo(true);
-            }, 5, TimeUnit.SECONDS);//线程实现，2、延迟时间 3.单位
-
-            repeatMessageMap.put(mark, repeatMessage);
-            return true;
-        } else if (repeatMessage.getNumberOf() >= screen) {
-            if (group.getBotPermission() == MemberPermission.MEMBER) {
-                return true;
-            }
-            if (!repeatMessage.isReplyTo()) {
-                subject.sendMessage("检测到刷屏,已阻止!");
-                repeatMessage.setReplyTo(true);
-            }
-            try {
-                group.get(sender.getId()).mute(SessionConfig.INSTANCE.getForbiddenTime());
-            } catch (Exception e) {
-                LOGGER.error("刷屏处理失败!");
-                subject.sendMessage("检测到刷屏,阻止失败!");
-            }
-            repeatMessageMap.put(mark, repeatMessage);
-            return true;
         }
-        repeatMessageMap.put(mark, repeatMessage);
         return false;
+    }
+
+    public static void clear() {
+        REPEAT_MESSAGES.invalidateAll();
+        REPEAT_MESSAGES.cleanUp();
     }
 
 }

@@ -7,8 +7,8 @@ import cn.chahuyun.session.job.TimingJob;
 import cn.chahuyun.session.utils.HibernateUtil;
 import cn.chahuyun.session.utils.ListUtil;
 import cn.chahuyun.session.utils.ShareUtils;
-import cn.hutool.cron.CronUtil;
 import cn.hutool.cron.task.CronTask;
+import cn.chahuyun.session.manage.PluginRuntime;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.Contact;
 import net.mamoe.mirai.contact.User;
@@ -42,8 +42,6 @@ public class QuartzAction {
      * @date 2022/8/27 19:12
      */
     public static void init() {
-        CronUtil.setMatchSecond(true);
-        CronUtil.start(true);
         List<QuartzInfo> quartzInfos = HibernateUtil.factory.fromTransaction(session -> {
             HibernateCriteriaBuilder builder = session.getCriteriaBuilder();
             JpaCriteriaQuery<QuartzInfo> query = builder.createQuery(QuartzInfo.class);
@@ -57,7 +55,7 @@ public class QuartzAction {
                 String id = quartzInfo.getId() + "." + quartzInfo.getName();
                 CronTask timingJob = TimingJob.createTask(id, quartzInfo.getCronString());
                 try {
-                    CronUtil.schedule(id, quartzInfo.getCronString(), timingJob);
+                    PluginRuntime.cron().schedule(id, quartzInfo.getCronString(), timingJob);
                 } catch (Exception e) {
                     LOGGER.error("!!!∑(ﾟДﾟノ)ノ 添加定时任务出错:" + quartzInfo.getName());
                     continue;
@@ -380,7 +378,7 @@ public class QuartzAction {
         QuartzInfo quartzInfo = quartzInfos.get(0);
         String quartzId = quartzInfo.getId() + "." + quartzInfo.getName();
         try {
-            CronUtil.remove(quartzId);
+            PluginRuntime.cron().deschedule(quartzId);
         } catch (Exception ignored) {
         }
         try {
@@ -442,10 +440,10 @@ public class QuartzAction {
         CronTask timingJob = TimingJob.createTask(id, quartzInfo.getCronString());
         quartzInfo.setStatus(!quartzInfo.isStatus());
         if (quartzInfo.isStatus()) {
-            CronUtil.schedule(timingId, quartzInfo.getCronString(), timingJob);
+            PluginRuntime.cron().schedule(timingId, quartzInfo.getCronString(), timingJob);
         } else {
             try {
-                CronUtil.remove(timingId);
+                PluginRuntime.cron().deschedule(timingId);
             } catch (Exception e) {
                 LOGGER.warning("定时器未启用!");
                 subject.sendMessage(String.format("定时器 %s %s失败!", quartzInfo.getName(), !quartzInfo.isStatus() ? "开启" : "关闭"));
