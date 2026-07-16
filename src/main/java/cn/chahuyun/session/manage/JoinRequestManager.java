@@ -46,7 +46,10 @@ public final class JoinRequestManager {
         String memberKey = memberKey(event.getGroupId(), event.getFromId());
         Integer previousDoor = REQUEST_BY_MEMBER.put(memberKey, doorNumber);
         if (previousDoor != null) {
-            REQUESTS.remove(previousDoor);
+            PendingRequest previous = REQUESTS.get(previousDoor);
+            if (previous != null) {
+                removePending(previousDoor, previous, true);
+            }
         }
 
         ApplyClusterInfo info = new ApplyClusterInfo();
@@ -151,11 +154,20 @@ public final class JoinRequestManager {
 
     public static ApplyClusterInfo markJoined(MemberJoinEvent event) {
         String key = memberKey(event.getGroup().getId(), event.getMember().getId());
-        Integer doorNumber = REQUEST_BY_MEMBER.remove(key);
+        Integer doorNumber = REQUEST_BY_MEMBER.get(key);
+        ApplyClusterInfo info = null;
         if (doorNumber != null) {
-            REQUESTS.remove(doorNumber);
+            PendingRequest request = REQUESTS.get(doorNumber);
+            if (request != null) {
+                info = request.info;
+                removePending(doorNumber, request, false);
+            }
         }
-        ApplyClusterInfo info = INFO_BY_MEMBER.computeIfAbsent(key, ignored -> new ApplyClusterInfo());
+        if (info == null) {
+            info = INFO_BY_MEMBER.computeIfAbsent(key, ignored -> new ApplyClusterInfo());
+        } else {
+            INFO_BY_MEMBER.put(key, info);
+        }
         info.setJoinEvent(event);
         return info;
     }
@@ -166,20 +178,33 @@ public final class JoinRequestManager {
 
     public static void remove(long groupId, long memberId) {
         String key = memberKey(groupId, memberId);
-        INFO_BY_MEMBER.remove(key);
-        Integer doorNumber = REQUEST_BY_MEMBER.remove(key);
+        Integer doorNumber = REQUEST_BY_MEMBER.get(key);
         if (doorNumber != null) {
-            REQUESTS.remove(doorNumber);
+            PendingRequest request = REQUESTS.get(doorNumber);
+            if (request != null) {
+                removePending(doorNumber, request, true);
+                return;
+            }
         }
+        REQUEST_BY_MEMBER.remove(key);
+        INFO_BY_MEMBER.remove(key);
     }
 
     private static void expire(int doorNumber, PendingRequest expected) {
-        REQUESTS.remove(doorNumber, expected);
-        REQUEST_BY_MEMBER.remove(expected.memberKey, doorNumber);
-        INFO_BY_MEMBER.remove(expected.memberKey, expected.info);
-        ScheduledFuture<?> expiration = expected.expiration;
-        if (expiration != null && !expiration.isDone()) {
-            expiration.cancel(false);
+        removePending(doorNumber, expected, true);
+    }
+
+    private static void removePending(int doorNumber, PendingRequest expected, boolean removeInfo) {
+        synchronized (expected) {
+            REQUESTS.remove(doorNumber, expected);
+            REQUEST_BY_MEMBER.remove(expected.memberKey, doorNumber);
+            if (removeInfo) {
+                INFO_BY_MEMBER.remove(expected.memberKey, expected.info);
+            }
+            ScheduledFuture<?> expiration = expected.expiration;
+            if (expiration != null && !expiration.isDone()) {
+                expiration.cancel(false);
+            }
         }
     }
 
