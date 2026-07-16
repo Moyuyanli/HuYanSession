@@ -59,7 +59,7 @@ public class PluginManager {
             default:
                 properties = h2Base(configuration);
         }
-        if (oldConfiguration.getProperty(HIBERNATE_CONNECTION_URL).equals(DEFAULT_H2_BASE_PATH)) {
+        if (DEFAULT_H2_BASE_PATH.equals(oldConfiguration.getProperty(HIBERNATE_CONNECTION_URL))) {
             HibernateUtil.saveProperties(properties);
             exists = false;
         }
