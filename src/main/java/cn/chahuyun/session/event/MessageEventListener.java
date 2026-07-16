@@ -12,6 +12,8 @@ import cn.chahuyun.session.entity.Session;
 import cn.chahuyun.session.exception.ExceptionProcessing;
 import cn.chahuyun.session.manage.DataManager;
 import cn.chahuyun.session.manage.GroupManager;
+import cn.chahuyun.session.manage.InteractionManager;
+import cn.chahuyun.session.manage.PluginRuntime;
 import cn.chahuyun.session.utils.ShareUtils;
 import kotlin.coroutines.CoroutineContext;
 import net.mamoe.mirai.Bot;
@@ -51,6 +53,10 @@ public class MessageEventListener extends SimpleListenerHost {
 
     @EventHandler()
     public void onMessage(@NotNull MessageEvent event) { // 可以抛出任何异常, 将在 handleException 处理
+        if (InteractionManager.accept(event)) {
+            event.intercept();
+            return;
+        }
         String code = event.getMessage().serializeToMiraiCode();
         Contact subject = event.getSubject();
         User sender = event.getSender();
@@ -198,11 +204,11 @@ public class MessageEventListener extends SimpleListenerHost {
                 return;
             } else if (Pattern.matches(queryStudyPattern, code)) {
                 LOGGER.info("查询会话指令");
-                sessionAction.querySession(event);
+                submitInteraction(event, () -> sessionAction.querySession(event));
                 return;
             } else if (Pattern.matches(addsStudyPattern, code)) {
                 LOGGER.info("添加会话指令");
-                sessionAction.studyDialogue(event);
+                submitInteraction(event, () -> sessionAction.studyDialogue(event));
                 return;
             } else if (Pattern.matches(deleteStudyPattern, code)) {
                 LOGGER.info("删除会话指令");
@@ -210,7 +216,7 @@ public class MessageEventListener extends SimpleListenerHost {
                 return;
             } else if (Pattern.matches(deleteDialogueStudyPattern, code)) {
                 LOGGER.info("删除会话指令");
-                sessionAction.deleteInformationSession(event);
+                submitInteraction(event, () -> sessionAction.deleteInformationSession(event));
                 return;
             }
         }
@@ -235,7 +241,7 @@ public class MessageEventListener extends SimpleListenerHost {
                 return;
             } else if (Pattern.matches(queryPowerPattern, code)) {
                 LOGGER.info("查询权限指令");
-                powerAction.queryPower(event);
+                submitInteraction(event, () -> powerAction.queryPower(event));
                 return;
             }
         }
@@ -305,7 +311,7 @@ public class MessageEventListener extends SimpleListenerHost {
             GroupProhibitedAction groupProhibitedAction = new GroupProhibitedAction();
             if (Pattern.matches(addProhibitedPattern, code)) {
                 LOGGER.info("添加违禁词指令");
-                groupProhibitedAction.addProhibited(event);
+                submitInteraction(event, () -> groupProhibitedAction.addProhibited(event));
                 return;
             } else if (Pattern.matches(deleteProhibitedPattern, code)) {
                 LOGGER.info("删除违禁词指令");
@@ -329,7 +335,7 @@ public class MessageEventListener extends SimpleListenerHost {
             GroupWelcomeInfoAction groupWelcomeInfoAction = new GroupWelcomeInfoAction();
             if (Pattern.matches(addGroupWelcomeMessagePattern, code)) {
                 LOGGER.info("添加欢迎词指令");
-                groupWelcomeInfoAction.addGroupWelcomeInfo(event);
+                submitInteraction(event, () -> groupWelcomeInfoAction.addGroupWelcomeInfo(event));
                 return;
             } else if (Pattern.matches(queryGroupWelcomeMessagePattern, code)) {
                 LOGGER.info("查询欢迎词指令");
@@ -353,7 +359,7 @@ public class MessageEventListener extends SimpleListenerHost {
         if (owner || admin || power.isGroupManage() || power.isGroupHmd()) {
             if (Pattern.matches(addBlackListPattern, code)) {
                 LOGGER.info("添加黑名单指令");
-                blackListAction.addBlackList(event);
+                submitInteraction(event, () -> blackListAction.addBlackList(event));
                 return;
             } else if (Pattern.matches(queryBlackListPattern, code)) {
                 LOGGER.info("查询黑名单指令");
@@ -377,7 +383,7 @@ public class MessageEventListener extends SimpleListenerHost {
             ManySessionAction manySessionAction = new ManySessionAction();
             if (Pattern.matches(addManySessionPattern, code)) {
                 LOGGER.info("添加多词条指令");
-                manySessionAction.addManySession(event);
+                submitInteraction(event, () -> manySessionAction.addManySession(event));
                 return;
             } else if (Pattern.matches(queryManySessionPattern, code)) {
                 LOGGER.info("查询多词条指令");
@@ -414,7 +420,7 @@ public class MessageEventListener extends SimpleListenerHost {
         if (owner || admin || power.isDs()) {
             if (Pattern.matches(addQuartzPattern, code)) {
                 LOGGER.info("添加定时器指令");
-                quartzAction.addQuartz(event);
+                submitInteraction(event, () -> quartzAction.addQuartz(event));
                 return;
             } else if (Pattern.matches(deleteQuartzPattern, code)) {
                 LOGGER.info("删除定时器指令");
@@ -437,7 +443,7 @@ public class MessageEventListener extends SimpleListenerHost {
                 return;
             } else if (Pattern.matches(inputDataPattern, code)) {
                 LOGGER.info("导入数据指令");
-                DataManager.inputData(event);
+                submitInteraction(event, () -> DataManager.inputData(event));
                 return;
             }
         }
@@ -445,6 +451,12 @@ public class MessageEventListener extends SimpleListenerHost {
 
         isSessionMessage(event);
 
+    }
+
+    private static void submitInteraction(MessageEvent event, Runnable interaction) {
+        if (!PluginRuntime.submitInteraction(interaction)) {
+            event.getSubject().sendMessage("当前进行中的交互操作过多，请稍后重试。");
+        }
     }
 
     /**
