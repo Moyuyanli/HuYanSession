@@ -39,6 +39,15 @@ public class HibernateUtil {
         HibernateUtil.factory = factory;
     }
 
+    public static synchronized void close() {
+        if (factory != null) {
+            if (!factory.isClosed()) {
+                factory.close();
+            }
+            factory = null;
+        }
+    }
+
     /**
      * 通过参数从数据库中查询一个单实例
      *

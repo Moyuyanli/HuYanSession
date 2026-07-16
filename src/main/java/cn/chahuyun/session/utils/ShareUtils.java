@@ -9,15 +9,12 @@ import cn.chahuyun.session.entity.GroupList;
 import cn.chahuyun.session.entity.Scope;
 import cn.chahuyun.session.enums.Mate;
 import cn.hutool.core.io.FileUtil;
-import kotlin.coroutines.EmptyCoroutineContext;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.Contact;
 import net.mamoe.mirai.contact.Group;
 import net.mamoe.mirai.contact.User;
-import net.mamoe.mirai.event.ConcurrencyKind;
-import net.mamoe.mirai.event.EventChannel;
-import net.mamoe.mirai.event.EventPriority;
-import net.mamoe.mirai.event.GlobalEventChannel;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.message.data.*;
 import org.jetbrains.annotations.NotNull;
@@ -25,16 +22,15 @@ import org.jetbrains.annotations.NotNull;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static cn.chahuyun.session.HuYanSession.CONFIG;
 import static cn.chahuyun.session.HuYanSession.LOGGER;
+import cn.chahuyun.session.manage.InteractionManager;
 
 /**
  * ShareUtils
@@ -52,7 +48,10 @@ public class ShareUtils {
      * 用于动态消息的变量字符
      */
     public static final String DYNAMIC_MESSAGE_PATTERN = String.format("\\%s\\w+\\((\\S+?)\\)", SessionConfig.INSTANCE.getVariableSymbol());
-    private static final Map<String, Integer> MAP = new HashMap<>();
+    private static final Cache<String, Integer> PAUSED_MESSAGES = Caffeine.newBuilder()
+            .maximumSize(Math.max(1L, SessionConfig.INSTANCE.getRuntimeCacheMaximumSize()))
+            .expireAfterAccess(1, TimeUnit.HOURS)
+            .build();
 
 
     private ShareUtils() {
@@ -107,7 +106,7 @@ public class ShareUtils {
 
         String mark = botQq + "." + sender.getId();
 
-        MAP.put(mark, num);
+        PAUSED_MESSAGES.put(mark, num);
         subject.sendMessage(bot.getNick() + "(" + botQq + ")开始忽略接下来你的 " + num + " 条消息");
     }
 
@@ -125,16 +124,21 @@ public class ShareUtils {
 
         String mark = bot.getId() + "." + sender.getId();
 
-        if (MAP.containsKey(mark)) {
-            Integer integer = MAP.get(mark);
+        Integer integer = PAUSED_MESSAGES.getIfPresent(mark);
+        if (integer != null) {
             if (integer > 0) {
-                MAP.put(mark, integer - 1);
+                PAUSED_MESSAGES.put(mark, integer - 1);
                 return true;
             }
-            MAP.remove(mark);
+            PAUSED_MESSAGES.invalidate(mark);
             return false;
         }
         return false;
+    }
+
+    public static void clearRuntimeState() {
+        PAUSED_MESSAGES.invalidateAll();
+        PAUSED_MESSAGES.cleanUp();
     }
 
     /**
@@ -241,26 +245,7 @@ public class ShareUtils {
      */
     @NotNull
     public static MessageEvent getNextMessageEventFromUser(User user) {
-        EventChannel<MessageEvent> channel = GlobalEventChannel.INSTANCE.parentScope(HuYanSession.INSTANCE)
-                .filterIsInstance(MessageEvent.class)
-                .filter(event -> event.getSender().getId() == user.getId());
-
-        CompletableFuture<MessageEvent> future = new CompletableFuture<>();
-
-        channel.subscribeOnce(MessageEvent.class, EmptyCoroutineContext.INSTANCE,
-                ConcurrencyKind.LOCKED, EventPriority.HIGH, event -> {
-                    event.intercept();
-                    future.complete(event);
-                }
-        );
-        MessageEvent event = null;
-        try {
-            event = future.get();
-        } catch (InterruptedException | ExecutionException e) {
-            LOGGER.error("获取下一条消息出错!");
-        }
-        assert event != null;
-        return event;
+        return InteractionManager.awaitNext(user);
     }
 
     @NotNull
