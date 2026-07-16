@@ -116,7 +116,7 @@ public class ManySessionAction {
         User user = event.getSender();
 
         subject.sendMessage("请发送多词条的触发词：");
-        MessageEvent triggerEvent = ShareUtils.getNextMessageEventFromUser(user);
+        MessageEvent triggerEvent = ShareUtils.getNextMessageEventByUser(user);
         if (ShareUtils.isQuit(triggerEvent)) {
             return;
         }
@@ -144,7 +144,7 @@ public class ManySessionAction {
         }
 
         subject.sendMessage("请发送参数(中间以空格隔开)");
-        MessageEvent paramEvent = ShareUtils.getNextMessageEventFromUser(user);
+        MessageEvent paramEvent = ShareUtils.getNextMessageEventByUser(user);
         if (ShareUtils.isQuit(paramEvent)) {
             return;
         }
@@ -210,7 +210,7 @@ public class ManySessionAction {
         boolean isQuit = false;
         while (!isQuit) {
             subject.sendMessage("请发送多词条回复消息:");
-            MessageEvent nextEvent = ShareUtils.getNextMessageEventFromUser(user);
+            MessageEvent nextEvent = ShareUtils.getNextMessageEventByUser(user);
             //退出
             if (ShareUtils.isQuit(nextEvent)) {
                 return;

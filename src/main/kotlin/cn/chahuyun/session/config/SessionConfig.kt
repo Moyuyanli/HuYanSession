@@ -62,6 +62,34 @@ object SessionConfig : AutoSavePluginConfig("config") {
     @ValueDescription("刷屏禁言时间(秒)")
     val forbiddenTime: Int by value(60)
 
+    @ValueDescription("交互指令等待下一条消息的超时时间(秒)")
+    val interactionTimeoutSeconds: Long by value(300L)
+
+    @ValueDescription("可同时执行的多步骤交互指令数量")
+    val interactionWorkerThreads: Int by value(8)
+
+    @ValueDescription("等待执行的多步骤交互指令队列上限")
+    val interactionQueueCapacity: Int by value(100)
+
+    @ValueDescription("入群申请在内存中的最长保留时间(分钟)")
+    val joinRequestTimeoutMinutes: Long by value(30L)
+
+    @ValueDescription("刷屏和暂停状态缓存的最大用户数")
+    val runtimeCacheMaximumSize: Long by value(10000L)
+
+    @ValueDescription("第一次加载插件")
+    private var firstLoad: Boolean by value(true)
+
+
+    fun isFirstLoad() : Boolean {
+        return if (firstLoad) {
+            firstLoad = false
+            true
+        } else {
+            firstLoad
+        }
+
+    }
 
     /**
      * 群号

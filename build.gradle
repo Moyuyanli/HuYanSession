@@ -7,7 +7,7 @@ plugins {
 }
 
 group = 'cn.chahuyun'
-version = '2.4.1'
+version = '2.4.4'
 
 repositories {
     maven { url 'https://maven.aliyun.com/repository/public' }
@@ -19,9 +19,15 @@ repositories {
 dependencies {
     compileOnly 'xyz.cssxsh.mirai:mirai-hibernate-plugin:2.7.1'
     implementation 'cn.hutool:hutool-all:5.8.20'
+    implementation 'com.github.ben-manes.caffeine:caffeine:3.1.8'
     implementation 'org.apache.poi:poi-ooxml:4.1.2'
     testImplementation 'org.jetbrains.kotlin:kotlin-test:1.8.10'
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
     testImplementation 'xyz.cssxsh.mirai:mirai-hibernate-plugin:2.7.1'
+}
+
+test {
+    useJUnitPlatform()
 }
 
 mirai {

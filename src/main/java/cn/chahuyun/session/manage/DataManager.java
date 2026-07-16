@@ -514,7 +514,7 @@ public class DataManager {
         User sender = event.getSender();
         Contact subject = event.getSubject();
         subject.sendMessage("请发送 excel 文件!");
-        MessageEvent nextMessageEventFromUser = ShareUtils.getNextMessageEventFromUser(sender);
+        MessageEvent nextMessageEventFromUser = ShareUtils.getNextMessageEventByUser(sender);
         MessageChain message = nextMessageEventFromUser.getMessage();
         FileMessage fileMessage = null;
         for (SingleMessage singleMessage : message) {

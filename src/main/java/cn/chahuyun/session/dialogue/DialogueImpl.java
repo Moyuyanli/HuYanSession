@@ -3,7 +3,6 @@ package cn.chahuyun.session.dialogue;
 import cn.chahuyun.session.controller.GroupWelcomeInfoAction;
 import cn.chahuyun.session.controller.ManySessionAction;
 import cn.chahuyun.session.entity.*;
-import cn.chahuyun.session.manage.GroupManager;
 import cn.chahuyun.session.utils.DynamicMessageUtil;
 import net.mamoe.mirai.contact.BotIsBeingMutedException;
 import net.mamoe.mirai.contact.Contact;
@@ -22,6 +21,7 @@ import java.net.URL;
 import java.util.List;
 
 import static cn.chahuyun.session.HuYanSession.LOGGER;
+import cn.chahuyun.session.manage.JoinRequestManager;
 
 /**
  * 说明
@@ -134,7 +134,6 @@ public class DialogueImpl {
      */
     public void dialogueSession(MemberJoinEvent group, GroupWelcomeInfo welcomeInfo) {
         Group subject = group.getGroup();
-        String mark = group.getGroup().getId() + "." + group.getMember().getId();
         try {
             List<WelcomeMessage> welcomeMessages = welcomeInfo.getWelcomeMessages();
             WelcomeMessage welcomeMessage;
@@ -154,7 +153,7 @@ public class DialogueImpl {
                     subject.sendMessage(MiraiCode.deserializeMiraiCode(welcomeMessage.getWelcomeMessage()));
                     break;
                 case 1:
-                    MessageChain messages = DynamicMessageUtil.parseMessageParameter(group, welcomeMessage.getWelcomeMessage(), welcomeInfo, GroupManager.map.get(mark));
+                    MessageChain messages = DynamicMessageUtil.parseMessageParameter(group, welcomeMessage.getWelcomeMessage(), welcomeInfo, JoinRequestManager.get(subject.getId(), group.getMember().getId()));
                     assert messages != null;
                     subject.sendMessage(messages);
                     break;
@@ -175,7 +174,7 @@ public class DialogueImpl {
         } catch (Exception e) {
             LOGGER.error("发送消息错误!!!!:", e);
         } finally {
-            GroupManager.map.remove(mark);
+            JoinRequestManager.remove(subject.getId(), group.getMember().getId());
         }
     }
 

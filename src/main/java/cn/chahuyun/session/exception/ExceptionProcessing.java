@@ -26,7 +26,10 @@ public class ExceptionProcessing extends SimpleListenerHost {
 
     @Override
     public void handleException(@NotNull CoroutineContext context, @NotNull Throwable exception) {
-        if (exception instanceof EventCancelledException) {
+        if (exception instanceof InteractionTimeoutException) {
+            LOGGER.info(exception.getMessage());
+            return;
+        } else if (exception instanceof EventCancelledException) {
             LOGGER.error("发送消息被取消:", exception);
         } else if (exception instanceof BotIsBeingMutedException) {
             LOGGER.error("你的机器人被禁言:", exception);
@@ -48,7 +51,7 @@ public class ExceptionProcessing extends SimpleListenerHost {
             if (owner == null) {
                 return;
             }
-            owner.sendMessage("壶言会话出错:" + exception.getMessage());
+            owner.sendMessage("壶言会话出错:" + exception.getCause().getCause().toString());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

@@ -7,8 +7,8 @@ import cn.chahuyun.session.job.TimingJob;
 import cn.chahuyun.session.utils.HibernateUtil;
 import cn.chahuyun.session.utils.ListUtil;
 import cn.chahuyun.session.utils.ShareUtils;
-import cn.hutool.cron.CronUtil;
 import cn.hutool.cron.task.CronTask;
+import cn.chahuyun.session.manage.PluginRuntime;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.Contact;
 import net.mamoe.mirai.contact.User;
@@ -42,8 +42,6 @@ public class QuartzAction {
      * @date 2022/8/27 19:12
      */
     public static void init() {
-        CronUtil.setMatchSecond(true);
-        CronUtil.start(true);
         List<QuartzInfo> quartzInfos = HibernateUtil.factory.fromTransaction(session -> {
             HibernateCriteriaBuilder builder = session.getCriteriaBuilder();
             JpaCriteriaQuery<QuartzInfo> query = builder.createQuery(QuartzInfo.class);
@@ -57,7 +55,7 @@ public class QuartzAction {
                 String id = quartzInfo.getId() + "." + quartzInfo.getName();
                 CronTask timingJob = TimingJob.createTask(id, quartzInfo.getCronString());
                 try {
-                    CronUtil.schedule(id, quartzInfo.getCronString(), timingJob);
+                    PluginRuntime.cron().schedule(id, quartzInfo.getCronString(), timingJob);
                 } catch (Exception e) {
                     LOGGER.error("!!!∑(ﾟДﾟノ)ノ 添加定时任务出错:" + quartzInfo.getName());
                     continue;
@@ -116,7 +114,7 @@ public class QuartzAction {
         Bot bot = event.getBot();
         //获取名称
         subject.sendMessage("请输入定时器名称:");
-        MessageEvent nextNameEvent = ShareUtils.getNextMessageEventFromUser(user);
+        MessageEvent nextNameEvent = ShareUtils.getNextMessageEventByUser(user);
         if (ShareUtils.isQuit(nextNameEvent)) {
             return;
         }
@@ -126,7 +124,7 @@ public class QuartzAction {
         boolean cronSure = true;
         while (cronSure) {
             subject.sendMessage("请输入定时器频率(cron表达式):");
-            MessageEvent nextCronStringEvent = ShareUtils.getNextMessageEventFromUser(user);
+            MessageEvent nextCronStringEvent = ShareUtils.getNextMessageEventByUser(user);
             if (ShareUtils.isQuit(nextCronStringEvent)) {
                 return;
             }
@@ -139,7 +137,7 @@ public class QuartzAction {
                 subject.sendMessage("沒有识别到cron表达式!请重新输入");
                 continue;
             }
-            MessageEvent nextCronStringSure = ShareUtils.getNextMessageEventFromUser(user);
+            MessageEvent nextCronStringSure = ShareUtils.getNextMessageEventByUser(user);
             if (ShareUtils.isQuit(nextCronStringSure)) {
                 return;
             }
@@ -150,7 +148,7 @@ public class QuartzAction {
         }
         //获取参数
         subject.sendMessage("请输入定时器参数:(参数中间以空格隔开)");
-        MessageEvent nextParamsEvent = ShareUtils.getNextMessageEventFromUser(user);
+        MessageEvent nextParamsEvent = ShareUtils.getNextMessageEventByUser(user);
         if (ShareUtils.isQuit(nextParamsEvent)) {
             return;
         }
@@ -190,7 +188,7 @@ public class QuartzAction {
         //单条消息的定时任务
         if (!isPolling && !isRandom) {
             subject.sendMessage("请输入发送内容:");
-            MessageEvent nextReplyEvent = ShareUtils.getNextMessageEventFromUser(user);
+            MessageEvent nextReplyEvent = ShareUtils.getNextMessageEventByUser(user);
             if (ShareUtils.isQuit(nextReplyEvent)) {
                 return;
             }
@@ -226,7 +224,7 @@ public class QuartzAction {
         boolean isQuit = false;
         while (!isQuit) {
             subject.sendMessage("请发送多词条回复消息:");
-            MessageEvent nextEvent = ShareUtils.getNextMessageEventFromUser(user);
+            MessageEvent nextEvent = ShareUtils.getNextMessageEventByUser(user);
             if (ShareUtils.isQuit(nextEvent)) {
                 return;
             }
@@ -380,7 +378,7 @@ public class QuartzAction {
         QuartzInfo quartzInfo = quartzInfos.get(0);
         String quartzId = quartzInfo.getId() + "." + quartzInfo.getName();
         try {
-            CronUtil.remove(quartzId);
+            PluginRuntime.cron().deschedule(quartzId);
         } catch (Exception ignored) {
         }
         try {
@@ -442,10 +440,10 @@ public class QuartzAction {
         CronTask timingJob = TimingJob.createTask(id, quartzInfo.getCronString());
         quartzInfo.setStatus(!quartzInfo.isStatus());
         if (quartzInfo.isStatus()) {
-            CronUtil.schedule(timingId, quartzInfo.getCronString(), timingJob);
+            PluginRuntime.cron().schedule(timingId, quartzInfo.getCronString(), timingJob);
         } else {
             try {
-                CronUtil.remove(timingId);
+                PluginRuntime.cron().deschedule(timingId);
             } catch (Exception e) {
                 LOGGER.warning("定时器未启用!");
                 subject.sendMessage(String.format("定时器 %s %s失败!", quartzInfo.getName(), !quartzInfo.isStatus() ? "开启" : "关闭"));

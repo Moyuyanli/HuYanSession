@@ -105,7 +105,7 @@ public class BlackListAction {
                     case "%":
                         //获取下一次消息
                         subject.sendMessage("请输入封禁理由:");
-                        reason = ShareUtils.getNextMessageEventFromUser(user).getMessage().serializeToMiraiCode();
+                        reason = ShareUtils.getNextMessageEventByUser(user).getMessage().serializeToMiraiCode();
                         break;
                     default:
                         if (Pattern.matches("gr[\\dA-z]+", s)) {
@@ -284,7 +284,7 @@ public class BlackListAction {
             if (ShareUtils.mateScope(bot, group, blacklist.getScope())) {
                 if (blacklist.isKick()) {
                     try {
-                        member.kick("你已被封禁");
+                        member.kick("你已被封禁",true);
                         subject.sendMessage(String.format("检测到黑名单用户 %d ,已踢出,封禁理由: %s", user.getId(), blacklist.getReason()));
                     } catch (Exception e) {
                         LOGGER.warning("该用户不存在");

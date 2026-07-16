@@ -202,4 +202,12 @@ public class StaticData {
     public static void setManySession(Map<Long, Map<String, ManySessionInfo>> manySession) {
         StaticData.manySession = manySession;
     }
+
+    public static void clear() {
+        groupListMap = null;
+        sessionMap = null;
+        manySession = null;
+        powerMap = null;
+        prohibitedMap = null;
+    }
 }

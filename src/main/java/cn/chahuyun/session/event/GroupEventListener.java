@@ -5,11 +5,14 @@ import cn.chahuyun.session.config.SessionConfig;
 import cn.chahuyun.session.HuYanSession;
 import cn.chahuyun.session.exception.ExceptionProcessing;
 import cn.chahuyun.session.manage.GroupManager;
+import cn.chahuyun.session.manage.JoinRequestManager;
 import kotlin.coroutines.CoroutineContext;
 import net.mamoe.mirai.contact.MemberPermission;
 import net.mamoe.mirai.event.EventHandler;
+import net.mamoe.mirai.event.EventPriority;
 import net.mamoe.mirai.event.SimpleListenerHost;
 import net.mamoe.mirai.event.events.GroupEvent;
+import net.mamoe.mirai.event.events.GroupMessageEvent;
 import net.mamoe.mirai.event.events.MemberJoinEvent;
 import net.mamoe.mirai.event.events.MemberJoinRequestEvent;
 import net.mamoe.mirai.event.events.MemberLeaveEvent;
@@ -76,6 +79,13 @@ public class GroupEventListener extends SimpleListenerHost {
         //入群申请
         if (SessionConfig.INSTANCE.getRequestSwitch()) {
             GroupManager.userRequestGroup(event);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onJoinRequestCommand(@NotNull GroupMessageEvent event) {
+        if (JoinRequestManager.handle(event)) {
+            event.intercept();
         }
     }
 
